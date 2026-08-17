@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ProductFieldRouter = void 0;
+const express_1 = require("express");
+const auth_middleware_1 = require("../../middleware/auth.middleware");
+const rbac_middleware_1 = require("../../middleware/rbac.middleware");
+const productField_controller_1 = require("./productField.controller");
+const router = (0, express_1.Router)();
+router.use(auth_middleware_1.authenticateToken);
+router.post("/subcategories/:id/fields", (0, rbac_middleware_1.requirePermission)("PRODUCT_MANAGER"), productField_controller_1.createField);
+router.get("/subcategories/:id/fields", (0, rbac_middleware_1.requirePermission)("PRODUCT_READ_ALL"), productField_controller_1.getBySubcategory);
+router.patch("/fields/:id", (0, rbac_middleware_1.requirePermission)("PRODUCT_MANAGER"), productField_controller_1.updateField);
+router.patch("/fields/:id/status", (0, rbac_middleware_1.requirePermission)("PRODUCT_MANAGER"), productField_controller_1.toggleStatus);
+router.delete("/fields/:id", (0, rbac_middleware_1.requirePermission)("PRODUCT_MANAGER"), productField_controller_1.deleteField);
+exports.ProductFieldRouter = router;

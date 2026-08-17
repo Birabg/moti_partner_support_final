@@ -1,0 +1,67 @@
+.my-cases-container {
+
+    padding: 30px;
+
+}
+
+
+
+.my-cases-container h1 {
+
+    margin-bottom: 25px;
+
+    font-size: 28px;
+
+}
+
+
+
+.cases-grid {
+
+    display: grid;
+
+    grid-template-columns: repeat(
+        auto-fill,
+        minmax(320px, 1fr)
+    );
+
+    gap: 20px;
+
+}
+
+
+
+.empty-cases {
+
+    background: #f8f9fa;
+
+    padding: 40px;
+
+    text-align: center;
+
+    border-radius: 8px;
+
+    color: #666;
+
+}
+
+
+
+.case-loading,
+.case-error {
+
+    padding: 40px;
+
+    text-align: center;
+
+    font-size: 18px;
+
+}
+
+
+
+.case-error {
+
+    color: red;
+
+}

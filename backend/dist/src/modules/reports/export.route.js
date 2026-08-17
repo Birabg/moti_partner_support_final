@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ReportsExportRouter = void 0;
+const express_1 = require("express");
+const export_controller_1 = require("./export.controller");
+const auth_middleware_1 = require("../../middleware/auth.middleware");
+const rbac_middleware_1 = require("../../middleware/rbac.middleware");
+const router = (0, express_1.Router)();
+router.use(auth_middleware_1.authenticateToken);
+router.get("/pdf", (0, rbac_middleware_1.requirePermission)("VIEW_ALL_CASES_DETAIL"), export_controller_1.exportPdf);
+router.get("/excel", (0, rbac_middleware_1.requirePermission)("VIEW_ALL_CASES_DETAIL"), export_controller_1.exportExcel);
+router.get("/csv", (0, rbac_middleware_1.requirePermission)("VIEW_ALL_CASES_DETAIL"), export_controller_1.exportCsv);
+exports.ReportsExportRouter = router;

@@ -1,0 +1,16 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.UserProfile = void 0;
+const express_1 = require("express");
+const users_controller_1 = require("./users.controller");
+const auth_middleware_1 = require("../../middleware/auth.middleware");
+const rbac_middleware_1 = require("../../middleware/rbac.middleware");
+const router = (0, express_1.Router)();
+router.use(auth_middleware_1.authenticateToken);
+router.patch("/own/updateProfile", users_controller_1.updateMyProfile);
+router.patch("/update/:id", (0, rbac_middleware_1.requirePermission)("USER_UPDATE_ANY"), users_controller_1.adminUpdateUserEmail);
+router.get("/all-approved", (0, rbac_middleware_1.requirePermission)("USER_READ_ALL"), users_controller_1.getAllApprovedUsers);
+router.get("/:id", (0, rbac_middleware_1.requirePermission)("USER_READ_ALL"), users_controller_1.getUserById);
+router.put("/:id", (0, rbac_middleware_1.requirePermission)("USER_UPDATE_ANY"), users_controller_1.updateUserByAdmin);
+router.get("/:id/permissions", (0, rbac_middleware_1.requirePermission)("PERMISSION_DELEGATE"), users_controller_1.getUserPermissions);
+exports.UserProfile = router;

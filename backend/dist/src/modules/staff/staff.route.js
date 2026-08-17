@@ -1,0 +1,17 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.StaffRoutes = void 0;
+const express_1 = require("express");
+const staff_controller_1 = require("./staff.controller");
+const auth_middleware_1 = require("../../middleware/auth.middleware");
+const PrivateRouter = (0, express_1.Router)();
+PrivateRouter.use(auth_middleware_1.authenticateToken);
+PrivateRouter.get("/analyze", staff_controller_1.getStaffDeepDetailProfile);
+PrivateRouter.get("/feedback/analytics", staff_controller_1.getStaffFeedbackAnalytics);
+PrivateRouter.get("/support", staff_controller_1.getAllSupportStaff);
+const router = (0, express_1.Router)();
+router.post("/register", staff_controller_1.register);
+router.post("/verify-email", staff_controller_1.verifyEmail);
+router.post("/resend-verification", staff_controller_1.resendVerification);
+router.use("/", PrivateRouter);
+exports.StaffRoutes = router;

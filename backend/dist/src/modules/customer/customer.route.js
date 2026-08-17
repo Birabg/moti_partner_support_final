@@ -1,0 +1,17 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CustomerRoute = void 0;
+const express_1 = require("express");
+const customer_controller_1 = require("./customer.controller");
+const auth_middleware_1 = require("../../middleware/auth.middleware");
+const PrivateRouter = (0, express_1.Router)();
+PrivateRouter.use(auth_middleware_1.authenticateToken);
+PrivateRouter.get("/analytics", customer_controller_1.getCustomerHistoryProfile);
+const router = (0, express_1.Router)();
+router.post("/register", customer_controller_1.register);
+router.post("/verify-email", customer_controller_1.verifyEmail);
+router.post("/resend-verification", customer_controller_1.resendVerification);
+// router.get("/my-history", handleGetCustomerHistory);
+// router.get("/:customerId/history", handleGetCustomerHistory);
+router.use("/", PrivateRouter);
+exports.CustomerRoute = router;

@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.RoleRoute = void 0;
+const express_1 = require("express");
+const roleassignment_controller_1 = require("./roleassignment.controller");
+const auth_middleware_1 = require("../../middleware/auth.middleware");
+const rbac_middleware_1 = require("../../middleware/rbac.middleware");
+const router = (0, express_1.Router)();
+router.use(auth_middleware_1.authenticateToken);
+router.patch("/update", (0, rbac_middleware_1.requirePermission)("STAFF_ASSIGN_ROLE"), roleassignment_controller_1.assignRole);
+router.patch("/revoke", (0, rbac_middleware_1.requirePermission)("STAFF_ASSIGN_ROLE"), roleassignment_controller_1.revokeRole);
+exports.RoleRoute = router;

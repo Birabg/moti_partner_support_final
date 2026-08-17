@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CaseAnalyticsRouter = void 0;
+const express_1 = require("express");
+const cases_controller_1 = require("./cases.controller");
+const rbac_middleware_1 = require("../../../../middleware/rbac.middleware");
+const router = (0, express_1.Router)();
+router.get("/metrics/all", (0, rbac_middleware_1.requirePermission)("VIEW_ALL_CASES_METRICS"), cases_controller_1.getGlobalCaseMetrics);
+router.get("/deepall", (0, rbac_middleware_1.requirePermission)("VIEW_ALL_CASES_DETAIL"), cases_controller_1.getAllCasesDeepDetail);
+router.get("/count", (0, rbac_middleware_1.requirePermission)("VIEW_ALL_CASES_METRICS"), cases_controller_1.getCaseSummaryMetrics);
+router.get("/casesdetail/:caseId", (0, rbac_middleware_1.requirePermission)("VIEW_ALL_CASES_DETAIL"), cases_controller_1.getCaseDeepDetailProfile);
+exports.CaseAnalyticsRouter = router;

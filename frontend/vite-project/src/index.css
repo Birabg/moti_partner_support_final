@@ -1,0 +1,103 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Manrope:wght@200..800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* MOTI brand palette — aligned to shadcn-admin reference (primary #5780BE / secondary #1B355C) */
+  --color-navy-50: #f3f7fc;
+  --color-navy-100: #e3ebf7;
+  --color-navy-200: #c5d5ed;
+  --color-navy-300: #9cb6de;
+  --color-navy-400: #789bce;
+  --color-navy-500: #567fbd;
+  --color-navy-600: #3f6bab;
+  --color-navy-700: #2f558e;
+  --color-navy-800: #234270;
+  --color-navy-900: #1a345b;
+  --color-navy-950: #102037;
+
+  --color-teal-600: #3f6bab;
+  --color-teal-500: #567fbd;
+  --color-teal-400: #789bce;
+  --color-teal-100: #e3ebf7;
+
+  --color-gold-600: #c8802a;
+  --color-gold-500: #e8a33d;
+  --color-gold-400: #f0b95e;
+  --color-gold-100: #fbecd4;
+
+  --color-success-600: #157a42;
+  --color-success-500: #1f9d55;
+  --color-success-100: #e3f7ea;
+
+  --color-warning-600: #b45309;
+  --color-warning-500: #d97706;
+  --color-warning-100: #fef3e0;
+
+  --color-danger-600: #b91c1c;
+  --color-danger-500: #dc2626;
+  --color-danger-100: #fce8e8;
+
+  --color-ink-900: #101a28;
+  --color-ink-700: #344154;
+  --color-ink-500: #667285;
+  --color-ink-300: #d0d5dd;
+  --color-ink-200: #e4e7ec;
+  --color-ink-100: #f0f2f5;
+  --color-ink-50: #f8f9fb;
+
+  --color-primary: #5780be;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #1b355c;
+  --color-background: #f8fafc;
+  --color-card: #ffffff;
+  --color-border: #e4e7ec;
+  --color-muted: #f0f2f5;
+  --color-muted-foreground: #667285;
+  --color-foreground: #101a28;
+
+  --font-display: 'Manrope', system-ui, sans-serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'Inter', ui-monospace, monospace;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  * {
+    border-color: var(--color-ink-200);
+  }
+  body {
+    font-family: var(--font-sans);
+    color: var(--color-ink-900);
+    background: #f8fafc;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+  ::selection {
+    background: var(--color-teal-100);
+    color: var(--color-navy-900);
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: var(--color-ink-300);
+    border-radius: 999px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .portal-shell {
+    position: relative;
+    isolation: isolate;
+  }
+}

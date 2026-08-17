@@ -1,0 +1,144 @@
+.create-case-container {
+
+    padding: 30px;
+
+    max-width: 900px;
+
+    margin: auto;
+
+}
+
+
+
+.create-case-container h1 {
+
+    margin-bottom: 25px;
+
+    font-size: 28px;
+
+}
+
+
+
+.create-case-form {
+
+    background: white;
+
+    padding: 30px;
+
+    border-radius: 10px;
+
+    box-shadow: 0 5px 8px rgba(0,0,0,0.08);
+
+}
+
+
+
+.form-group {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+
+    margin-bottom: 20px;
+
+}
+
+
+
+.form-group label {
+
+    font-weight: 600;
+
+    color: #333;
+
+}
+
+
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+
+
+    padding: 12px;
+
+    border: 1px solid #ddd;
+
+    border-radius: 6px;
+
+    font-size: 15px;
+
+}
+
+
+
+.form-group textarea {
+
+    min-height: 130px;
+
+    resize: vertical;
+
+}
+
+
+
+.submit-case-btn {
+
+    background: #2574eb;
+
+    color: white;
+
+    border: none;
+
+    padding: 12px 25px;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    font-size: 16px;
+
+}
+
+
+
+.submit-case-btn:hover {
+
+    background: #1d68d8;
+
+}
+
+
+
+.case-success {
+
+    padding: 15px;
+
+    background: #d1fae5;
+
+    color: #065f46;
+
+    border-radius: 6px;
+
+    margin-bottom: 20px;
+
+}
+
+
+
+.case-error {
+
+    padding: 15px;
+
+    background: #fee2e2;
+
+    color: #991b1b;
+
+    border-radius: 6px;
+
+    margin-bottom: 20px;
+
+}

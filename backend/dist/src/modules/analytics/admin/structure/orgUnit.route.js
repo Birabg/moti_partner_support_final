@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.StructureRouter = void 0;
+const express_1 = require("express");
+const orgUnit_controller_1 = require("./orgUnit.controller");
+const rbac_middleware_1 = require("../../../../middleware/rbac.middleware");
+const router = (0, express_1.Router)();
+router.get("/divisions", (0, rbac_middleware_1.requirePermission)("STRUCTURE_READ_ALL"), orgUnit_controller_1.getDivisionAnalytics);
+router.get("/departments", (0, rbac_middleware_1.requirePermission)("STRUCTURE_READ_ALL"), orgUnit_controller_1.getDepartmentAnalytics);
+router.get("/sections", (0, rbac_middleware_1.requirePermission)("STRUCTURE_READ_ALL"), orgUnit_controller_1.getSectionAnalytics);
+router.get("/servicetypes", (0, rbac_middleware_1.requirePermission)("SERVICE_MANAGE"), orgUnit_controller_1.getServiceTypesList);
+exports.StructureRouter = router;

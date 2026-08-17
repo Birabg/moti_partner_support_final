@@ -1,0 +1,476 @@
+/* ===============================
+   Case Tracking Page
+================================ */
+
+.case-tracking-page {
+
+    padding: 25px;
+
+    width: 100%;
+
+    min-height: 100vh;
+
+    background: #f8fafc;
+
+}
+
+
+
+/* Header */
+
+.case-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 25px;
+
+}
+
+
+
+.case-header h1 {
+
+    font-size: 28px;
+
+    font-weight: 700;
+
+    color: #1e2a3b;
+
+}
+
+
+
+.case-header p {
+
+    color: #64748b;
+
+    margin-top: 5px;
+
+}
+
+
+
+.refresh-btn {
+
+    background: #2574eb;
+
+    color: white;
+
+    border: none;
+
+    padding: 10px 18px;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+}
+
+
+
+.refresh-btn:hover {
+
+    opacity: .9;
+
+}
+
+
+
+/* Error */
+
+.case-error {
+
+    background: #fee2e2;
+
+    color: #991b1b;
+
+    padding: 12px;
+
+    border-radius: 6px;
+
+    margin-bottom: 20px;
+
+}
+
+
+
+
+
+/* Table */
+
+.case-table-container {
+
+    background: white;
+
+    border-radius: 8px;
+
+    overflow-x: auto;
+
+    box-shadow: 0 4px 15px rgba(0,0,0,.08);
+
+}
+
+
+
+.case-table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+}
+
+
+
+.case-table th {
+
+    text-align: left;
+
+    padding: 15px;
+
+    background: #f1f4f9;
+
+    color: #334155;
+
+    font-size: 14px;
+
+}
+
+
+
+.case-table td {
+
+    padding: 15px;
+
+    border-bottom: 1px solid #e2e8f0;
+
+    color: #475569;
+
+}
+
+
+
+.case-table tr:hover {
+
+    background: #f8fafc;
+
+}
+
+
+
+
+
+/* Status */
+
+.case-status {
+
+    padding: 5px 10px;
+
+    border-radius: 10px;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+}
+
+
+
+.case-status.OPEN {
+
+    background: #dbe9fe;
+
+    color: #1d68d8;
+
+}
+
+
+
+.case-status.IN_PROGRESS {
+
+    background: #fef3c7;
+
+    color: #92400e;
+
+}
+
+
+
+.case-status.CLOSED {
+
+    background: #dcfce7;
+
+    color: #166534;
+
+}
+
+
+
+.case-status.WAITING_CUSTOMER_FEEDBACK {
+
+    background: #ede9fe;
+
+    color: #6d28d9;
+
+}
+
+
+
+
+
+/* Priority */
+
+.priority {
+
+    padding: 5px 10px;
+
+    border-radius: 10px;
+
+    font-size: 12px;
+
+    font-weight: bold;
+
+}
+
+
+
+.priority.HIGH {
+
+    background: #fee2e2;
+
+    color: #dc2626;
+
+}
+
+
+
+.priority.MEDIUM {
+
+    background: #fef3c7;
+
+    color: #d97706;
+
+}
+
+
+
+.priority.LOW {
+
+    background: #dcfce7;
+
+    color: #15803d;
+
+}
+
+
+
+
+
+/* Buttons */
+
+.case-actions {
+
+    display: flex;
+
+    gap: 8px;
+
+}
+
+
+
+.case-actions button {
+
+    border: none;
+
+    padding: 7px 12px;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    background: #2574eb;
+
+    color: white;
+
+    font-size: 13px;
+
+}
+
+
+
+.case-actions button:hover {
+
+    opacity: .85;
+
+}
+
+
+
+
+
+/* Empty */
+
+.empty-case {
+
+    text-align: center;
+
+    padding: 40px !important;
+
+    color: #64748b;
+
+}
+
+
+
+
+
+/* Loading */
+
+.case-loading {
+
+    padding: 50px;
+
+    text-align: center;
+
+    font-size: 20px;
+
+}
+
+
+
+
+
+
+/* Drawer */
+
+.drawer {
+
+    position: fixed;
+
+    top: 0;
+
+    right: 0;
+
+    height: 100vh;
+
+    width: 420px;
+
+    background: white;
+
+    box-shadow: -5px 0 8px rgba(0,0,0,.15);
+
+    z-index: 1000;
+
+    padding: 25px;
+
+}
+
+
+
+.drawer-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+}
+
+
+
+.drawer-header button {
+
+    border:none;
+
+    background:#ef4444;
+
+    color:white;
+
+    padding:5px 10px;
+
+    border-radius: 4px;
+
+    cursor:pointer;
+
+}
+
+
+
+
+
+/* Modal */
+
+.modal {
+
+    position: fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.4);
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    z-index:2000;
+
+}
+
+
+
+.modal-box {
+
+    background:white;
+
+    padding:30px;
+
+    width:350px;
+
+    border-radius: 8px;
+
+}
+
+
+
+.modal-box input,
+
+.modal-box select {
+
+    width:100%;
+
+    padding:10px;
+
+    margin:15px 0;
+
+    border:1px solid #cbd4e1;
+
+    border-radius: 6px;
+
+}
+
+
+
+.modal-box button {
+
+    margin-right:10px;
+
+    padding:10px 15px;
+
+    border:none;
+
+    border-radius: 6px;
+
+    cursor:pointer;
+
+    background:#2574eb;
+
+    color:white;
+
+}

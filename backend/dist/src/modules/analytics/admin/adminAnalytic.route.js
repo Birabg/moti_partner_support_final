@@ -1,0 +1,22 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AdminAnalyticsRouter = void 0;
+const express_1 = __importDefault(require("express"));
+const cases_route_1 = require("./cases/cases.route");
+const feedback_route_1 = require("./feedback/feedback.route");
+const user_route_1 = require("./user/user.route");
+const orgUnit_route_1 = require("./structure/orgUnit.route");
+const org_route_1 = require("./org_and_product/org.route");
+const auth_middleware_1 = require("../../../middleware/auth.middleware");
+const router = (0, express_1.default)();
+router.use(auth_middleware_1.authenticateToken);
+router.use("/cases", cases_route_1.CaseAnalyticsRouter);
+router.use("/feedback", feedback_route_1.FeedbackAnalyticsRouter);
+router.use("/user", user_route_1.AdminUserAnalyticsRouter);
+router.use("/structures", orgUnit_route_1.StructureRouter);
+router.use("/organdproduct", org_route_1.OrganizationAndProductAnalyticsRouter);
+router.use("/cases/organdproduct", org_route_1.OrganizationAndProductAnalyticsRouter);
+exports.AdminAnalyticsRouter = router;

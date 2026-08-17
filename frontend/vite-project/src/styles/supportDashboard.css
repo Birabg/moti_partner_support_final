@@ -1,0 +1,195 @@
+.ps-support-dashboard { font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; padding: 20px; }
+.ps-container { max-width: 1200px; margin: 0 auto; }
+.welcome-banner { background: linear-gradient(90deg,#ffffff 0,#f8fafc 100%); padding: 20px; border-radius: 8px; margin-bottom: 16px; }
+.ps-stats-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; margin-bottom: 20px; }
+.ps-stat-card { background: white; padding: 16px; border-radius: 8px; box-shadow: 0 2px 6px rgba(2, 10, 23, 0.06); }
+.ps-stat-title { color: #6b7380; font-size: 12px; }
+.ps-stat-value { font-size: 22px; font-weight: 700; }
+.ps-main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+.ps-cases-table { width: 100%; border-collapse: collapse; background: white; border-radius: 6px; overflow: hidden; }
+.ps-cases-table th, .ps-cases-table td { padding: 10px; border-bottom: 1px solid #eef2f7; text-align: left; }
+.ps-feedback-list { display:flex; flex-direction: column; gap: 12px; }
+.ps-feedback-item { background: white; padding: 12px; border-radius: 6px; box-shadow: 0 1px 4px rgba(2, 10, 23, 0.04); }
+.ps-quick-actions { display:flex; flex-direction: column; gap: 8px; }
+.ps-chart-card { background: white; padding: 12px; border-radius: 6px; }
+.ps-chart-placeholder { height: 160px; display:flex; align-items:center; justify-content:center; color:#9ca4af; }
+.ps-status-badge { padding: 4px 8px; border-radius: 999px; font-size: 12px; }
+.badge-open { background:#e6f0ff; color:#0342a1; }
+.badge-progress { background:#fff7ed; color:#b45309; }
+.badge-resolved { background:#ecfdf5; color:#047857; }
+
+.manager-header__action-button {
+  border: 1px solid #dbe3f0;
+  background: #2574eb;
+  color: #ffffff;
+  border-radius: 8px;
+  padding: 12px 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 180ms ease, transform 180ms ease;
+}
+
+.manager-header__action-button:hover {
+  background: #1d68d8;
+}
+
+.ps-module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.ps-module-card,
+.ps-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 6px 12px rgba(15, 26, 42, 0.08);
+  padding: 20px;
+}
+
+.ps-module-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.ps-module-card h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.ps-module-card p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.ps-module-card a {
+  align-self: flex-start;
+  color: #2574eb;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ps-small-card {
+  background: #f8fbff;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.ps-small-card h3 {
+  margin: 0 0 6px;
+  font-size: 20px;
+}
+
+.ps-small-card p {
+  margin: 0;
+  color: #475569;
+}
+
+.ps-stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.ps-button {
+  border: 0;
+  border-radius: 8px;
+  background: #2574eb;
+  color: #fff;
+  font-weight: 700;
+  padding: 11px 18px;
+  cursor: pointer;
+}
+
+.ps-button:hover {
+  background: #1d68d8;
+}
+
+.ps-button--secondary {
+  background: #f8fbff;
+  color: #2574eb;
+  border: 1px solid #dbe3f0;
+}
+
+.ps-profile-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 18px;
+}
+
+.ps-profile-row {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.ps-profile-label {
+  font-size: 13px;
+  color: #475569;
+  font-weight: 700;
+}
+
+.ps-profile-input {
+  width: 100%;
+  border: 1px solid #dbe3f0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: #ffffff;
+  color: #0f1a2a;
+}
+
+.ps-empty-state {
+  background: #f1f4f9;
+  border: 1px dashed #cbd4e1;
+  border-radius: 10px;
+  padding: 28px;
+  text-align: center;
+  color: #475569;
+  font-size: 15px;
+}
+
+.ps-case-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 16px 0;
+}
+
+.ps-case-row:last-child {
+  border-bottom: 0;
+}
+
+.ps-case-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.ps-cases-list {
+  display: grid;
+  gap: 14px;
+}
+
+.ps-stat-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 8px 10px rgba(15, 26, 42, 0.06);
+}
+
+.ps-section-title {
+  margin: 0 0 14px;
+  font-size: 20px;
+}
+
+.ps-card--highlight {
+  background: linear-gradient(180deg, #eff5ff 0%, #ffffff 100%);
+}

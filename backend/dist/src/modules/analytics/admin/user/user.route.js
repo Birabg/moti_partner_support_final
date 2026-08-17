@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AdminUserAnalyticsRouter = void 0;
+const express_1 = require("express");
+const user_controller_1 = require("./user.controller");
+const rbac_middleware_1 = require("../../../../middleware/rbac.middleware");
+const router = (0, express_1.Router)();
+router.get("/customers/metrics", (0, rbac_middleware_1.requirePermission)("CUSTOMER_READ_ALL"), user_controller_1.getActiveCustomersCount);
+router.get("/customers/:customerId", (0, rbac_middleware_1.requirePermission)("ACCESS_USER_DETAIL"), user_controller_1.getCustomerHistoryProfile);
+router.get("/all/metrics", (0, rbac_middleware_1.requirePermission)("USER_READ_STATS"), user_controller_1.getActiveUsersHandler);
+router.get("/staff/metrics", (0, rbac_middleware_1.requirePermission)("STAFF_READ_ALL"), user_controller_1.getStaffMetricsCount);
+router.get("/staff/:staffId", (0, rbac_middleware_1.requirePermission)("ACCESS_USER_DETAIL"), user_controller_1.getStaffDeepDetailProfile);
+exports.AdminUserAnalyticsRouter = router;

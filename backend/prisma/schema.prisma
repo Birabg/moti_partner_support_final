@@ -1,0 +1,521 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ChangeType {
+  ADMIN_EMAIL_UPDATE
+}
+
+enum StaffStatus {
+  PENDING_VERIFICATION
+  PENDING_APPROVAL
+  ACTIVE
+  SUSPENDED
+  DEACTIVATED
+  REJECTED
+}
+
+enum CustomerStatus {
+  PENDING_VERIFICATION
+  PENDING_APPROVAL
+  ACTIVE
+  REJECTED
+  SUSPENDED
+  DEACTIVATED
+}
+
+enum CaseStatus {
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  PENDING
+  ESCALATED
+  RESOLVED
+  CUSTOMER_CONFIRMATION
+  CLOSED
+  CANCELLED
+}
+
+enum CasePriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+}
+
+enum PartyType {
+  CUSTOMER
+  STAFF
+}
+
+enum ActorType {
+  STAFF
+  CUSTOMER
+  SYSTEM
+}
+
+enum NotificationType {
+  NEW_CUSTOMER_REGISTRATION
+  NEW_CASE_ARRIVED
+  CASE_ASSIGNED
+  CASE_REASSIGNED
+  CASE_STATUS_CHANGED
+  CASE_CLOSED
+  CASE_IN_PROGRESS
+  CASE_PRIORITY_CHANGED
+  SIGNIN_HELP_REQUEST
+}
+
+enum EmailType {
+  EMAIL_VERIFICATION
+  ACCOUNT_APPROVED
+  ACCOUNT_REJECTED
+  PASSWORD_RESET
+  CASE_ASSIGNED
+  CASE_STATUS_CHANGED
+  CASE_RESOLVED
+  CASE_REJECTED
+}
+
+enum EmailStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+model Department {
+  id          String   @id @default(uuid())
+  name        String   @unique @db.VarChar(100)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  createdById String?
+  createdBy   Staff?   @relation("DepartmentCreatedBy", fields: [createdById], references: [id])
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+  updatedBy   Staff?   @relation("DepartmentUpdatedBy", fields: [updatedById], references: [id])
+
+  managerId String? @unique
+  manager   Staff?  @relation("DepartmentManager", fields: [managerId], references: [id])
+
+  divisions Division[]
+
+  @@map("departments")
+}
+
+model Division {
+  id           String     @id @default(uuid())
+  name         String     @db.VarChar(100)
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+  isActive     Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  createdBy    String?
+  updatedBy    String?
+
+  managerId String? @unique
+  manager   Staff?  @relation("DivisionManager", fields: [managerId], references: [id])
+
+  sections Section[]
+
+  @@map("divisions")
+}
+
+model Section {
+  id         String   @id @default(uuid())
+  name       String   @db.VarChar(100)
+  divisionId String
+  division   Division @relation(fields: [divisionId], references: [id])
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  createdBy  String?
+  updatedBy  String?
+
+  managerId String? @unique
+  manager   Staff?  @relation("SectionManager", fields: [managerId], references: [id])
+
+  staff Staff[] @relation("SectionMembers")
+
+  @@map("sections")
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String   @unique @db.VarChar(150)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  createdBy String?
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+
+  customers    Customer[]
+  emailDomains EmailDomain[]
+
+  @@map("organizations")
+}
+
+model EmailDomain {
+  id             String       @id @default(uuid())
+  domain         String       @unique @db.VarChar(255)
+  isPrimary      Boolean      @default(false)
+  isActive       Boolean      @default(true)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  createdBy      String?
+  updatedAt      DateTime     @updatedAt
+  updatedBy      String?
+
+  @@map("email_domains")
+}
+
+model Staff {
+  id                        String               @id @default(uuid())
+  firstName                 String               @db.VarChar(100)
+  middleName                String               @db.VarChar(100)
+  lastName                  String?              @db.VarChar(100)
+  email                     String               @unique @db.VarChar(255)
+  passwordHash              String               @db.VarChar(255)
+  phoneNumber               String               @default("N/A") @db.VarChar(20)
+  gender                    Gender
+  sectionId                 String?
+  section                   Section?             @relation("SectionMembers", fields: [sectionId], references: [id])
+  isSAdmin                  Boolean              @default(false)
+  isManager                 Boolean              @default(false)
+  isPSsupport               Boolean              @default(false)
+  isDirector                Boolean              @default(false)
+  isSystemSupport           Boolean              @default(false)
+  status                    StaffStatus          @default(PENDING_VERIFICATION)
+  failedLoginCount          Int                  @default(0)
+  lockedUntil               DateTime?
+  createdAt                 DateTime             @default(now())
+  createdById               String?
+  createdBy                 Staff?               @relation("StaffCreatedBy", fields: [createdById], references: [id]) // FIX: was a bare scalar, inconsistent with every other model's pattern
+  createdStaff              Staff[]              @relation("StaffCreatedBy")
+  updatedAt                 DateTime             @updatedAt
+  updatedById               String?
+  updatedBy                 Staff?               @relation("StaffUpdatedBy", fields: [updatedById], references: [id])
+  updatedStaff              Staff[]              @relation("StaffUpdatedBy")
+  emailChangeReason         String?              @db.Text
+  assignedCases             CaseReport[]         @relation("AssignedPSsupport")
+  managedDepartment         Department?          @relation("DepartmentManager")
+  managedDivision           Division?            @relation("DivisionManager")
+  managedSection            Section?             @relation("SectionManager")
+  statusChangesLogged       CaseStatusHistory[]  @relation("ChangedByStaff")
+  createdDepartment         Department[]         @relation("DepartmentCreatedBy")
+  updatedDepartment         Department[]         @relation("DepartmentUpdatedBy")
+  createdProductCategory    ProductCategory[]    @relation("ProductCategoryCreatedBy")
+  updatedProductCategory    ProductCategory[]    @relation("ProductCategoryUpdatedBy")
+  createdProductSubCategory ProductSubcategory[] @relation("ProductSubCategoryCreatedBy")
+  updatedProductSubCategory ProductSubcategory[] @relation("ProductSubCategoryUpdatedBy")
+  closedCaseReport          CaseReport[]         @relation("CaseReportClosedBy")
+  updatedCaseReport         CaseReport[]         @relation("CaseReportUpdatedBy")
+  uploadedAttachments       Attachment[]         @relation("AttachmentUploadedByStaff")
+  approvedById              String?
+  approvedBy                Staff?               @relation("StaffApprover", fields: [approvedById], references: [id])
+  approvedStaff             Staff[]              @relation("StaffApprover")
+  approvedCustomers         Customer[]           @relation("CustomerApprover")
+
+  staffPermissions StaffPermission[]
+
+  @@map("staffs")
+}
+
+model Permission {
+  id          String  @id @default(uuid())
+  code        String  @unique
+  name        String
+  category    String
+  description String?
+
+  staffPermissions StaffPermission[]
+
+  @@map("permissions")
+}
+
+model StaffPermission {
+  id           String @id @default(uuid())
+  staffId      String
+  permissionId String
+
+  staff      Staff      @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([staffId, permissionId])
+  @@map("staff_permissions")
+}
+
+model Customer {
+  id                String         @id @default(uuid())
+  firstName         String         @db.VarChar(100)
+  middleName        String         @db.VarChar(100)
+  lastName          String?        @db.VarChar(100)
+  email             String         @unique @db.VarChar(255)
+  phoneNumber       String         @db.VarChar(30)
+  passwordHash      String         @db.VarChar(255)
+  position          String         @db.VarChar(100)
+  gender            Gender
+  organizationId    String
+  organization      Organization   @relation(fields: [organizationId], references: [id])
+  status            CustomerStatus @default(PENDING_VERIFICATION)
+  emailVerifiedAt   DateTime?
+  failedLoginCount  Int            @default(0)
+  lockedUntil       DateTime?
+  createdAt         DateTime       @default(now())
+  createdById       String?
+  emailChangeReason String?        @db.Text
+  createdByType     PartyType
+  updatedAt         DateTime       @updatedAt
+  updatedById       String?
+  updatedByType     PartyType
+
+  uploadedAttachments Attachment[] @relation("AttachmentUploadedByCustomer")
+  cases               CaseReport[]
+  approvedById        String?
+  approvedBy          Staff?       @relation("CustomerApprover", fields: [approvedById], references: [id])
+
+  @@map("customers")
+}
+
+model ProfileAuditLog {
+  id              String     @id @default(uuid())
+  targetAccountId String     @db.VarChar(255)
+  targetType      PartyType
+  changedById     String     @db.VarChar(255)
+  changeType      ChangeType
+  reason          String     @db.Text
+  oldData         Json?
+  newData         Json?
+  createdAt       DateTime   @default(now())
+
+  @@map("profile_audit_logs")
+}
+
+model AuthToken {
+  id        String    @id @default(uuid())
+  userId    String
+  userType  PartyType
+  tokenType TokenType
+  tokenHash String    @db.VarChar(255)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@map("auth_tokens")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  userType  PartyType
+  tokenHash String    @db.VarChar(255)
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@map("refresh_tokens")
+}
+
+model ProductCategory {
+  id          String   @id @default(uuid())
+  name        String   @unique @db.VarChar(100)
+  brandName   String?  @db.VarChar(150)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  createdById String
+  createdBy   Staff    @relation("ProductCategoryCreatedBy", fields: [createdById], references: [id])
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+  updatedBy   Staff?   @relation("ProductCategoryUpdatedBy", fields: [updatedById], references: [id])
+
+  subcategories ProductSubcategory[]
+  cases         CaseReport[]
+
+  @@map("product_categories")
+}
+
+model ProductSubcategory {
+  id                String          @id @default(uuid())
+  name              String          @db.VarChar(100)
+  productCategoryId String
+  productCategory   ProductCategory @relation(fields: [productCategoryId], references: [id])
+  isActive          Boolean         @default(true)
+  createdAt         DateTime        @default(now())
+  createdById       String
+  createdBy         Staff           @relation("ProductSubCategoryCreatedBy", fields: [createdById], references: [id])
+  updatedAt         DateTime        @updatedAt
+  updatedById       String?
+  updatedBy         Staff?          @relation("ProductSubCategoryUpdatedBy", fields: [updatedById], references: [id])
+
+  cases        CaseReport[]
+  customFields ProductCustomField[]
+
+  @@map("product_subcategories")
+}
+
+model ProductCustomField {
+  id String @id @default(uuid())
+
+  name String @db.VarChar(100)
+
+  fieldType String @db.VarChar(50)
+
+  required Boolean @default(false)
+
+  isActive Boolean @default(true)
+
+  productSubcategoryId String
+
+  productSubcategory ProductSubcategory @relation(fields: [productSubcategoryId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@map("product_custom_fields")
+}
+
+model ServiceType {
+  id        String   @id @default(uuid())
+  name      String   @unique @db.VarChar(150)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  cases CaseReport[]
+
+  @@map("service_types")
+}
+
+model CaseReport {
+  id                   String              @id @default(uuid())
+  caseNumber           String              @unique @default(uuid())
+  branchName           String              @db.VarChar(255)
+  customerId           String
+  customer             Customer            @relation(fields: [customerId], references: [id])
+  assignedSupportId    String?
+  assignedSupport      Staff?              @relation("AssignedPSsupport", fields: [assignedSupportId], references: [id])
+  productCategoryId    String
+  productCategory      ProductCategory     @relation(fields: [productCategoryId], references: [id])
+  productSubcategoryId String?
+  productSubcategory   ProductSubcategory? @relation(fields: [productSubcategoryId], references: [id])
+  creationReason       String?
+  subject              String              @db.VarChar(255)
+  description          String              @db.Text
+  status               CaseStatus          @default(OPEN)
+  priority             CasePriority?
+  serviceTypeId        String
+  serviceType          ServiceType         @relation(fields: [serviceTypeId], references: [id])
+  resolutionSummary    String?             @db.Text
+  resolvedAt           DateTime?
+  closedAt             DateTime?
+  closedById           String?
+  closedBy             Staff?              @relation("CaseReportClosedBy", fields: [closedById], references: [id])
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  updatedById          String?
+  updatedBy            Staff?              @relation("CaseReportUpdatedBy", fields: [updatedById], references: [id])
+
+  statusHistory CaseStatusHistory[]
+  attachments   Attachment[]
+  feedback      Feedback?
+  notifications Notification[]
+
+  @@map("case_report")
+}
+
+model CaseStatusHistory {
+  id           String        @id @default(uuid())
+  caseReportId String
+  caseReport   CaseReport    @relation(fields: [caseReportId], references: [id], onDelete: Cascade)
+  changedById  String?
+  changedBy    Staff?        @relation("ChangedByStaff", fields: [changedById], references: [id])
+
+  // New: generic actor representation to support STAFF, CUSTOMER and SYSTEM actors
+  actorType    ActorType?
+  actorId      String?
+
+  fromStatus   CaseStatus
+  toStatus     CaseStatus
+  reason       String?       @db.Text
+  note         String?       @db.Text
+  oldPriority  CasePriority?
+  newPriority  CasePriority?
+  oldAgentId   String?
+  newAgentId   String?
+  createdAt    DateTime      @default(now())
+
+  @@map("case_report_status_histories")
+}
+
+model Attachment {
+  id                   String     @id @default(uuid())
+  caseReportId         String
+  case                 CaseReport @relation(fields: [caseReportId], references: [id], onDelete: Cascade)
+  uploaderType         PartyType
+  uploadedByCustomerId String?
+  uploadedByCustomer   Customer?  @relation("AttachmentUploadedByCustomer", fields: [uploadedByCustomerId], references: [id])
+  uploadedByStaffId    String?
+  uploadedByStaff      Staff?     @relation("AttachmentUploadedByStaff", fields: [uploadedByStaffId], references: [id])
+  fileName             String     @db.VarChar(255)
+  storagePath          String     @db.VarChar(500)
+  fileSizeBytes        BigInt
+  mimeType             String     @db.VarChar(100)
+  uploadedAt           DateTime   @default(now())
+
+  @@map("attachments")
+}
+
+model Feedback {
+  id           String     @id @default(uuid())
+  caseReportId String     @unique
+  caseReport   CaseReport @relation(fields: [caseReportId], references: [id], onDelete: Cascade)
+  rating       Int        @db.SmallInt
+  comment      String?    @db.Text
+  submittedAt  DateTime   @default(now())
+
+  @@map("feedbacks")
+}
+
+model Notification {
+  id            String           @id @default(uuid())
+  recipientId   String
+  recipientType PartyType
+  caseReportId  String?
+  caseReport    CaseReport?      @relation(fields: [caseReportId], references: [id])
+  type          NotificationType
+  message       String           @db.VarChar(500)
+  isRead        Boolean          @default(false)
+  createdAt     DateTime         @default(now())
+
+  @@map("notifications")
+}
+
+model EmailLog {
+  id             String      @id @default(uuid())
+  recipientId    String?
+  recipientEmail String      @db.VarChar(255)
+  emailType      EmailType
+  relatedCaseId  String?
+  status         EmailStatus @default(PENDING)
+  retryCount     Int         @default(0)
+  sentAt         DateTime?
+  createdAt      DateTime    @default(now())
+
+  @@map("email_logs")
+}

@@ -1,0 +1,120 @@
+### ==========================================
+### LOGIN AS SYSTEM ADMIN
+### ==========================================
+
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "nejatebrahim35@gmail.com",
+  "password": "Admin@123"
+}
+
+### Replace the accessToken below with the one from the login response.
+@token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI3ZTVhOTU2Zi0zYTg1LTQ0YzMtODBiOS05OWI4ZGM4MDhiZmYiLCJlbWFpbCI6Im5lamF0ZWJyYWhpbTM1QGdtYWlsLmNvbSIsInBhcnR5VHlwZSI6IlNUQUZGIiwiaXNTQWRtaW4iOnRydWUsImlzTWFuYWdlciI6ZmFsc2UsIm1hbmFnZXJUeXBlIjpudWxsLCJpc1BTc3VwcG9ydCI6ZmFsc2UsImRlcGFydG1lbnRJZCI6bnVsbCwiZGl2aXNpb25JZCI6bnVsbCwic2VjdGlvbklkIjpudWxsLCJwZXJtaXNzaW9ucyI6WyJSRUNFSVZFX05FV19DQVNFIiwiVklFV19BTExfQ0FTRVNfREVUQUlMIiwiVklFV19BTExfQ0FTRVNfTUVUUklDUyIsIkNBU0VfQ1JFQVRFIiwiUEVSTUlTU0lPTl9ERUxFR0FURSIsIk9SR0FOSVpBVElPTl9NQU5BR0UiLCJTRVJWSUNFX01BTkFHRSIsIlNUUlVDVFVSRV9SRUFEX0FMTCIsIlNUUlVDVFVSRV9NQU5BR0UiLCJDQVNFX1JFQURfQU5BTFlUSUNTIiwiQ0FTRV9TRVRfUFJJT1JJVFkiLCJDQVNFX0FTU0lHTiIsIkNBU0VfUkVBRF9ISUVSQVJDSFkiLCJDQVNFX1JFQURfQUxMIiwiVVNFUl9SRUFEX1NUQVRTIiwiVVNFUl9VUERBVEVfQU5ZIiwiQ1VTVE9NRVJfUkVBRF9BTEwiLCJTVEFGRl9SRUFEX0FMTCJdLCJpYXQiOjE3ODUyNTgxMjgsImV4cCI6MTc4NTI1OTAyOH0.CJM5ene7isqxRbS00KyQCsthCGi85FAR8XWvYK2TcFU
+
+### ==========================================
+### CREATE ORGANIZATION #1
+### ==========================================
+
+POST http://localhost:5000/api/organization/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Commercial Bank of Ethiopia",
+  "emailDomain": "cbe.com"
+}
+
+### ==========================================
+### CREATE ORGANIZATION #2
+### ==========================================
+
+POST http://localhost:5000/api/organization/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Dashen Bank",
+  "emailDomain": "dashenbank.com"
+}
+
+### ==========================================
+### CREATE ORGANIZATION #3
+### ==========================================
+
+POST http://localhost:5000/api/organization/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Awash Bank",
+  "emailDomain": "awashbank.com"
+}
+
+### ==========================================
+### CREATE ORGANIZATION #4
+### ==========================================
+
+POST http://localhost:5000/api/organization/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Ethio Telecom",
+  "emailDomain": "ethiotelecom.et"
+}
+
+### ==========================================
+### CREATE ORGANIZATION #5
+### ==========================================
+
+POST http://localhost:5000/api/organization/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Ethiopian Airlines",
+  "emailDomain": "ethiopianairlines.com"
+}
+
+### ==========================================
+### GET ALL ORGANIZATIONS
+### ==========================================
+
+GET http://localhost:5000/api/organization/getAll
+Authorization: Bearer {{token}}
+
+### ==========================================
+### GET ORGANIZATION BY ID
+### ==========================================
+
+GET http://localhost:5000/api/organization/get/ORGANIZATION_ID
+Authorization: Bearer {{token}}
+
+### ==========================================
+### UPDATE ORGANIZATION
+### ==========================================
+
+PUT http://localhost:5000/api/organization/update/ORGANIZATION_ID
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Commercial Bank of Ethiopia PLC",
+  "emailDomain": "cbe.org.et"
+}
+
+### ==========================================
+### DEACTIVATE ORGANIZATION
+### ==========================================
+
+PATCH http://localhost:5000/api/organization/deactivate/ORGANIZATION_ID
+Authorization: Bearer {{token}}
+
+### ==========================================
+### REACTIVATE ORGANIZATION
+### ==========================================
+
+PATCH http://localhost:5000/api/organization/reactivate/ORGANIZATION_ID
+Authorization: Bearer {{token}}
