@@ -5,7 +5,6 @@ import { ReportsApi } from "../../api/reportsApi";
 
 import DashboardHeader from "../../components/reports/DashboardHeader";
 import ExportButtons from "../../components/reports/ExportButtons";
-import KPISection from "../../components/reports/KPISection";
 import StatusPieChart from "../../components/reports/StatusPieChart";
 import MonthlyTrendChart from "../../components/reports/MonthlyTrendChart";
 import FeedbackSummary from "../../components/reports/FeedbackSummary";
@@ -152,7 +151,6 @@ export default function ReportsPage() {
                 <ExportButtons />
             </div>
 
-            <KPISection metrics={metrics} />
 
             <div className="grid lg:grid-cols-2 gap-6">
                 <StatusPieChart data={pieData} />
