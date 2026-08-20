@@ -53,8 +53,16 @@ export default function DirectorDashboard() {
 
     loadSummary();
 
+    // Listen for case updates and refresh summary
+    const handleCasesUpdated = () => {
+      loadSummary();
+    };
+
+    window.addEventListener("cases:updated", handleCasesUpdated);
+
     return () => {
       isMounted = false;
+      window.removeEventListener("cases:updated", handleCasesUpdated);
     };
   }, []);
 
@@ -86,6 +94,17 @@ export default function DirectorDashboard() {
     { to: "/director/case-analytics", label: "Case Analytics", value: "Performance view", icon: FaChartBar },
   ];
 
+  const handleStatusClick = (status) => {
+    // Notify other pages that cases changed / filters should update.
+    // Include status in detail for potential listeners, but maintain backwards compatibility.
+    try {
+      window.dispatchEvent(new CustomEvent("cases:updated", { detail: { status } }));
+    } catch (err) {
+      // Fallback to simple event if CustomEvent fails in some environments
+      window.dispatchEvent(new CustomEvent("cases:updated"));
+    }
+  };
+
   return (
     <div className="space-y-6">
       <DirectorHeader
@@ -99,7 +118,7 @@ export default function DirectorDashboard() {
       ) : null}
 
       <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <CaseStats cases={statusCases} />
+        <CaseStats cases={statusCases} onStatusClick={handleStatusClick} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
