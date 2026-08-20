@@ -5,6 +5,7 @@ import { CaseStatus } from "../../../../../generated/prisma/client";
 
 export const getCaseFeedbackAnalytics = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    // Use correct relation filters and read rating/comment from the related Feedback record
     const [totalClosedCases, casesWithFeedback] = await prisma.$transaction([
       prisma.caseReport.count({
         where: { status: CaseStatus.CLOSED }
@@ -12,10 +13,8 @@ export const getCaseFeedbackAnalytics = async (req: Request, res: Response, next
       prisma.caseReport.count({
         where: {
           status: CaseStatus.CLOSED,
-          OR: [
-            { customerFeedback: { not: null } },
-            { feedback: { not: null } }
-          ] as any
+          // feedback is a one-to-one optional relation; use `feedback: { isNot: null }` to detect presence
+          feedback: { isNot: null } as any
         }
       })
     ]);
@@ -23,10 +22,7 @@ export const getCaseFeedbackAnalytics = async (req: Request, res: Response, next
     const trackingRecords = await prisma.caseReport.findMany({
       where: {
         status: CaseStatus.CLOSED,
-        OR: [
-          { customerFeedback: { not: null } },
-          { feedback: { not: null } }
-        ] as any
+        feedback: { isNot: null } as any
       },
       select: {
         id: true,
@@ -34,8 +30,9 @@ export const getCaseFeedbackAnalytics = async (req: Request, res: Response, next
         subject: true,
         resolvedAt: true,
         closedAt: true,
-        customerFeedback: true,
-        rating: true, 
+        feedback: {
+          select: { rating: true, comment: true }
+        },
         assignedSupport: {
           select: {
             id: true,
@@ -51,8 +48,9 @@ export const getCaseFeedbackAnalytics = async (req: Request, res: Response, next
     let scoredReviewsCount = 0;
     
     const feedbackList = trackingRecords.map((record: any) => {
-      if (record.rating && typeof record.rating === "number") {
-        totalRatingSum += record.rating;
+      const ratingVal = record.feedback?.rating;
+      if (typeof ratingVal === "number") {
+        totalRatingSum += ratingVal;
         scoredReviewsCount++;
       }
 
@@ -64,8 +62,8 @@ export const getCaseFeedbackAnalytics = async (req: Request, res: Response, next
         assignedAgent: record.assignedSupport 
           ? `${record.assignedSupport.firstName} ${record.assignedSupport.middleName}`
           : "Unassigned / Automated System",
-        rating: record.rating || "No Score Provided",
-        comment: record.customerFeedback || record.feedback || ""
+        rating: ratingVal ?? "No Score Provided",
+        comment: record.feedback?.comment || ""
       };
     });
 

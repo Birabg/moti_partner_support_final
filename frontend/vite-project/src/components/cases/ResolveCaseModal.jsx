@@ -34,7 +34,8 @@ export default function ResolveCaseModal({
 
             console.log(error);
 
-            alert("Failed to resolve case.");
+            const msg = err?.response?.data?.message || err?.message || "Failed to resolve case.";
+            alert(msg);
 
         } finally {
 

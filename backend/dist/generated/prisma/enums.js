@@ -9,7 +9,7 @@
 * 🟢 You can import this file directly.
 */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Gender = exports.EmailStatus = exports.EmailType = exports.NotificationType = exports.PartyType = exports.TokenType = exports.CasePriority = exports.CaseStatus = exports.CustomerStatus = exports.StaffStatus = exports.ChangeType = void 0;
+exports.Gender = exports.EmailStatus = exports.EmailType = exports.NotificationType = exports.ActorType = exports.PartyType = exports.TokenType = exports.CasePriority = exports.CaseStatus = exports.CustomerStatus = exports.StaffStatus = exports.ChangeType = void 0;
 exports.ChangeType = {
     ADMIN_EMAIL_UPDATE: 'ADMIN_EMAIL_UPDATE'
 };
@@ -53,6 +53,11 @@ exports.TokenType = {
 exports.PartyType = {
     CUSTOMER: 'CUSTOMER',
     STAFF: 'STAFF'
+};
+exports.ActorType = {
+    STAFF: 'STAFF',
+    CUSTOMER: 'CUSTOMER',
+    SYSTEM: 'SYSTEM'
 };
 exports.NotificationType = {
     NEW_CUSTOMER_REGISTRATION: 'NEW_CUSTOMER_REGISTRATION',

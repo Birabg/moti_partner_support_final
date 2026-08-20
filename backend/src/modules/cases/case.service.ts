@@ -16,6 +16,7 @@ import { PERMISSIONS } from "../../config/default.permission";
 import { getTransporter } from "../../utils/email";
 import { ENV } from "../../config/env";
 import { sendCaseCreationCustomerEmail, sendSharedSupportInboxAlert } from "../../utils/email";
+import { createStatusHistory } from "./statusHistory.service";
 
 
 
@@ -342,21 +343,17 @@ export const createCase = async (input: any) => {
       },
     });
 
-    await tx.caseStatusHistory.create({
-      data: {
-        caseReport: {
-          connect: { id: createdCase.id },
-        },
-        changedBy: staffActorId ? { connect: { id: staffActorId } } : undefined,
-        actorType: isStaff ? "STAFF" : "CUSTOMER",
-        actorId: isStaff ? staffActorId : caseData.customerId,
-        fromStatus: CaseStatus.OPEN,
-        toStatus: CaseStatus.OPEN,
-        oldPriority: null,
-        newPriority: null,
-        oldAgentId: null,
-        newAgentId: null,
-      },
+    await createStatusHistory(tx, {
+      caseReportId: createdCase.id,
+      changedById: staffActorId || null,
+      actorType: isStaff ? "STAFF" : "CUSTOMER",
+      actorId: isStaff ? staffActorId : caseData.customerId,
+      fromStatus: CaseStatus.OPEN,
+      toStatus: CaseStatus.OPEN,
+      oldPriority: null,
+      newPriority: null,
+      oldAgentId: null,
+      newAgentId: null,
     });
 
     return createdCase;
@@ -556,19 +553,17 @@ const caseScope = {
       },
     });
 
-    await tx.caseStatusHistory.create({
-      data: {
-        caseReportId: caseId,
-        changedById: operator.id,
-        actorType: "STAFF",
-        actorId: operator.id,
-        fromStatus: targetCase.status as any,
-        toStatus: CaseStatus.IN_PROGRESS,
-        oldPriority: targetCase.priority,
-        newPriority: targetCase.priority,
-        oldAgentId: targetCase.assignedSupportId,
-        newAgentId: assignedSupportId,
-      },
+    await createStatusHistory(tx, {
+      caseReportId: caseId,
+      changedById: operator.id,
+      actorType: "STAFF",
+      actorId: operator.id,
+      fromStatus: targetCase.status as any,
+      toStatus: CaseStatus.IN_PROGRESS,
+      oldPriority: targetCase.priority,
+      newPriority: targetCase.priority,
+      oldAgentId: targetCase.assignedSupportId,
+      newAgentId: assignedSupportId,
     });
   });
 
@@ -656,19 +651,17 @@ export const closeCaseReport = async (
       include: { updatedBy: true, customer: true }
     });
 
-    await tx.caseStatusHistory.create({
-      data: {
-        caseReportId: caseId,
-        changedById: operatorId,
-        actorType: "STAFF",
-        actorId: operatorId,
-        fromStatus: targetCase.status as any,
-        toStatus: CaseStatus.CLOSED,
-        oldPriority: targetCase.priority,
-        newPriority: targetCase.priority,
-        oldAgentId: targetCase.assignedSupportId,
-        newAgentId: targetCase.assignedSupportId,
-      },
+    await createStatusHistory(tx, {
+      caseReportId: caseId,
+      changedById: operatorId,
+      actorType: "STAFF",
+      actorId: operatorId,
+      fromStatus: targetCase.status as any,
+      toStatus: CaseStatus.CLOSED,
+      oldPriority: targetCase.priority,
+      newPriority: targetCase.priority,
+      oldAgentId: targetCase.assignedSupportId,
+      newAgentId: targetCase.assignedSupportId,
     });
     return updatedCase;
   });
@@ -738,19 +731,17 @@ export const reassignOpenCase = async (
       include: { updatedBy: true },
     });
 
-    await tx.caseStatusHistory.create({
-      data: {
-        caseReportId: caseId,
-        changedById: operator.id,
-        actorType: "STAFF",
-        actorId: operator.id,
-        fromStatus: targetCase.status as any,
-        toStatus: CaseStatus.IN_PROGRESS,
-        oldPriority: targetCase.priority,
-        newPriority: targetCase.priority,
-        oldAgentId: targetCase.assignedSupportId,
-        newAgentId: newSupportId,
-      },
+    await createStatusHistory(tx, {
+      caseReportId: caseId,
+      changedById: operator.id,
+      actorType: "STAFF",
+      actorId: operator.id,
+      fromStatus: targetCase.status as any,
+      toStatus: CaseStatus.IN_PROGRESS,
+      oldPriority: targetCase.priority,
+      newPriority: targetCase.priority,
+      oldAgentId: targetCase.assignedSupportId,
+      newAgentId: newSupportId,
     });
 
     return updatedCase;
@@ -1052,19 +1043,17 @@ const caseScope = {
       include: { updatedBy: true },
     });
 
-    await tx.caseStatusHistory.create({
-      data: {
-        caseReportId: caseId,
-        changedById: operator.id,
-        actorType: "STAFF",
-        actorId: operator.id,
-        fromStatus: targetCase.status as any,
-        toStatus: targetCase.status as any,
-        oldPriority: targetCase.priority,
-        newPriority: priority,
-        oldAgentId: targetCase.assignedSupportId,
-        newAgentId: targetCase.assignedSupportId,
-      },
+    await createStatusHistory(tx, {
+      caseReportId: caseId,
+      changedById: operator.id,
+      actorType: "STAFF",
+      actorId: operator.id,
+      fromStatus: targetCase.status as any,
+      toStatus: targetCase.status as any,
+      oldPriority: targetCase.priority,
+      newPriority: priority,
+      oldAgentId: targetCase.assignedSupportId,
+      newAgentId: targetCase.assignedSupportId,
     });
 
     return updatedCase;
@@ -1126,19 +1115,18 @@ export const resolveCase = async (caseId: string, resolutionSummary: string, age
       include: { customer: true, updatedBy: true }, 
     });
 
-    await tx.caseStatusHistory.create({
-      data: {
-        caseReportId: caseId,
-        changedById: agentId,
-        actorType: "STAFF",
-        actorId: agentId,
-        fromStatus: targetCase.status as any,
-        toStatus: CaseStatus.CUSTOMER_CONFIRMATION,
-        oldPriority: targetCase.priority,
-        newPriority: targetCase.priority,
-        oldAgentId: targetCase.assignedSupportId,
-        newAgentId: targetCase.assignedSupportId,
-      },
+    await createStatusHistory(tx, {
+      caseReportId: caseId,
+      changedById: agentId,
+      actorType: "STAFF",
+      actorId: agentId,
+      fromStatus: targetCase.status as any,
+      toStatus: CaseStatus.CUSTOMER_CONFIRMATION,
+      oldPriority: targetCase.priority,
+      newPriority: targetCase.priority,
+      oldAgentId: targetCase.assignedSupportId,
+      newAgentId: targetCase.assignedSupportId,
+      resolutionSnapshot: resolutionSummary.trim(),
     });
 
     return updated;
@@ -1199,22 +1187,19 @@ export const closeCaseWithFeedback = async (
       data: { status: CaseStatus.CLOSED },
     });
 
-    await tx.caseStatusHistory.create({
-      data: {
-        caseReportId: caseId,
-        // When a customer submits feedback and confirms closure, there is no Staff actor to reference.
-        // The `changedBy` relation points to Staff, so writing the customerId causes a FK violation.
-        // Leave changedById null and populate actorType/actorId to record customer actor.
-        changedById: null,
-        actorType: "CUSTOMER",
-        actorId: targetCase.customerId,
-        fromStatus: targetCase.status as any,
-        toStatus: CaseStatus.CLOSED,
-        oldPriority: targetCase.priority,
-        newPriority: targetCase.priority,
-        oldAgentId: targetCase.assignedSupportId,
-        newAgentId: targetCase.assignedSupportId,
-      },
+    await createStatusHistory(tx, {
+      caseReportId: caseId,
+      // When a customer submits feedback and confirms closure, there is no Staff actor to reference.
+      // Leave changedById null and populate actorType/actorId to record the customer actor.
+      changedById: null,
+      actorType: "CUSTOMER",
+      actorId: targetCase.customerId,
+      fromStatus: targetCase.status as any,
+      toStatus: CaseStatus.CLOSED,
+      oldPriority: targetCase.priority,
+      newPriority: targetCase.priority,
+      oldAgentId: targetCase.assignedSupportId,
+      newAgentId: targetCase.assignedSupportId,
     });
 
     return updated;
@@ -1276,17 +1261,17 @@ export const reopenCase = async (caseId: string, customerId: string) => {
       include: { customer: true },
     });
 
-    await tx.caseStatusHistory.create({
-      data: {
-        caseReportId: caseId,
-        changedById: targetCase.customerId,
-        fromStatus: CaseStatus.CUSTOMER_CONFIRMATION,
-        toStatus: CaseStatus.IN_PROGRESS,
-        oldPriority: targetCase.priority,
-        newPriority: targetCase.priority,
-        oldAgentId: targetCase.assignedSupportId,
-        newAgentId: targetCase.assignedSupportId,
-      },
+    await createStatusHistory(tx, {
+      caseReportId: caseId,
+      changedById: null,
+      actorType: "CUSTOMER",
+      actorId: targetCase.customerId,
+      fromStatus: CaseStatus.CUSTOMER_CONFIRMATION,
+      toStatus: CaseStatus.IN_PROGRESS,
+      oldPriority: targetCase.priority,
+      newPriority: targetCase.priority,
+      oldAgentId: targetCase.assignedSupportId,
+      newAgentId: targetCase.assignedSupportId,
     });
 
     return updated;

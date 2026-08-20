@@ -80,63 +80,46 @@ loadData();
 
 
 const loadData = async()=>{
-
+ 
 try{
+  const [cat, sub, service] = await Promise.all([
+    getCategories(),
+    getSubcategories(),
+    getServiceTypes(),
+  ]);
 
+  const normalizedCategories = Array.isArray(cat?.data)
+    ? cat.data
+    : Array.isArray(cat?.data?.data)
+      ? cat.data.data
+      : Array.isArray(cat?.data?.categories)
+        ? cat.data.categories
+        : [];
 
-const [
-cat,
-sub,
-service
+  const normalizedSubcategories = Array.isArray(sub?.data)
+    ? sub.data
+    : Array.isArray(sub?.data?.data)
+      ? sub.data.data
+      : Array.isArray(sub?.data?.subcategories)
+        ? sub.data.subcategories
+        : [];
 
-]=await Promise.all([
+  const normalizedServices = Array.isArray(service?.data)
+    ? service.data
+    : Array.isArray(service?.data?.data)
+      ? service.data.data
+      : Array.isArray(service?.data?.serviceTypes)
+        ? service.data.serviceTypes
+        : [];
 
-getCategories(),
-
-getSubcategories(),
-
-getServiceTypes()
-
-]);
-
-
-console.log("CATEGORY API RESPONSE:",cat.data);
-
-console.log("SUBCATEGORY API RESPONSE:",sub.data);
-
-console.log("SERVICE API RESPONSE:",service.data);
-
-
-
-setCategories(
-cat.data.data ||
-cat.data.categories ||
-cat.data
-);
-
-
-setSubcategories(
-sub.data.data ||
-sub.data.subcategories ||
-sub.data
-);
-
-
-setServices(
-service.data.data ||
-service.data.serviceTypes ||
-service.data
-);
-
-
-
+  setCategories(normalizedCategories);
+  setSubcategories(normalizedSubcategories);
+  setServices(normalizedServices);
 }
 catch(error){
-
-console.log(error);
-
+  console.error("Unable to load lookup data for case creation:", error);
 }
-
+ 
 };
 
 
@@ -146,35 +129,20 @@ console.log(error);
 
 
 const handleCategoryChange=(e)=>{
-
-
-const categoryId=e.target.value;
-
-
+const categoryId = e.target.value;
 
 setForm({
-
-...form,
-
-productCategoryId:categoryId,
-
-productSubcategoryId:""
-
+  ...form,
+  productCategoryId: categoryId,
+  productSubcategoryId: ""
 });
 
-
-
-const filtered = subcategories.filter(
- item =>
- item.productCategoryId === categoryId
-);
-
-
+const filtered = subcategories.filter((item) => {
+  const itemCategoryId = item.productCategoryId ?? item.categoryId ?? item.product_category_id;
+  return String(itemCategoryId) === String(categoryId);
+});
 
 setFilteredSubcategories(filtered);
-
-
-
 };
 
 
@@ -182,105 +150,37 @@ setFilteredSubcategories(filtered);
 
 
 
-
 const handleSubmit=async(e)=>{
+ e.preventDefault();
 
-e.preventDefault();
+ if (!form.branchName || !form.subject || !form.description || !form.productCategoryId || !form.productSubcategoryId || !form.serviceTypeId) {
+   alert("Please complete all required case fields before submitting.");
+   return;
+ }
 
+ try {
+   const data = new FormData();
 
-try{
+   data.append("branchName", form.branchName);
+   data.append("subject", form.subject);
+   data.append("description", form.description);
+   data.append("productCategoryId", form.productCategoryId);
+   data.append("productSubcategoryId", form.productSubcategoryId);
+   data.append("serviceTypeId", form.serviceTypeId);
+   data.append("priority", form.priority || "MEDIUM");
 
+   if (file) {
+     data.append("attachments", file);
+   }
 
-const data=new FormData();
-
-
-
-data.append(
-"branchName",
-form.branchName
-);
-
-
-data.append(
-"subject",
-form.subject
-);
-
-
-
-data.append(
-"description",
-form.description
-);
-
-
-
-data.append(
-"productCategoryId",
-form.productCategoryId
-);
-
-
-
-data.append(
-"productSubcategoryId",
-form.productSubcategoryId
-);
-
-
-
-data.append(
-"serviceTypeId",
-form.serviceTypeId
-);
-
-
-
-data.append(
-"priority",
-form.priority
-);
-
-
-
-if(file){
-
-data.append(
-"attachments",
-file
-);
-
-}
-
-
-
-const response=await createCase(data);
-
-
-
-console.log(
-"CASE CREATED",
-response.data
-);
-
-
-
-alert(
-"Case created successfully"
-);
-            navigate("/customer/my-cases");
-}
-catch(error){
-
-console.log(error);
-
-alert(
-"Failed creating case"
-);
-
-}
-
-
+   const response = await createCase(data);
+   console.log("CASE CREATED", response.data);
+   alert("Case created successfully");
+   navigate("/customer/my-cases");
+ } catch (error) {
+   console.error("CASE CREATE FAILED", error?.response?.data || error);
+   alert(error?.response?.data?.message || "Failed creating case");
+ }
 };
 
 

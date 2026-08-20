@@ -7,6 +7,7 @@ const client_1 = require("../../../generated/prisma/client");
 const case_notification_1 = require("../cases/case.notification");
 const case_event_1 = require("../cases/case.event");
 const email_1 = require("../../utils/email");
+const statusHistory_service_1 = require("../cases/statusHistory.service");
 const triggerStatusNotification = async (caseDetails, newStatus) => {
     if (!caseDetails?.customer?.email)
         return;
@@ -37,17 +38,17 @@ const assignCaseSupport = async (caseId, assignedSupportId, operatorId, requireC
         if (updateResult.count === 0) {
             throw new error_1.ConflictError("This case was just assigned by someone else. Please refresh your queue and pick another case.");
         }
-        await tx.caseStatusHistory.create({
-            data: {
-                caseReportId: caseId,
-                changedById: operatorId,
-                fromStatus: targetCase.status,
-                toStatus: client_1.CaseStatus.IN_PROGRESS,
-                oldPriority: targetCase.priority,
-                newPriority: targetCase.priority,
-                oldAgentId: targetCase.assignedSupportId,
-                newAgentId: assignedSupportId,
-            },
+        await (0, statusHistory_service_1.createStatusHistory)(tx, {
+            caseReportId: caseId,
+            changedById: operatorId,
+            actorType: "STAFF",
+            actorId: operatorId,
+            fromStatus: targetCase.status,
+            toStatus: client_1.CaseStatus.IN_PROGRESS,
+            oldPriority: targetCase.priority,
+            newPriority: targetCase.priority,
+            oldAgentId: targetCase.assignedSupportId,
+            newAgentId: assignedSupportId,
         });
     });
     const completeCaseDetails = await database_1.prisma.caseReport.findUnique({
@@ -125,6 +126,8 @@ const updateCasePriority = async (caseId, priority, operatorId) => {
             data: {
                 caseReportId: caseId,
                 changedById: operatorId,
+                actorType: "STAFF",
+                actorId: operatorId,
                 fromStatus: targetCase.status,
                 toStatus: targetCase.status,
                 oldPriority: targetCase.priority,

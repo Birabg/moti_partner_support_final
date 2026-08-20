@@ -29,6 +29,14 @@ from "../modules/productCustomField/productCustomField.route";
 
 const router = Router();
 
+// Register debug routes only in non-production environments
+if (process.env.NODE_ENV !== 'production') {
+  // lazy require to avoid loading in production
+  const { DebugRouter } = require('../modules/debug/debug.route');
+  router.use('/debug', DebugRouter);
+}
+
+
 router.use("/auth", AuthRoutes);
 router.use("/staff", StaffRoutes);
 router.use("/customer", CustomerRoute);

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "../../context/useAuth";
 
 import { ReportsApi } from "../../api/reportsApi";
 
@@ -32,8 +33,21 @@ export default function ReportsPage() {
 
     const [cases, setCases] = useState([]);
 
+    const { user } = useAuth();
+
     useEffect(() => {
         initialize();
+
+        // Listen for case updates and refresh reports
+        const handleCasesUpdated = () => {
+            initialize();
+        };
+
+        window.addEventListener("cases:updated", handleCasesUpdated);
+
+        return () => {
+            window.removeEventListener("cases:updated", handleCasesUpdated);
+        };
     }, []);
 
     async function initialize() {
@@ -62,20 +76,43 @@ export default function ReportsPage() {
         }
     }
 
-    const pieData = [
-        {
-            name: "Open",
-            value: metrics.open,
-        },
-        {
-            name: "In Progress",
-            value: metrics.inProgress,
-        },
-        {
-            name: "Closed",
-            value: metrics.closed,
-        },
+    // Build pie chart data from actual cases so all statuses are reflected
+    const defaultOrder = [
+        "Open",
+        "In Progress",
+        "Pending",
+        "Escalated",
+        "Awaiting Customer",
+        "Resolved",
+        "Closed",
     ];
+
+    const statusLabel = (raw) => {
+        if (!raw) return "Open";
+        const s = String(raw).toUpperCase().trim();
+
+        if (s === "OPEN") return "Open";
+        if (s === "IN_PROGRESS" || s === "INPROGRESS") return "In Progress";
+        if (s === "PENDING" || s === "PENDING_CUSTOMER") return "Pending";
+        if (s === "ESCALATED") return "Escalated";
+        if (s === "WAITING_CUSTOMER_FEEDBACK" || s === "AWAITING_CUSTOMER" || s === "AWAITING_CUSTOMER_FEEDBACK") return "Awaiting Customer";
+        if (s === "RESOLVED") return "Resolved";
+        if (s === "CLOSED") return "Closed";
+
+        // Fallback to the raw string with capitalization
+        return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+    };
+
+    const counts = defaultOrder.reduce((acc, name) => ({ ...acc, [name]: 0 }), {});
+
+    cases.forEach((c) => {
+        const raw = c?.lifecycle?.status || c?.status;
+        const label = statusLabel(raw);
+        if (counts[label] === undefined) counts[label] = 0;
+        counts[label]++;
+    });
+
+    const pieData = defaultOrder.map((name) => ({ name, value: counts[name] || 0 }));
 
     const monthly = {};
 
@@ -115,18 +152,10 @@ export default function ReportsPage() {
                 <ExportButtons />
             </div>
 
-            <KPISection
-                total={metrics.total}
-                open={metrics.open}
-                progress={metrics.inProgress}
-                closed={metrics.closed}
-            />
+            <KPISection metrics={metrics} />
 
             <div className="grid lg:grid-cols-2 gap-6">
-
-                <StatusPieChart
-                    data={pieData}
-                />
+                <StatusPieChart data={pieData} />
             </div>
             <div><MonthlyTrendChart
                     data={monthlyData}

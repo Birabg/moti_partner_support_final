@@ -9,6 +9,7 @@ const client_1 = require("../../../generated/prisma/client");
 const caseStatus_validation_1 = __importDefault(require("./caseStatus.validation"));
 const case_event_1 = require("./case.event");
 const email_1 = require("../../utils/email");
+const statusHistory_service_1 = require("./statusHistory.service");
 async function updateStatus(caseId, newStatus, actor, opts) {
     const targetCase = await database_1.prisma.caseReport.findUnique({ where: { id: caseId }, include: { customer: true, assignedSupport: true } });
     if (!targetCase)
@@ -64,19 +65,20 @@ async function updateStatus(caseId, newStatus, actor, opts) {
     }
     const updated = await database_1.prisma.$transaction(async (tx) => {
         const updatedCase = await tx.caseReport.update({ where: { id: caseId }, data: updateData, include: { customer: true, updatedBy: true } });
-        await tx.caseStatusHistory.create({
-            data: {
-                caseReportId: caseId,
-                changedById: actorId,
-                fromStatus: targetCase.status,
-                toStatus: newStatus,
-                reason: opts?.reason || null,
-                note: opts?.note || null,
-                oldPriority: targetCase.priority,
-                newPriority: targetCase.priority,
-                oldAgentId: targetCase.assignedSupportId,
-                newAgentId: targetCase.assignedSupportId,
-            },
+        await (0, statusHistory_service_1.createStatusHistory)(tx, {
+            caseReportId: caseId,
+            // Only set changedById when the actor is a Staff (the relation points to Staff). If actor is a customer, leave null.
+            changedById: actor?.isCustomer ? null : actorId,
+            actorType: actor?.isCustomer ? "CUSTOMER" : "STAFF",
+            actorId: actorId || null,
+            fromStatus: targetCase.status,
+            toStatus: newStatus,
+            reason: opts?.reason || null,
+            note: opts?.note || null,
+            oldPriority: targetCase.priority,
+            newPriority: targetCase.priority,
+            oldAgentId: targetCase.assignedSupportId,
+            newAgentId: targetCase.assignedSupportId,
         });
         return updatedCase;
     });
@@ -104,17 +106,17 @@ async function updateStatus(caseId, newStatus, actor, opts) {
             const SYSTEM_BOT_ID = "00000000-0000-0000-0000-000000000000";
             await database_1.prisma.$transaction(async (tx) => {
                 await tx.caseReport.update({ where: { id: updated.id }, data: { status: client_1.CaseStatus.CUSTOMER_CONFIRMATION, updatedById: SYSTEM_BOT_ID } });
-                await tx.caseStatusHistory.create({
-                    data: {
-                        caseReportId: updated.id,
-                        changedById: SYSTEM_BOT_ID,
-                        fromStatus: client_1.CaseStatus.RESOLVED,
-                        toStatus: client_1.CaseStatus.CUSTOMER_CONFIRMATION,
-                        oldPriority: updated.priority,
-                        newPriority: updated.priority,
-                        oldAgentId: updated.assignedSupportId,
-                        newAgentId: updated.assignedSupportId,
-                    },
+                await (0, statusHistory_service_1.createStatusHistory)(tx, {
+                    caseReportId: updated.id,
+                    changedById: SYSTEM_BOT_ID,
+                    actorType: "SYSTEM",
+                    actorId: null,
+                    fromStatus: client_1.CaseStatus.RESOLVED,
+                    toStatus: client_1.CaseStatus.CUSTOMER_CONFIRMATION,
+                    oldPriority: updated.priority,
+                    newPriority: updated.priority,
+                    oldAgentId: updated.assignedSupportId,
+                    newAgentId: updated.assignedSupportId,
                 });
             });
             // notify customer that confirmation is required

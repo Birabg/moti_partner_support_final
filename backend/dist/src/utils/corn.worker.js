@@ -7,6 +7,7 @@ exports.startCaseTimeoutWorker = void 0;
 const node_cron_1 = __importDefault(require("node-cron"));
 const database_1 = require("../config/database");
 const client_1 = require("../../generated/prisma/client");
+const statusHistory_service_1 = require("../modules/cases/statusHistory.service");
 const SYSTEM_BOT_ID = "00000000-0000-0000-0000-000000000000";
 /*
 export const startCaseTimeoutWorker = () => {
@@ -44,17 +45,17 @@ export const startCaseTimeoutWorker = () => {
               data: { status: CaseStatus.CLOSED },
             });
 
-            await tx.caseStatusHistory.create({
-              data: {
-                caseReportId: targetCase.id,
-                changedById: SYSTEM_BOT_ID,
-                fromStatus: CaseStatus.CUSTOMER_CONFIRMATION,
-                toStatus: CaseStatus.CLOSED,
-                oldPriority: targetCase.priority,
-                newPriority: targetCase.priority,
-                oldAgentId: targetCase.assignedSupportId,
-                newAgentId: targetCase.assignedSupportId,
-              },
+            await createStatusHistory(tx, {
+              caseReportId: targetCase.id,
+              changedById: SYSTEM_BOT_ID,
+              actorType: "SYSTEM",
+              actorId: null,
+              fromStatus: CaseStatus.CUSTOMER_CONFIRMATION,
+              toStatus: CaseStatus.CLOSED,
+              oldPriority: targetCase.priority,
+              newPriority: targetCase.priority,
+              oldAgentId: targetCase.assignedSupportId,
+              newAgentId: targetCase.assignedSupportId,
             });
           });
 
@@ -108,17 +109,17 @@ const startCaseTimeoutWorker = () => {
                                 updatedById: SYSTEM_BOT_ID,
                             },
                         });
-                        await tx.caseStatusHistory.create({
-                            data: {
-                                caseReportId: targetCase.id,
-                                changedById: SYSTEM_BOT_ID,
-                                fromStatus: client_1.CaseStatus.CUSTOMER_CONFIRMATION,
-                                toStatus: client_1.CaseStatus.IN_PROGRESS,
-                                oldPriority: targetCase.priority,
-                                newPriority: targetCase.priority,
-                                oldAgentId: targetCase.assignedSupportId,
-                                newAgentId: targetCase.assignedSupportId,
-                            },
+                        await (0, statusHistory_service_1.createStatusHistory)(tx, {
+                            caseReportId: targetCase.id,
+                            changedById: SYSTEM_BOT_ID,
+                            actorType: "SYSTEM",
+                            actorId: null,
+                            fromStatus: client_1.CaseStatus.CUSTOMER_CONFIRMATION,
+                            toStatus: client_1.CaseStatus.IN_PROGRESS,
+                            oldPriority: targetCase.priority,
+                            newPriority: targetCase.priority,
+                            oldAgentId: targetCase.assignedSupportId,
+                            newAgentId: targetCase.assignedSupportId,
                         });
                     });
                     console.log(`[Cron Worker] Successfully reopened Case ID: ${targetCase.id} to IN_PROGRESS`);

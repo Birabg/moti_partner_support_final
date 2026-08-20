@@ -24,6 +24,12 @@ const reports_1 = require("../modules/reports");
 const productField_route_1 = require("../modules/productField/productField.route");
 const productCustomField_route_1 = require("../modules/productCustomField/productCustomField.route");
 const router = (0, express_1.Router)();
+// Register debug routes only in non-production environments
+if (process.env.NODE_ENV !== 'production') {
+    // lazy require to avoid loading in production
+    const { DebugRouter } = require('../modules/debug/debug.route');
+    router.use('/debug', DebugRouter);
+}
 router.use("/auth", auth_route_1.AuthRoutes);
 router.use("/staff", staff_route_1.StaffRoutes);
 router.use("/customer", customer_route_1.CustomerRoute);

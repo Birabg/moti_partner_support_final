@@ -3,6 +3,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 const COLORS = [
   "#5780be", // Open
   "#0ea5ff", // In Progress
+  "#8b5cf6", // Pending
   "#ef4444", // Escalated
   "#10b981", // Resolved
   "#a78bfa", // Awaiting Customer
@@ -10,20 +11,29 @@ const COLORS = [
 ];
 
 export default function StatusPieChart({ data = [] }) {
-  const hasData = data.some((item) => Number(item.value) > 0);
+  const normalized = (data || []).map((d) => ({ ...d, name: String(d.name).trim() }));
+  const hasData = normalized.some((item) => Number(item.value) > 0);
 
   // Recharts cannot render a pie when every value is 0.
   // Use tiny placeholder values so the chart still appears.
+  const defaultOrder = [
+    "Open",
+    "In Progress",
+    "Pending",
+    "Escalated",
+    "Resolved",
+    "Awaiting Customer",
+    "Closed",
+  ];
+
+  const buildPlaceholder = () => defaultOrder.map((name) => ({ name, value: 1, displayValue: 0 }));
+
   const chartData = hasData
-    ? data
-    : [
-        { name: "Open", value: 1, displayValue: 0 },
-        { name: "In Progress", value: 1, displayValue: 0 },
-        { name: "Escalated", value: 1, displayValue: 0 },
-        { name: "Resolved", value: 1, displayValue: 0 },
-        { name: "Awaiting Customer", value: 1, displayValue: 0 },
-        { name: "Closed", value: 1, displayValue: 0 },
-      ];
+    ? defaultOrder.map((name) => {
+        const found = normalized.find((i) => i.name === name);
+        return found ? { ...found } : { name, value: 0 };
+      })
+    : buildPlaceholder();
 
   return (
     <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 h-full">
@@ -60,8 +70,7 @@ export default function StatusPieChart({ data = [] }) {
 
             <Tooltip
               formatter={(value, name, props) => {
-                const realValue =
-                  props?.payload?.displayValue ?? value;
+                const realValue = props?.payload?.displayValue ?? value;
                 return [realValue, name];
               }}
             />
@@ -70,7 +79,7 @@ export default function StatusPieChart({ data = [] }) {
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-        {(hasData ? data : chartData).map((item, index) => (
+        {(hasData ? chartData : buildPlaceholder()).map((item, index) => (
           <div key={item.name} className="flex items-center gap-2">
             <span
               className="w-3 h-3 rounded-full"

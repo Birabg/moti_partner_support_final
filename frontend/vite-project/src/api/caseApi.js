@@ -44,20 +44,16 @@ const caseApi = {
 
     // Create customer case
     createCase(data){
-
         return api.post(
             "/cases/create",
             data,
             {
-                headers:{
-                    "Content-Type":"multipart/form-data"
-                }
+                headers: data instanceof FormData ? undefined : { "Content-Type": "application/json" }
             }
         ).then((response)=>{
             notifyCaseRefresh();
             return response;
         });
-
     },
 
 
@@ -105,16 +101,21 @@ const caseApi = {
 
     // Resolve case
     resolveCase(caseId,data){
-
+        const body = { ...(data || {}) };
+        if (!body.resolutionSummary && body.resolution) {
+            body.resolutionSummary = body.resolution;
+            delete body.resolution;
+        }
         return api.patch(
             `/cases/${caseId}/resolve`,
-            data
+            body
         ).then((response)=>{
             notifyCaseRefresh();
             return response;
         });
 
     },
+
 
 
     // Customer closes case with feedback
@@ -135,6 +136,17 @@ const caseApi = {
             `/cases/rejectedcase/${caseId}`
         );
 
+    },
+
+    // Generic status update (PATCH /cases/:id/status)
+    updateStatus(caseId, payload){
+        return api.patch(
+            `/cases/${caseId}/status`,
+            payload
+        ).then((response)=>{
+            notifyCaseRefresh();
+            return response;
+        });
     }
 
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import SupportApi from "../../api/supportApi";
+import caseApi from "../../api/caseApi";
 import StatusBadge from "../../components/support/StatusBadge";
 import ResolutionModal from "../../components/support/ResolutionModal";
 import CaseDetailsDrawer from "../../components/cases/CaseDetailsDrawer";
@@ -27,21 +28,33 @@ export default function AssignedCases() {
     setResolvingCase(c);
   };
 
-  const handleViewDetails = (c) => {
-    setDetailCase(c);
-  };
-
   const submitResolution = async (text) => {
     if (!resolvingCase) return;
+    const summary = text?.trim();
+    if (!summary || summary.length < 10) {
+      alert("A detailed resolution summary is required (minimum 10 characters).")
+      return;
+    }
+
     try {
-      await SupportApi.resolveCase(resolvingCase.id, { resolution: text });
+      await caseApi.updateStatus(resolvingCase.id, {
+        status: "RESOLVED",
+        resolutionSummary: summary,
+        reason: "Case resolved by support team.",
+      });
+
       setCases((cur) => cur.map((x) => (x.id === resolvingCase.id ? { ...x, status: "RESOLVED" } : x)));
       setResolvingCase(null);
       window.dispatchEvent(new CustomEvent("cases:updated"));
     } catch (err) {
       console.error(err);
-      alert("Failed to resolve case");
+      const msg = err?.response?.data?.message || err?.message || "Failed to resolve case";
+      alert(msg);
     }
+  };
+
+  const handleViewDetails = (c) => {
+    setDetailCase(c);
   };
 
   const total = cases.length;
@@ -115,7 +128,13 @@ export default function AssignedCases() {
         </Card>
       )}
 
-      {resolvingCase && <ResolutionModal onClose={() => setResolvingCase(null)} onSubmit={submitResolution} />}
+      {resolvingCase && (
+        <ResolutionModal
+          initial={resolvingCase?.resolutionSummary || ""}
+          onClose={() => setResolvingCase(null)}
+          onSubmit={submitResolution}
+        />
+      )}
       {detailCase && <CaseDetailsDrawer caseData={detailCase} close={() => setDetailCase(null)} />}
     </div>
   );

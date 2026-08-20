@@ -4,6 +4,7 @@ import canTransition from "./caseStatus.validation";
 import { CaseEventBroker, CASE_EVENTS } from "./case.event";
 import { sendStatusUpdateEmail, triggerResolutionEmail } from "../../utils/email";
 import { processCaseNotifications } from "./case.notification";
+import { createStatusHistory } from "./statusHistory.service";
 
 type Actor = {
   id?: string;
@@ -45,6 +46,33 @@ export async function updateStatus(
     throw new Error(validation.reason || "Transition not allowed.");
   }
 
+  // Enforce Cancelled only by system admin (double-check at service layer)
+  if (newStatus === CaseStatus.CANCELLED && !actor.isSAdmin) {
+    throw new Error("Only System Administrators may cancel cases.");
+  }
+
+  // PENDING: require reason and restrict actors to customer (case owner), assigned agent, manager/director, or system admin
+  if (newStatus === CaseStatus.PENDING) {
+    if (!opts?.reason || typeof opts.reason !== 'string' || opts.reason.trim().length < 5) {
+      throw new Error("Pending description is required (min 5 chars).");
+    }
+
+    const actorIsOwnerCustomer = !!(actor.isCustomer && actorId && targetCase.customerId && actorId === targetCase.customerId);
+    const actorIsAssignedAgent = !!(actorId && targetCase.assignedSupportId && actorId === targetCase.assignedSupportId);
+    const actorIsPrivilegedStaff = !!(actor.isManager || actor.isDirector || actor.isSAdmin);
+
+    if (!actorIsOwnerCustomer && !actorIsAssignedAgent && !actorIsPrivilegedStaff) {
+      throw new Error("Only the case owner (customer), the assigned agent, manager/director, or system admin may place a case on PENDING.");
+    }
+  }
+
+  // ESCALATED: require reason
+  if (newStatus === CaseStatus.ESCALATED) {
+    if (!opts?.reason || typeof opts.reason !== 'string' || opts.reason.trim().length < 5) {
+      throw new Error("Escalation reason is required (min 5 chars).");
+    }
+  }
+
   // Enforce resolutionSummary when marking RESOLVED
   if (newStatus === CaseStatus.RESOLVED && (!opts?.resolutionSummary || opts.resolutionSummary.trim().length < 10)) {
     throw new Error("A detailed resolutionSummary (min 10 chars) is required when resolving a case.");
@@ -82,22 +110,20 @@ export async function updateStatus(
   const updated = await prisma.$transaction(async (tx) => {
     const updatedCase = await tx.caseReport.update({ where: { id: caseId }, data: updateData, include: { customer: true, updatedBy: true } });
 
-    await tx.caseStatusHistory.create({
-      data: {
-        caseReportId: caseId,
-        // Only set changedById when the actor is a Staff (the relation points to Staff). If actor is a customer, leave null.
-        changedById: actor?.isCustomer ? null : (actorId as any),
-        actorType: actor?.isCustomer ? "CUSTOMER" : "STAFF",
-        actorId: actorId || null,
-        fromStatus: targetCase.status as any,
-        toStatus: newStatus,
-        reason: opts?.reason || null,
-        note: opts?.note || null,
-        oldPriority: targetCase.priority as CasePriority | null,
-        newPriority: targetCase.priority as CasePriority | null,
-        oldAgentId: targetCase.assignedSupportId,
-        newAgentId: targetCase.assignedSupportId,
-      },
+    await createStatusHistory(tx, {
+      caseReportId: caseId,
+      // Only set changedById when the actor is a Staff (the relation points to Staff). If actor is a customer, leave null.
+      changedById: actor?.isCustomer ? null : (actorId as any),
+      actorType: actor?.isCustomer ? "CUSTOMER" : "STAFF",
+      actorId: actorId || null,
+      fromStatus: targetCase.status as any,
+      toStatus: newStatus,
+      reason: opts?.reason || null,
+      note: opts?.note || null,
+      oldPriority: targetCase.priority as CasePriority | null,
+      newPriority: targetCase.priority as CasePriority | null,
+      oldAgentId: targetCase.assignedSupportId,
+      newAgentId: targetCase.assignedSupportId,
     });
 
     return updatedCase;
@@ -128,19 +154,17 @@ export async function updateStatus(
       const SYSTEM_BOT_ID = "00000000-0000-0000-0000-000000000000";
       await prisma.$transaction(async (tx) => {
         await tx.caseReport.update({ where: { id: updated.id }, data: { status: CaseStatus.CUSTOMER_CONFIRMATION, updatedById: SYSTEM_BOT_ID } });
-        await tx.caseStatusHistory.create({
-          data: {
-            caseReportId: updated.id,
-            changedById: SYSTEM_BOT_ID,
-            actorType: "SYSTEM",
-            actorId: null,
-            fromStatus: CaseStatus.RESOLVED,
-            toStatus: CaseStatus.CUSTOMER_CONFIRMATION,
-            oldPriority: (updated as any).priority,
-            newPriority: (updated as any).priority,
-            oldAgentId: (updated as any).assignedSupportId,
-            newAgentId: (updated as any).assignedSupportId,
-          },
+        await createStatusHistory(tx, {
+          caseReportId: updated.id,
+          changedById: SYSTEM_BOT_ID,
+          actorType: "SYSTEM",
+          actorId: null,
+          fromStatus: CaseStatus.RESOLVED,
+          toStatus: CaseStatus.CUSTOMER_CONFIRMATION,
+          oldPriority: (updated as any).priority,
+          newPriority: (updated as any).priority,
+          oldAgentId: (updated as any).assignedSupportId,
+          newAgentId: (updated as any).assignedSupportId,
         });
       });
 

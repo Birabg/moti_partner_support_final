@@ -99,13 +99,10 @@ export const StaffApi = {
     // ==========================
 
 
-    getFeedbackAnalytics(){
+    getFeedbackAnalytics(staffId){
 
-
-        return Axios.get(
-            "/staff/feedback/analytics"
-        );
-
+        const url = staffId ? `/staff/feedback/analytics?staffId=${encodeURIComponent(staffId)}` : "/staff/feedback/analytics";
+        return Axios.get(url);
 
     }
 

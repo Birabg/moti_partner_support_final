@@ -458,6 +458,9 @@ model CaseStatusHistory {
   newPriority  CasePriority?
   oldAgentId   String?
   newAgentId   String?
+  oldAgentName String?       @db.VarChar(200)
+  newAgentName String?       @db.VarChar(200)
+  resolutionSnapshot String? @db.Text
   createdAt    DateTime      @default(now())
 
   @@map("case_report_status_histories")

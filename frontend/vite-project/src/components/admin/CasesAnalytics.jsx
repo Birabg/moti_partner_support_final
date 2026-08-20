@@ -1,13 +1,18 @@
 import { useEffect, useState } from "react";
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell } from "recharts";
 import { AnalyticsApi } from "../../api/analyticsApi";
 
-const emptyData = [
-    { day: "Open", count: 0 },
-    { day: "In Progress", count: 0 },
-    { day: "Resolved", count: 0 },
-    { day: "Closed", count: 0 },
+const STATUS_ORDER = [
+  { key: 'OPEN', label: 'Open', color: '#3b82f6' },
+  { key: 'IN_PROGRESS', label: 'In Progress', color: '#10b981' },
+  { key: 'PENDING', label: 'Pending', color: '#8b5cf6' },
+  { key: 'ESCALATED', label: 'Escalated', color: '#ef4444' },
+  { key: 'RESOLVED', label: 'Resolved', color: '#06b6d4' },
+  { key: 'CUSTOMER_CONFIRMATION', label: 'Awaiting Customer', color: '#f97316' },
+  { key: 'CLOSED', label: 'Closed', color: '#64748b' },
 ];
+
+const emptyData = STATUS_ORDER.map(s => ({ status: s.label, count: 0, key: s.key, color: s.color }));
 
 export default function CasesAnalytics() {
     const [data, setData] = useState(emptyData);
@@ -17,12 +22,22 @@ export default function CasesAnalytics() {
             AnalyticsApi.getCaseSummary()
                 .then((res) => {
                     const payload = res?.data?.data || {};
-                    setData([
-                        { day: "Open", count: payload.open || 0 },
-                        { day: "In Progress", count: payload.inProgress || 0 },
-                        { day: "Resolved", count: payload.resolved || 0 },
-                        { day: "Closed", count: payload.closed || 0 },
-                    ]);
+
+                    const mapped = STATUS_ORDER.map(s => ({
+                        status: s.label,
+                        key: s.key,
+                        count:
+                          s.key === 'OPEN' ? (payload.open ?? payload.OPEN ?? 0) :
+                          s.key === 'IN_PROGRESS' ? (payload.inProgress ?? payload.IN_PROGRESS ?? 0) :
+                          s.key === 'PENDING' ? (payload.pending ?? payload.PENDING ?? 0) :
+                          s.key === 'ESCALATED' ? (payload.escalated ?? payload.ESCALATED ?? 0) :
+                          s.key === 'RESOLVED' ? (payload.resolved ?? payload.RESOLVED ?? 0) :
+                          s.key === 'CUSTOMER_CONFIRMATION' ? (payload.customerConfirmation ?? payload.CUSTOMER_CONFIRMATION ?? 0) :
+                          s.key === 'CLOSED' ? (payload.closed ?? payload.CLOSED ?? 0) : 0,
+                        color: s.color,
+                    }));
+
+                    setData(mapped);
                 })
                 .catch((error) => console.error(error));
         };
@@ -46,16 +61,39 @@ export default function CasesAnalytics() {
                 </div>
             </div>
 
-            <div className="h-[320px] w-full">
+            <div className="flex gap-6">
+              {/* Left column: status list */}
+              <div className="w-64">
+                <ul className="space-y-3">
+                  {data.map(d => (
+                    <li key={d.key} className="flex items-center justify-between bg-slate-50 p-3 rounded-md border">
+                      <div className="flex items-center gap-3">
+                        <span style={{ width: 12, height: 12, background: d.color, display: 'inline-block', borderRadius: 3 }} />
+                        <span className="text-sm font-medium">{d.status}</span>
+                      </div>
+                      <div className="text-sm text-slate-700 font-bold">{d.count}</div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Right column: bar chart (vertical bars) */}
+              <div className="flex-1 h-[320px]">
                 <ResponsiveContainer>
-                    <LineChart data={data}>
-                        <CartesianGrid strokeDasharray="4 4" stroke="#e5e7eb" />
-                        <XAxis dataKey="day" tickLine={false} axisLine={false} />
-                        <YAxis allowDecimals={false} tickLine={false} axisLine={false} />
-                        <Tooltip formatter={(value) => [`${value} cases`, "Count"]} />
-                        <Line type="monotone" dataKey="count" stroke="#0f3876" strokeWidth={3} dot={{ r: 6, fill: "#1456b8" }} activeDot={{ r: 8 }} />
-                    </LineChart>
+                  <BarChart data={data} margin={{ top: 10, right: 20, left: 20, bottom: 10 }}>
+                    <CartesianGrid strokeDasharray="4 4" stroke="#e5e7eb" />
+                    <XAxis dataKey="status" type="category" tickLine={false} axisLine={false} interval={0} tick={{ angle: -45, textAnchor: 'end' }} height={70} />
+                    <YAxis type="number" allowDecimals={false} tickLine={false} axisLine={false} />
+                    <Tooltip formatter={(value) => [`${value} cases`, "Count"]} />
+                    <Bar dataKey="count" barSize={36}>
+                      {data.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
                 </ResponsiveContainer>
+              </div>
+
             </div>
         </div>
     );

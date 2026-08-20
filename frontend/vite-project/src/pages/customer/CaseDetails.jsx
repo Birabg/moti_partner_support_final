@@ -20,6 +20,33 @@ import CaseTimeline from "../../components/customer/CaseTimeline";
 
 import FeedbackModal from "../../components/customer/FeedbackModal";
 
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/$/, "");
+
+const getAttachmentUrl = (attachment) => {
+    if (!attachment) return "";
+
+    if (typeof attachment === "string") {
+        if (/^https?:\/\//i.test(attachment)) return attachment;
+        const fileName = attachment.split("/").pop();
+        return fileName ? `${API_BASE_URL}/uploads/${encodeURIComponent(fileName)}` : "";
+    }
+
+    if (attachment.url && /^https?:\/\//i.test(attachment.url)) return attachment.url;
+
+    const storagePath = attachment.storagePath || attachment.filePath || attachment.path || attachment.fileName || "";
+    if (storagePath) {
+        if (/^https?:\/\//i.test(storagePath)) return storagePath;
+        const fileName = storagePath.replace(/\\/g, "/").split("/").filter(Boolean).pop();
+        if (fileName) return `${API_BASE_URL}/uploads/${encodeURIComponent(fileName)}`;
+    }
+
+    if (attachment.fileName) {
+        return `${API_BASE_URL}/uploads/${encodeURIComponent(attachment.fileName)}`;
+    }
+
+    return "";
+};
+
 export default function CaseDetails() {
 
     const { id } = useParams();
@@ -200,6 +227,35 @@ export default function CaseDetails() {
                     </p>
 
                 </div>
+
+                {data.attachments?.length > 0 && (
+                    <div className="mt-8">
+                        <h4 className="font-semibold mb-3">Attachments</h4>
+                        <ul className="space-y-2">
+                            {data.attachments.map((attachment) => {
+                                const url = getAttachmentUrl(attachment);
+                                const label = attachment?.fileName || attachment?.name || attachment?.originalName || "Attachment";
+
+                                return (
+                                    <li key={attachment?.id || label}>
+                                        {url ? (
+                                            <a
+                                                href={url}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="inline-flex items-center gap-2 text-blue-700 underline break-all"
+                                            >
+                                                {label}
+                                            </a>
+                                        ) : (
+                                            <span className="break-all">{label}</span>
+                                        )}
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </div>
+                )}
 
                 <div className="grid md:grid-cols-2 gap-6 mt-8">
 

@@ -8,7 +8,6 @@
     const countBy = (status) => cases.filter(item => item.status === status).length;
 
     const open = countBy("OPEN");
-    const assigned = countBy("ASSIGNED");
     const inProgress = countBy("IN_PROGRESS");
     const pending = countBy("PENDING");
     const escalated = countBy("ESCALATED");
@@ -31,8 +30,6 @@
             <Card title="Total Cases" value={total} onClick={() => onStatusClick?.(null)} />
 
             <Card title="Open" value={open} onClick={() => onStatusClick?.("OPEN")} />
-
-            <Card title="Assigned" value={assigned} onClick={() => onStatusClick?.("ASSIGNED")} />
 
             <Card title="In Progress" value={inProgress} onClick={() => onStatusClick?.("IN_PROGRESS")} />
 

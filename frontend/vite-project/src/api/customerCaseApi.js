@@ -46,20 +46,16 @@ const customerCaseApi = {
 
 
     createCase(data){
-
         return api.post(
             "/cases/create",
             data,
             {
-                headers:{
-                    "Content-Type":"multipart/form-data"
-                }
+                headers: data instanceof FormData ? undefined : { "Content-Type": "application/json" }
             }
         ).then((response)=>{
             notifyCaseRefresh();
             return response;
         });
-
     },
 
 

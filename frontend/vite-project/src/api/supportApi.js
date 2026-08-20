@@ -43,11 +43,19 @@ const SupportApi = {
   },
 
   resolveCase(caseId, payload) {
-    return Axios.patch(`/cases/${caseId}/resolve`, payload);
+    // Support both legacy `resolution` field from UI and new `resolutionSummary` expected by backend
+    const body = { ...(payload || {}) };
+    if (!body.resolutionSummary && body.resolution) {
+      body.resolutionSummary = body.resolution;
+      delete body.resolution;
+    }
+    return Axios.patch(`/cases/${caseId}/resolve`, body);
   },
 
-  getFeedbackAnalytics() {
-    return Axios.get("/staff/feedback/analytics");
+
+  getFeedbackAnalytics(staffId) {
+    const url = staffId ? `/staff/feedback/analytics?staffId=${encodeURIComponent(staffId)}` : "/staff/feedback/analytics";
+    return Axios.get(url);
   },
 
   updateProfile(payload) {

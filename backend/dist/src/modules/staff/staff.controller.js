@@ -99,23 +99,60 @@ const resendVerification = async (req, res) => {
 exports.resendVerification = resendVerification;
 const getStaffFeedbackAnalytics = async (req, res, next) => {
     try {
-        const staffId = req.user?.id || req.user?.staffId || req.user?.userId;
-        if (!staffId) {
-            return res.status(401).json({
-                success: false,
-                message: "Authentication context missing. Ensure you are passing a valid token."
-            });
+        // Determine requester identity and optional target staffId
+        const requester = req.user || {};
+        const requesterId = requester.id || requester.userId || requester.staffId;
+        const isAdmin = !!requester.isSAdmin;
+        const isManager = !!requester.isManager;
+        const isDirector = !!requester.isDirector;
+        // optional query param to request analytics for a specific staff
+        const rawQueryStaffId = req.query.staffId;
+        const queryStaffId = Array.isArray(rawQueryStaffId) ? rawQueryStaffId[0] : rawQueryStaffId;
+        if (!requesterId && !isAdmin) {
+            return res.status(401).json({ success: false, message: "Authentication context missing. Ensure you are passing a valid token." });
         }
-        const staffExists = await database_1.prisma.staff.findUnique({
-            where: { id: staffId },
-            select: { id: true, firstName: true, lastName: true }
-        });
-        if (!staffExists) {
-            throw new error_1.NotFoundError("Requested staff member performance profile could not be located.");
+        // Determine list of staff ids to run analytics for
+        let targetStaffIds = [];
+        if (typeof queryStaffId === 'string' && queryStaffId.length > 0) {
+            // If caller requested a specific staff id, permit if admin or manager/director or requesting self
+            if (isAdmin || isManager || isDirector || queryStaffId === requesterId) {
+                targetStaffIds = [queryStaffId];
+            }
+            else {
+                return res.status(403).json({ success: false, message: 'Not authorized to view other staff analytics' });
+            }
         }
+        else if (isManager || isDirector) {
+            // managers/directors: aggregate team members within their managed scope
+            // manager info includes managerType and departmentId/divisionId/sectionId in the JWT
+            const managerType = requester.managerType || null;
+            const departmentId = requester.departmentId || null;
+            const divisionId = requester.divisionId || null;
+            const sectionId = requester.sectionId || null;
+            // build where clause depending on managerType
+            let staffWhere = { isPSsupport: true, status: 'ACTIVE' };
+            if (managerType === 'SECTION' && sectionId)
+                staffWhere.sectionId = sectionId;
+            else if (managerType === 'DIVISION' && divisionId)
+                staffWhere.divisionId = divisionId;
+            else if (managerType === 'DEPARTMENT' && departmentId)
+                staffWhere.departmentId = departmentId;
+            const team = await database_1.prisma.staff.findMany({ where: staffWhere, select: { id: true } });
+            targetStaffIds = team.map((s) => s.id);
+            if (targetStaffIds.length === 0) {
+                return res.status(200).json({ success: true, data: { agent: { id: requesterId, name: `${requester.firstName || ''} ${requester.lastName || ''}`.trim() }, summary: { averageRating: null, totalReviewsCount: 0 }, ratingDistribution: { '5_star': 0, '4_star': 0, '3_star': 0, '2_star': 0, '1_star': 0 }, reviewsFeed: [] } });
+            }
+        }
+        else {
+            // default: personal analytics
+            if (!requesterId)
+                return res.status(401).json({ success: false, message: 'Authentication context missing' });
+            targetStaffIds = [requesterId];
+        }
+        // Query case reports assigned to any of the target staff ids with feedback
         const resolvedCasesWithFeedback = await database_1.prisma.caseReport.findMany({
             where: {
-                assignedSupportId: staffId,
+                assignedSupportId: { in: targetStaffIds },
                 status: { in: ["CUSTOMER_CONFIRMATION", "CLOSED"] },
                 feedback: { isNot: null }
             },
@@ -124,6 +161,7 @@ const getStaffFeedbackAnalytics = async (req, res, next) => {
                 caseNumber: true,
                 subject: true,
                 closedAt: true,
+                assignedSupportId: true,
                 feedback: {
                     select: {
                         id: true,
@@ -136,11 +174,23 @@ const getStaffFeedbackAnalytics = async (req, res, next) => {
             orderBy: { closedAt: "desc" }
         });
         const totalReviewsCount = resolvedCasesWithFeedback.length;
+        // prepare agent display info: single staff or aggregated team
+        let agentDisplay;
+        if (targetStaffIds.length === 1) {
+            const staffExists = await database_1.prisma.staff.findUnique({ where: { id: targetStaffIds[0] }, select: { id: true, firstName: true, lastName: true } });
+            if (!staffExists) {
+                return res.status(404).json({ success: false, message: 'Requested staff member was not found.' });
+            }
+            agentDisplay = { id: staffExists.id, name: `${staffExists.firstName || ''} ${staffExists.lastName || ''}`.trim() || 'Staff' };
+        }
+        else {
+            agentDisplay = { id: null, name: `Team (${targetStaffIds.length})` };
+        }
         if (totalReviewsCount === 0) {
             return res.status(200).json({
                 success: true,
                 data: {
-                    agent: { id: staffExists.id, name: `${staffExists.firstName} ${staffExists.lastName || ""}`.trim() },
+                    agent: agentDisplay,
                     summary: { averageRating: null, totalReviewsCount: 0 },
                     ratingDistribution: { "5_star": 0, "4_star": 0, "3_star": 0, "2_star": 0, "1_star": 0 },
                     reviewsFeed: []

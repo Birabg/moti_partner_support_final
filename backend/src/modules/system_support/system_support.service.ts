@@ -4,6 +4,7 @@ import { CaseStatus, CasePriority} from "../../../generated/prisma/client";
 import { processCaseNotifications } from "../cases/case.notification";
 import { CaseEventBroker, CASE_EVENTS } from "../cases/case.event";
 import { sendStatusUpdateEmail } from "../../utils/email";
+import { createStatusHistory } from "../cases/statusHistory.service";
 
 
 
@@ -48,19 +49,17 @@ export const assignCaseSupport = async (
       );
     }
 
-    await tx.caseStatusHistory.create({
-      data: {
-        caseReportId: caseId,
-        changedById: operatorId,
-        actorType: "STAFF",
-        actorId: operatorId,
-        fromStatus: targetCase.status as any,
-        toStatus: CaseStatus.IN_PROGRESS,
-        oldPriority: targetCase.priority,
-        newPriority: targetCase.priority,
-        oldAgentId: targetCase.assignedSupportId,
-        newAgentId: assignedSupportId,
-      },
+    await createStatusHistory(tx, {
+      caseReportId: caseId,
+      changedById: operatorId,
+      actorType: "STAFF",
+      actorId: operatorId,
+      fromStatus: targetCase.status as any,
+      toStatus: CaseStatus.IN_PROGRESS,
+      oldPriority: targetCase.priority,
+      newPriority: targetCase.priority,
+      oldAgentId: targetCase.assignedSupportId,
+      newAgentId: assignedSupportId,
     });
   });
 

@@ -312,6 +312,8 @@ exports.CaseStatusHistoryScalarFieldEnum = {
     id: 'id',
     caseReportId: 'caseReportId',
     changedById: 'changedById',
+    actorType: 'actorType',
+    actorId: 'actorId',
     fromStatus: 'fromStatus',
     toStatus: 'toStatus',
     reason: 'reason',
@@ -320,6 +322,9 @@ exports.CaseStatusHistoryScalarFieldEnum = {
     newPriority: 'newPriority',
     oldAgentId: 'oldAgentId',
     newAgentId: 'newAgentId',
+    oldAgentName: 'oldAgentName',
+    newAgentName: 'newAgentName',
+    resolutionSnapshot: 'resolutionSnapshot',
     createdAt: 'createdAt'
 };
 exports.AttachmentScalarFieldEnum = {

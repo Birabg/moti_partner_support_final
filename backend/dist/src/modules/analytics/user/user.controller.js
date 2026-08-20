@@ -11,23 +11,23 @@ const getCustomerCaseloadAnalytics = async (req, res, next) => {
                 firstName: true,
                 lastName: true,
                 email: true,
-                caseReports: {
+                cases: {
                     select: {
                         id: true,
                         status: true,
-                        rating: true
+                        feedback: { select: { rating: true } }
                     }
                 }
             },
             orderBy: { lastName: "asc" }
         });
         const customerProfiles = customersData.map((cust) => {
-            const cases = cust.caseReports || [];
+            const cases = cust.cases || [];
             const totalCases = cases.length;
             const inProgressCount = cases.filter((c) => c.status === client_1.CaseStatus.IN_PROGRESS).length;
             const closedCount = cases.filter((c) => c.status === client_1.CaseStatus.CLOSED).length;
-            const ratedCases = cases.filter((c) => c.status === client_1.CaseStatus.CLOSED && typeof c.rating === "number");
-            const totalScoreSum = ratedCases.reduce((sum, c) => sum + c.rating, 0);
+            const ratedCases = cases.filter((c) => c.status === client_1.CaseStatus.CLOSED && typeof (c.feedback?.rating) === "number");
+            const totalScoreSum = ratedCases.reduce((sum, c) => sum + (c.feedback?.rating || 0), 0);
             const averageFeedbackScore = ratedCases.length > 0
                 ? parseFloat((totalScoreSum / ratedCases.length).toFixed(2))
                 : null;
@@ -63,23 +63,23 @@ const getPSSupportPerformanceAnalytics = async (req, res, next) => {
                 lastName: true,
                 email: true,
                 isPSsupport: true,
-                staff: {
+                assignedCases: {
                     select: {
                         id: true,
                         status: true,
-                        rating: true
+                        feedback: { select: { rating: true } }
                     }
                 }
             },
             orderBy: { lastName: "asc" }
         });
         const supportProfiles = staffData.map((agent) => {
-            const assignedCases = agent.staff || [];
+            const assignedCases = agent.assignedCases || [];
             const totalReceived = assignedCases.length;
             const inProgressCount = assignedCases.filter((c) => c.status === client_1.CaseStatus.IN_PROGRESS).length;
             const closedCount = assignedCases.filter((c) => c.status === client_1.CaseStatus.CLOSED).length;
-            const reviewedCases = assignedCases.filter((c) => c.status === client_1.CaseStatus.CLOSED && typeof c.rating === "number");
-            const ratingScoreSum = reviewedCases.reduce((sum, c) => sum + c.rating, 0);
+            const reviewedCases = assignedCases.filter((c) => c.status === client_1.CaseStatus.CLOSED && typeof (c.feedback?.rating) === "number");
+            const ratingScoreSum = reviewedCases.reduce((sum, c) => sum + (c.feedback?.rating || 0), 0);
             const agentAverageCsat = reviewedCases.length > 0
                 ? parseFloat((ratingScoreSum / reviewedCases.length).toFixed(2))
                 : null;

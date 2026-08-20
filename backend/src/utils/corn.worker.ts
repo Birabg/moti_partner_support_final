@@ -2,6 +2,7 @@ import cron from "node-cron";
 import { prisma } from "../config/database";
 import { CaseStatus } from "../../generated/prisma/client";
 import { triggerAutoCloseEmail } from "../utils/email";
+import { createStatusHistory } from "../modules/cases/statusHistory.service";
 
 const SYSTEM_BOT_ID = "00000000-0000-0000-0000-000000000000";
 
@@ -41,19 +42,17 @@ export const startCaseTimeoutWorker = () => {
               data: { status: CaseStatus.CLOSED },
             });
 
-            await tx.caseStatusHistory.create({
-              data: {
-                caseReportId: targetCase.id,
-                changedById: SYSTEM_BOT_ID,
-                actorType: "SYSTEM",
-                actorId: null,
-                fromStatus: CaseStatus.CUSTOMER_CONFIRMATION,
-                toStatus: CaseStatus.CLOSED,
-                oldPriority: targetCase.priority,
-                newPriority: targetCase.priority,
-                oldAgentId: targetCase.assignedSupportId,
-                newAgentId: targetCase.assignedSupportId,
-              },
+            await createStatusHistory(tx, {
+              caseReportId: targetCase.id,
+              changedById: SYSTEM_BOT_ID,
+              actorType: "SYSTEM",
+              actorId: null,
+              fromStatus: CaseStatus.CUSTOMER_CONFIRMATION,
+              toStatus: CaseStatus.CLOSED,
+              oldPriority: targetCase.priority,
+              newPriority: targetCase.priority,
+              oldAgentId: targetCase.assignedSupportId,
+              newAgentId: targetCase.assignedSupportId,
             });
           });
 
@@ -115,19 +114,17 @@ export const startCaseTimeoutWorker = () => {
               },
             });
 
-            await tx.caseStatusHistory.create({
-              data: {
-                caseReportId: targetCase.id,
-                changedById: SYSTEM_BOT_ID,
-                actorType: "SYSTEM",
-                actorId: null,
-                fromStatus: CaseStatus.CUSTOMER_CONFIRMATION,
-                toStatus: CaseStatus.IN_PROGRESS,
-                oldPriority: targetCase.priority,
-                newPriority: targetCase.priority,
-                oldAgentId: targetCase.assignedSupportId,
-                newAgentId: targetCase.assignedSupportId,
-              },
+            await createStatusHistory(tx, {
+              caseReportId: targetCase.id,
+              changedById: SYSTEM_BOT_ID,
+              actorType: "SYSTEM",
+              actorId: null,
+              fromStatus: CaseStatus.CUSTOMER_CONFIRMATION,
+              toStatus: CaseStatus.IN_PROGRESS,
+              oldPriority: targetCase.priority,
+              newPriority: targetCase.priority,
+              oldAgentId: targetCase.assignedSupportId,
+              newAgentId: targetCase.assignedSupportId,
             });
           });
 

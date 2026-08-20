@@ -1,5 +1,7 @@
 import express, { Application, Request, Response, NextFunction } from "express";
 import cors from "cors";
+import fs from "fs";
+import path from "path";
 import { ApiRouter } from "./route/route.index";
 import {
     ProfileRouter
@@ -7,9 +9,15 @@ import {
 from "./modules/profile/profile.route";
 const app: Application = express();
 
+const uploadsDir = path.resolve(process.cwd(), "uploads");
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static(uploadsDir));
 app.use(
     "/api/profile",
     ProfileRouter
