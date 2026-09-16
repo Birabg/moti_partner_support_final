@@ -12,6 +12,45 @@ export function AuthProvider({ children }) {
         loadUser();
     }, []);
 
+    function normalizeUser(rawUser) {
+        const normalizedRole = rawUser?.role ||
+            (rawUser?.isSAdmin ? "SYSTEM_ADMIN" :
+            rawUser?.isDirector ? "DIRECTOR" :
+            rawUser?.isManager || rawUser?.managerType ? "MANAGER" :
+            rawUser?.isPSsupport ? "PS_SUPPORT" :
+            rawUser?.userType || undefined);
+
+        const staffRole = rawUser?.partyType === "STAFF" ||
+            rawUser?.isSAdmin ||
+            rawUser?.isManager ||
+            rawUser?.isPSsupport ||
+            rawUser?.isDirector ||
+            rawUser?.managerType ||
+            normalizedRole === "SYSTEM_ADMIN" ||
+            normalizedRole === "MANAGER" ||
+            normalizedRole === "DIRECTOR" ||
+            normalizedRole === "PS_SUPPORT";
+
+        const managerType = rawUser?.managerType ||
+            (normalizedRole === "MANAGER" ? "SECTION" : null);
+
+        return {
+            ...rawUser,
+            id: rawUser?.id || rawUser?.userId,
+            partyType: rawUser?.partyType || (staffRole ? "STAFF" : "CUSTOMER"),
+            role: normalizedRole,
+            userType: rawUser?.userType || normalizedRole,
+            managerType,
+            isSAdmin: Boolean(rawUser?.isSAdmin || normalizedRole === "SYSTEM_ADMIN" || rawUser?.userType === "SYSTEM_ADMIN"),
+            isManager: Boolean(rawUser?.isManager || rawUser?.managerType || normalizedRole === "MANAGER" || rawUser?.userType === "MANAGER"),
+            isDirector: Boolean(rawUser?.isDirector || normalizedRole === "DIRECTOR" || rawUser?.userType === "DIRECTOR"),
+            isPSsupport: Boolean(rawUser?.isPSsupport || normalizedRole === "PS_SUPPORT" || rawUser?.userType === "PS_SUPPORT"),
+            firstName: rawUser?.firstName || "",
+            lastName: rawUser?.lastName || "",
+            email: rawUser?.email || "",
+        };
+    }
+
     function loadUser() {
         try {
             const token = localStorage.getItem("jwt_token");
@@ -23,14 +62,7 @@ export function AuthProvider({ children }) {
             }
 
             const decoded = jwtDecode(token);
-            const normalizedUser = {
-                ...decoded,
-                id: decoded.id || decoded.userId,
-                partyType: decoded.partyType || (decoded.isSAdmin || decoded.isManager || decoded.isPSsupport || decoded.isDirector ? "STAFF" : "CUSTOMER"),
-                firstName: decoded.firstName || "",
-                lastName: decoded.lastName || "",
-                email: decoded.email || "",
-            };
+            const normalizedUser = normalizeUser(decoded);
 
             setUser(normalizedUser);
         } catch (error) {
@@ -44,14 +76,7 @@ export function AuthProvider({ children }) {
 
     async function login(credentials) {
         const decoded = await AuthApi.login(credentials);
-        const normalizedUser = {
-            ...decoded,
-            id: decoded.id || decoded.userId,
-            partyType: decoded.partyType || (decoded.isSAdmin || decoded.isManager || decoded.isPSsupport || decoded.isDirector ? "STAFF" : "CUSTOMER"),
-            firstName: decoded.firstName || decoded.email?.split("@")[0] || "User",
-            lastName: decoded.lastName || "",
-            email: decoded.email || "",
-        };
+        const normalizedUser = normalizeUser(decoded);
 
         setUser(normalizedUser);
         return normalizedUser;

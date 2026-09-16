@@ -9,6 +9,18 @@ import { NotFoundError, ForbiddenError } from "../../utils/error";
 
 const router = Router();
 
+router.get("/public/:id", cases.getPublicCaseForConfirmation);
+
+router.post(
+  "/close/:id/feedback-close",
+  cases.closeCaseWithFeedback
+);
+
+router.post(
+  "/rejectedcase/:id",
+  cases.rejectedCase
+);
+
 router.use(authenticateToken);
 
 router.get(
@@ -48,13 +60,13 @@ router.get(
 
 router.post(
   "/create",
-  upload.array("attachments"),
+  upload.array("attachments", 5),
   cases.createCustomerCase
 );
 
 router.post(
   "/auth/create",
-  upload.array("attachments"),
+  upload.array("attachments", 5),
   requirePermission("CASE_CREATE"),
   cases.createAdminCase
 );
@@ -91,16 +103,6 @@ router.patch(
   "/:id/resolve",
   requirePermission("CASE_RESOLVE"),
   cases.resolveCase
-);
-
-router.post(
-  "/close/:id/feedback-close",
-  cases.closeCaseWithFeedback
-);
-
-router.post(
-  "/rejectedcase/:id",
-  cases.rejectedCase
 );
 
 export const CaseReportRouter = router;

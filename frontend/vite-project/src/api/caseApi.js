@@ -48,7 +48,9 @@ const caseApi = {
             "/cases/create",
             data,
             {
-                headers: data instanceof FormData ? undefined : { "Content-Type": "application/json" }
+                headers: data instanceof FormData
+                    ? { "Content-Type": "multipart/form-data" }
+                    : { "Content-Type": "application/json" }
             }
         ).then((response)=>{
             notifyCaseRefresh();

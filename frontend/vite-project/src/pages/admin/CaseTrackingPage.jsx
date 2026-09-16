@@ -1,11 +1,12 @@
 import {
     useEffect,
-    useState
+    useState,
 } from "react";
 
+import { useAuth } from "../../context/useAuth";
 
 import {
-    getAllCases
+    getAllCases,
 } from "../../api/caseApi";
 
 
@@ -18,652 +19,986 @@ import AssignStaffModal from "../../components/cases/AssignStaffModal";
 import ChangePriorityModal from "../../components/cases/ChangePriorityModal";
 import ResolveCaseModal from "../../components/cases/ResolveCaseModal";
 import ReassignStaffModal from "../../components/cases/ReassignStaffModal";
+import CancelCaseModal from "../../components/cases/CancelCaseModal";
 
 import Pagination from "../../components/cases/Pagination";
 import CaseSorting from "../../components/cases/CaseSorting";
-import CaseToolbar from "../../components/cases/CaseToolbar";
+
+import {
+    RefreshCw,
+    FileText,
+} from "lucide-react";
+
 import { PageHeader } from "../../components/ui/page-header";
 
 
+// ============================================================
+// PAGE
+// ============================================================
 
-export default function CaseTrackingPage(){
+export default function CaseTrackingPage() {
 
+    const { user } = useAuth();
 
 
-const [cases,setCases] = useState([]);
+    // ============================================================
+    // CASE DATA
+    // ============================================================
 
-const [filteredCases,setFilteredCases] = useState([]);
+    const [cases, setCases] = useState([]);
 
-const [loading,setLoading] = useState(false);
+    const [filteredCases, setFilteredCases] = useState([]);
 
 
+    const [loading, setLoading] = useState(false);
 
-const [selectedCase,setSelectedCase] = useState(null);
 
+    // ============================================================
+    // SELECTED CASE
+    // ============================================================
 
+    const [selectedCase, setSelectedCase] = useState(null);
 
-const [details,setDetails] = useState(false);
 
-const [assign,setAssign] = useState(false);
+    // ============================================================
+    // MODALS / DRAWERS
+    // ============================================================
 
-const [priority,setPriority] = useState(false);
+    const [details, setDetails] = useState(false);
 
-const [showResolve,setShowResolve] = useState(false);
+    const [assign, setAssign] = useState(false);
 
-const [showReassign,setShowReassign] = useState(false);
+    const [priority, setPriority] = useState(false);
 
+    const [showResolve, setShowResolve] = useState(false);
 
+    const [showReassign, setShowReassign] = useState(false);
 
-const [sortBy,setSortBy] = useState("createdAt");
+    const [showCancel, setShowCancel] = useState(false);
 
-const [order,setOrder] = useState("desc");
 
+    // ============================================================
+    // SORTING
+    // ============================================================
 
+    const [sortBy, setSortBy] = useState("createdAt");
 
-const [page,setPage] = useState(1);
+    const [order, setOrder] = useState("desc");
 
-const [limit] = useState(10);
 
+    // ============================================================
+    // PAGINATION
+    // ============================================================
 
+    const [page, setPage] = useState(1);
 
-const [pagination,setPagination] = useState({
+    const [limit] = useState(10);
 
-    page:1,
 
-    limit:10,
+    const [pagination, setPagination] = useState({
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 1,
+    });
 
-    total:0,
 
-    totalPages:1
+    // ============================================================
+    // REFRESH EVENT
+    // ============================================================
 
-});
+    const notifyCaseDashboardRefresh = () => {
 
-const notifyCaseDashboardRefresh = () => {
+        window.dispatchEvent(
+            new CustomEvent("cases:updated")
+        );
 
-    window.dispatchEvent(new CustomEvent("cases:updated"));
+    };
 
-};
 
+    // ============================================================
+    // LOAD CASES
+    // ============================================================
 
+    const loadCases = async () => {
 
+        try {
 
-// ===============================
-// LOAD CASES
-// ===============================
+            setLoading(true);
 
-const loadCases = async()=>{
 
+            const response = await getAllCases(
+                page,
+                limit,
+                sortBy,
+                order
+            );
 
-try{
 
+            const casesData =
+                response?.data?.data || [];
 
-setLoading(true);
 
+            const paginationData =
+                response?.data?.pagination || {
+                    page: 1,
+                    limit: 10,
+                    total: 0,
+                    totalPages: 1,
+                };
 
 
-const response = await getAllCases(
+            setCases(casesData);
 
-    page,
+            setFilteredCases(casesData);
 
-    limit,
+            setPagination(paginationData);
 
-    sortBy,
+        }
 
-    order
+        catch (error) {
 
-);
+            console.error(
+                "Loading cases failed:",
+                error
+            );
 
+        }
 
+        finally {
 
-// backend response:
-// {
-//   success:true,
-//   data:[cases],
-//   pagination:{}
-// }
+            setLoading(false);
 
+        }
 
-const casesData = response.data.data || [];
+    };
 
 
+    // ============================================================
+    // LOAD CASES + AUTO REFRESH
+    // ============================================================
 
-const paginationData = response.data.pagination || {
+    useEffect(() => {
 
-    page:1,
+        let intervalId = setInterval(() => {
+            loadCases();
+        }, 15000);
 
-    limit:10,
+        loadCases();
 
-    total:0,
+        return () => {
+            clearInterval(intervalId);
+        };
 
-    totalPages:1
+    }, [
+        page,
+        sortBy,
+        order,
+    ]);
 
-};
 
+    // ============================================================
+    // FILTER
+    // ============================================================
 
+    const filterCases = ({
+        search,
+        status,
+    }) => {
 
-setCases(casesData);
+        let result = [...cases];
 
 
-setFilteredCases(casesData);
+        // SEARCH
 
+        if (search) {
 
-setPagination(paginationData);
+            const query =
+                search.toLowerCase().trim();
 
 
+            result = result.filter(
+                (item) => {
 
-}
+                    const searchableText = `
 
-catch(error){
+                        ${item.caseNumber || ""}
 
-console.log(
-    "Loading cases failed:",
-    error
-);
+                        ${item.subject || ""}
 
-}
+                        ${item.description || ""}
 
+                        ${item.customer?.firstName || ""}
 
-finally{
+                        ${item.customer?.lastName || ""}
 
-setLoading(false);
+                        ${item.customer?.email || ""}
 
-}
+                        ${item.customer?.organization?.name || ""}
 
+                    `.toLowerCase();
 
-};
 
+                    return searchableText.includes(
+                        query
+                    );
 
+                }
+            );
 
+        }
 
 
-useEffect(()=>{
+        // STATUS
 
-    loadCases();
+        if (
+            status &&
+            status !== "ALL"
+        ) {
 
-},[
-    page,
-    sortBy,
-    order
-]);
+            result = result.filter(
+                item => {
 
+                    if (
+                        status ===
+                        "AWAITING_CUSTOMER_RESPONSE"
+                    ) {
 
+                        return (
+                            item.status ===
+                                "AWAITING_CUSTOMER_RESPONSE" ||
+                            item.status ===
+                                "WAITING_CUSTOMER_FEEDBACK"
+                        );
 
+                    }
 
 
+                    return (
+                        item.status === status
+                    );
 
+                }
+            );
 
-// ===============================
-// FILTER
-// ===============================
+        }
 
 
-const filterCases = ({
-    search,
-    status
-})=>{
+        setFilteredCases(result);
 
+    };
 
-let result=[...cases];
 
+    // ============================================================
+    // SORTING
+    // ============================================================
 
+    const handleSorting = (
+        field,
+        direction
+    ) => {
 
-if(search){
+        setSortBy(field);
 
+        setOrder(direction);
 
-result=result.filter(item=>
+        setPage(1);
 
+    };
 
-`${item.caseNumber || ""}
 
-${item.subject || ""}
+    // ============================================================
+    // REFRESH
+    // ============================================================
 
-${item.customer?.firstName || ""}
+    const handleRefresh = async () => {
 
-${item.customer?.lastName || ""}`
+        await loadCases();
 
+    };
 
-.toLowerCase()
 
-.includes(
-    search.toLowerCase()
-)
+    // ============================================================
+    // RENDER
+    // ============================================================
 
-);
+    return (
 
+        <div
+            className="
+                min-h-screen
+                space-y-6
+                bg-slate-50/50
+                pb-8
+            "
+        >
 
-}
 
+            {/* =====================================================
+                PAGE HEADER
+            ===================================================== */}
 
+            <PageHeader
+                title="All support cases"
+                subtitle="Case Management"
+            />
 
-if(
-status &&
-status !== "ALL"
-){
 
 
-result=result.filter(
-item=>item.status===status
-);
+            {/* =====================================================
+                CASE STATISTICS
+            ===================================================== */}
 
+            <section>
 
-}
+                <CaseStats
+                    cases={cases}
+                />
 
+            </section>
 
 
-setFilteredCases(result);
 
+            {/* =====================================================
+                CASE HISTORY
+            ===================================================== */}
 
+            <section
+                className="
+                    overflow-hidden
+                    rounded-2xl
+                    border
+                    border-slate-200
+                    bg-white
+                "
+            >
 
-};
 
+                {/* =================================================
+                    HEADER
+                ================================================= */}
 
+                <div
+                    className="
+                        border-b
+                        border-slate-100
+                        px-5
+                        py-5
+                    "
+                >
 
+                    <div
+                        className="
+                            flex
+                            flex-col
+                            gap-4
+                            lg:flex-row
+                            lg:items-center
+                            lg:justify-between
+                        "
+                    >
 
+                        {/* LEFT */}
 
+                        <div
+                            className="
+                                flex
+                                min-w-0
+                                items-start
+                                gap-3
+                            "
+                        >
 
+                            <div
+                                className="
+                                    flex
+                                    h-9
+                                    w-9
+                                    shrink-0
+                                    items-center
+                                    justify-center
+                                    rounded-xl
+                                    bg-blue-50
+                                    text-blue-600
+                                "
+                            >
 
+                                <FileText
+                                    size={17}
+                                    strokeWidth={1.8}
+                                />
 
+                            </div>
 
-// ===============================
-// SORTING
-// ===============================
 
+                            <div>
 
-const handleSorting=(
+                                <div
+                                    className="
+                                        flex
+                                        items-center
+                                        gap-2
+                                    "
+                                >
 
-field,
+                                    <span
+                                        className="
+                                            text-[10px]
+                                            font-bold
+                                            uppercase
+                                            tracking-[0.14em]
+                                            text-blue-600
+                                        "
+                                    >
+                                        Case Management
+                                    </span>
 
-direction
 
-)=>{
+                                    <span
+                                        className="
+                                            h-1
+                                            w-1
+                                            rounded-full
+                                            bg-slate-300
+                                        "
+                                    />
 
 
-setSortBy(field);
+                                    <span
+                                        className="
+                                            text-[11px]
+                                            font-medium
+                                            text-slate-400
+                                        "
+                                    >
+                                        {cases.length}{" "}
+                                        {cases.length === 1
+                                            ? "case"
+                                            : "cases"}
+                                    </span>
 
-setOrder(direction);
+                                </div>
 
-setPage(1);
 
+                                <h2
+                                    className="
+                                        mt-1
+                                        text-base
+                                        font-semibold
+                                        text-slate-900
+                                    "
+                                >
+                                    Your case history
+                                </h2>
 
 
-};
+                                <p
+                                    className="
+                                        mt-1
+                                        text-xs
+                                        text-slate-400
+                                    "
+                                >
+                                    Review previously handled
+                                    cases and their latest status.
+                                </p>
 
+                            </div>
 
+                        </div>
 
 
 
+                        {/* RIGHT — REFRESH */}
 
+                        <button
+                            type="button"
+                            onClick={handleRefresh}
+                            disabled={loading}
+                            className="
+                                inline-flex
+                                h-9
+                                shrink-0
+                                items-center
+                                justify-center
+                                gap-2
+                                self-start
+                                rounded-lg
+                                bg-[#17345c]
+                                px-3.5
+                                text-xs
+                                font-semibold
+                                text-white
+                                shadow-sm
+                                transition-all
+                                duration-200
+                                hover:bg-[#102949]
+                                disabled:cursor-not-allowed
+                                disabled:opacity-60
+                                lg:self-center
+                            "
+                        >
 
-return(
+                            <RefreshCw
+                                size={14}
+                                strokeWidth={2}
+                                className={
+                                    loading
+                                        ? "animate-spin"
+                                        : ""
+                                }
+                            />
 
+                            Refresh
 
-<div
-className="
-space-y-6
-"
->
+                        </button>
 
+                    </div>
 
 
-<PageHeader
-title="Case Tracking Center"
-subtitle="Manage customer support cases"
-/>
+                    {/* =================================================
+                        SEARCH + FILTER + SORT
+                    ================================================= */}
 
+                    <div
+                        className="
+                            mt-5
+                            flex
+                            flex-col
+                            gap-2
+                            lg:flex-row
+                            lg:items-center
+                        "
+                    >
 
+                        {/* GLOBAL SEARCH */}
 
+                        <div
+                            className="
+                                min-w-0
+                                flex-1
+                            "
+                        >
 
-<CaseToolbar
+                            <CaseFilters
+                                onFilter={
+                                    filterCases
+                                }
+                            />
 
-refresh={loadCases}
+                        </div>
 
-cases={cases}
 
-/>
+                        {/* SORTING */}
 
+                        <div
+                            className="
+                                shrink-0
+                            "
+                        >
 
+                            <CaseSorting
+                                sortBy={
+                                    sortBy
+                                }
+                                order={
+                                    order
+                                }
+                                onSortChange={
+                                    handleSorting
+                                }
+                            />
 
+                        </div>
 
+                    </div>
 
-<CaseStats
+                </div>
 
-cases={cases}
 
-/>
 
+                {/* =================================================
+                    TABLE META
+                ================================================= */}
 
+                <div
+                    className="
+                        flex
+                        items-center
+                        justify-between
+                        border-b
+                        border-slate-100
+                        bg-slate-50/40
+                        px-5
+                        py-2.5
+                    "
+                >
 
+                    <div
+                        className="
+                            flex
+                            items-center
+                            gap-2
+                            text-[11px]
+                            font-medium
+                            text-slate-400
+                        "
+                    >
 
+                        <span
+                            className="
+                                h-1.5
+                                w-1.5
+                                rounded-full
+                                bg-emerald-500
+                            "
+                        />
 
+                        {filteredCases.length}{" "}
+                        {filteredCases.length === 1
+                            ? "case"
+                            : "cases"}
 
-<div className="flex flex-wrap items-center gap-3 rounded-lg border border-navy-100 bg-white p-4 shadow-sm">
-<CaseFilters
+                    </div>
 
-onFilter={filterCases}
 
-/>
+                    <div
+                        className="
+                            text-[11px]
+                            text-slate-400
+                        "
+                    >
 
-<CaseSorting
+                        {filteredCases.length} of{" "}
+                        {cases.length} shown
 
-sortBy={sortBy}
+                    </div>
 
-order={order}
+                </div>
 
-onSortChange={handleSorting}
 
-/>
-</div>
 
+                {/* =================================================
+                    TABLE
+                ================================================= */}
 
+                <div>
 
+                    {loading ? (
 
+                        <div
+                            className="
+                                flex
+                                min-h-[320px]
+                                items-center
+                                justify-center
+                                text-sm
+                                text-slate-400
+                            "
+                        >
 
+                            <div
+                                className="
+                                    flex
+                                    items-center
+                                    gap-2
+                                "
+                            >
 
+                                <RefreshCw
+                                    size={15}
+                                    className="animate-spin"
+                                />
 
+                                Loading cases...
 
-{
+                            </div>
 
-loading ?
+                        </div>
 
+                    ) : (
 
-<div
-className="
-bg-white
-p-10
-rounded-lg
-text-center
-"
->
+                        <CaseTable
+                            cases={
+                                filteredCases
+                            }
 
-Loading Cases...
+                            permissions={
+                                user?.permissions ||
+                                []
+                            }
 
+                            onView={(item) => {
 
-</div>
+                                setSelectedCase(
+                                    item
+                                );
 
+                                setDetails(
+                                    true
+                                );
 
+                            }}
 
-:
+                            onAssign={(item) => {
 
+                                setSelectedCase(
+                                    item
+                                );
 
-<CaseTable
+                                setAssign(
+                                    true
+                                );
 
+                            }}
 
-cases={filteredCases}
+                            onResolve={(item) => {
 
+                                setSelectedCase(
+                                    item
+                                );
 
+                                setShowResolve(
+                                    true
+                                );
 
-onView={(item)=>{
+                            }}
 
+                            onReassign={(item) => {
 
-setSelectedCase(item);
+                                setSelectedCase(
+                                    item
+                                );
 
-setDetails(true);
+                                setShowReassign(
+                                    true
+                                );
 
+                            }}
 
-}}
+                            onPriority={(item) => {
 
+                                setSelectedCase(
+                                    item
+                                );
 
+                                setPriority(
+                                    true
+                                );
 
-onAssign={(item)=>{
+                            }}
 
+                            onCancel={(item) => {
 
-setSelectedCase(item);
+                                setSelectedCase(
+                                    item
+                                );
 
-setAssign(true);
+                                setShowCancel(
+                                    true
+                                );
 
+                            }}
 
-}}
+                        />
 
+                    )}
 
+                </div>
 
-onResolve={(item)=>{
 
 
-setSelectedCase(item);
+                {/* =================================================
+                    PAGINATION
+                ================================================= */}
 
-setShowResolve(true);
+                <div
+                    className="
+                        border-t
+                        border-slate-100
+                        px-5
+                        py-3
+                    "
+                >
 
+                    <Pagination
+                        page={
+                            pagination.page
+                        }
 
-}}
+                        totalPages={
+                            pagination.totalPages
+                        }
 
+                        onPageChange={
+                            setPage
+                        }
+                    />
 
+                </div>
 
+            </section>
 
-onReassign={(item)=>{
 
 
-setSelectedCase(item);
+            {/* =====================================================
+                DETAILS DRAWER
+            ===================================================== */}
 
-setShowReassign(true);
+            {details && (
 
+                <CaseDetailsDrawer
+                    caseData={
+                        selectedCase
+                    }
 
-}}
+                    close={() =>
+                        setDetails(false)
+                    }
+                />
 
+            )}
 
 
 
-onPriority={(item)=>{
+            {/* =====================================================
+                ASSIGN
+            ===================================================== */}
 
+            {assign && (
 
-setSelectedCase(item);
+                <AssignStaffModal
+                    caseData={
+                        selectedCase
+                    }
 
-setPriority(true);
+                    refresh={async () => {
 
+                        await loadCases();
 
-}}
+                        notifyCaseDashboardRefresh();
 
+                    }}
 
+                    close={() =>
+                        setAssign(false)
+                    }
+                />
 
-/>
+            )}
 
 
-}
 
+            {/* =====================================================
+                RESOLVE
+            ===================================================== */}
 
+            {showResolve && (
 
+                <ResolveCaseModal
+                    caseData={
+                        selectedCase
+                    }
 
+                    refresh={async () => {
 
+                        await loadCases();
 
+                        notifyCaseDashboardRefresh();
 
+                    }}
 
+                    close={() =>
+                        setShowResolve(false)
+                    }
+                />
 
-<Pagination
+            )}
 
 
-page={pagination.page}
 
+            {/* =====================================================
+                REASSIGN
+            ===================================================== */}
 
-totalPages={pagination.totalPages}
+            {showReassign && (
 
+                <ReassignStaffModal
+                    caseData={
+                        selectedCase
+                    }
 
-onPageChange={setPage}
+                    refresh={async () => {
 
+                        await loadCases();
 
-/>
+                        notifyCaseDashboardRefresh();
 
+                    }}
 
+                    close={() =>
+                        setShowReassign(false)
+                    }
+                />
 
+            )}
 
 
 
+            {/* =====================================================
+                PRIORITY
+            ===================================================== */}
 
+            {priority && (
 
+                <ChangePriorityModal
+                    caseData={
+                        selectedCase
+                    }
 
-{
-details &&
+                    refresh={async () => {
 
-<CaseDetailsDrawer
+                        await loadCases();
 
+                        notifyCaseDashboardRefresh();
 
-caseData={selectedCase}
+                    }}
 
+                    close={() =>
+                        setPriority(false)
+                    }
+                />
 
-close={()=>setDetails(false)}
+            )}
 
+            {/* =====================================================
+                CANCEL
+            ===================================================== */}
 
-/>
+            {showCancel && (
 
-}
+                <CancelCaseModal
+                    caseData={
+                        selectedCase
+                    }
 
+                    refresh={async () => {
 
+                        await loadCases();
 
+                        notifyCaseDashboardRefresh();
 
+                    }}
 
+                    close={() =>
+                        setShowCancel(false)
+                    }
+                />
 
+            )}
 
+        </div>
 
-
-{
-assign &&
-
-<AssignStaffModal
-
-
-caseData={selectedCase}
-
-
-refresh={async()=>{
-
-
-await loadCases();
-
-
-notifyCaseDashboardRefresh();
-
-
-}}
-
-
-close={()=>setAssign(false)}
-
-
-/>
-
-}
-
-
-
-
-
-
-
-
-
-
-{
-showResolve &&
-
-
-<ResolveCaseModal
-
-
-caseData={selectedCase}
-
-
-refresh={async()=>{
-
-
-await loadCases();
-
-
-notifyCaseDashboardRefresh();
-
-
-}}
-
-
-close={()=>setShowResolve(false)}
-
-
-/>
-
-}
-
-
-
-
-
-
-
-
-
-{
-showReassign &&
-
-
-<ReassignStaffModal
-
-
-caseData={selectedCase}
-
-
-refresh={async()=>{
-
-
-await loadCases();
-
-
-notifyCaseDashboardRefresh();
-
-
-}}
-
-
-close={()=>setShowReassign(false)}
-
-
-/>
-
-}
-
-
-
-
-
-
-
-
-
-{
-priority &&
-
-
-<ChangePriorityModal
-
-
-caseData={selectedCase}
-
-
-refresh={async()=>{
-
-
-await loadCases();
-
-
-notifyCaseDashboardRefresh();
-
-
-}}
-
-
-close={()=>setPriority(false)}
-
-
-/>
-
-}
-
-
-
-
-
-
-
-
-</div>
-
-
-);
-
+    );
 
 }

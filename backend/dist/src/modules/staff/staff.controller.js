@@ -23,6 +23,13 @@ const register = async (req, res) => {
         });
         return;
     }
+    const cleanPhoneNumber = phoneNumber?.trim();
+    if (!/^\+251\d{9}$/.test(cleanPhoneNumber)) {
+        res.status(400).json({
+            error: "Phone number must start with +251 and contain 12 digits without the + sign.",
+        });
+        return;
+    }
     if (firstName.trim().length < 2) {
         res.status(400).json({ error: "First name parameter is too short." });
         return;
@@ -35,7 +42,7 @@ const register = async (req, res) => {
             email: email.trim().toLowerCase(),
             passwordPlain: password,
             gender,
-            phoneNumber
+            phoneNumber: cleanPhoneNumber
         });
         res.status(201).json({
             message: "Staff registration submitted successfully. Please check your inbox to verify your account.",
@@ -227,10 +234,7 @@ const getStaffFeedbackAnalytics = async (req, res, next) => {
         return res.status(200).json({
             success: true,
             data: {
-                agent: {
-                    id: staffExists.id,
-                    name: `${staffExists.firstName} ${staffExists.lastName || ""}`.trim()
-                },
+                agent: agentDisplay,
                 summary: {
                     averageRating,
                     totalReviewsCount

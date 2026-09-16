@@ -44,13 +44,20 @@ const customerCaseApi = {
 
     },
 
+    getPublicCaseForConfirmation(caseId){
+        return api.get(`/cases/public/${caseId}`);
+    },
 
-    createCase(data){
+
+    createCase(data, isStaffCase = false){
+        const url = isStaffCase ? "/cases/auth/create" : "/cases/create";
         return api.post(
-            "/cases/create",
+            url,
             data,
             {
-                headers: data instanceof FormData ? undefined : { "Content-Type": "application/json" }
+                headers: data instanceof FormData
+                    ? { "Content-Type": "multipart/form-data" }
+                    : { "Content-Type": "application/json" }
             }
         ).then((response)=>{
             notifyCaseRefresh();
@@ -125,11 +132,12 @@ export const {
     getCustomerCases,
     getMyCases,
     getCaseDetails,
+    getPublicCaseForConfirmation,
     createCase,
     closeCase,
     rejectCase,
     reopenCase,
     submitFeedback,
     markNotificationRead
-
+ 
 } = customerCaseApi;

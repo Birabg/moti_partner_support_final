@@ -404,7 +404,7 @@ model ServiceType {
 
 model CaseReport {
   id                   String              @id @default(uuid())
-  caseNumber           String              @unique @default(uuid())
+  caseNumber           String              @unique
   branchName           String              @db.VarChar(255)
   customerId           String
   customer             Customer            @relation(fields: [customerId], references: [id])

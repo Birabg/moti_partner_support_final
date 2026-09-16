@@ -46,27 +46,33 @@ const getCaseSummaryMetrics = async (req, res, next) => {
             throw new error_1.ForbiddenError("Access Denied: Authentication required.");
         }
         const scopeWhere = (0, exports.buildHierarchyWhereClause)(actor);
-        const [totalCases, openCases, inProgressCases, closedCases] = await database_1.prisma.$transaction([
-            database_1.prisma.caseReport.count({ where: scopeWhere }),
-            database_1.prisma.caseReport.count({ where: { ...scopeWhere, status: client_1.CaseStatus.OPEN } }),
-            database_1.prisma.caseReport.count({
-                where: {
-                    ...scopeWhere,
-                    OR: [
-                        { status: client_1.CaseStatus.IN_PROGRESS },
-                        { status: client_1.CaseStatus.ASSIGNED },
-                    ],
-                },
-            }),
-            database_1.prisma.caseReport.count({ where: { ...scopeWhere, status: client_1.CaseStatus.CLOSED } }),
-        ]);
+        // Derive per-status counts directly from the database in a single query so every
+        // status in the CaseStatus enum (including CANCELLED) is always represented
+        // instead of relying on a hand-maintained list of counters.
+        const grouped = await database_1.prisma.caseReport.groupBy({
+            by: ["status"],
+            where: scopeWhere,
+            _count: { _all: true },
+        });
+        const statusCounts = {};
+        for (const row of grouped) {
+            statusCounts[row.status] = row._count._all;
+        }
+        const getCount = (status) => statusCounts[status] ?? 0;
+        const totalCases = grouped.reduce((sum, row) => sum + row._count._all, 0);
         return res.status(200).json({
             success: true,
             data: {
                 total: totalCases,
-                open: openCases,
-                inProgress: inProgressCases,
-                closed: closedCases,
+                open: getCount(client_1.CaseStatus.OPEN),
+                // Existing application logic counts ASSIGNED cases as part of "in progress".
+                inProgress: getCount(client_1.CaseStatus.IN_PROGRESS) + getCount(client_1.CaseStatus.ASSIGNED),
+                pending: getCount(client_1.CaseStatus.PENDING),
+                escalated: getCount(client_1.CaseStatus.ESCALATED),
+                resolved: getCount(client_1.CaseStatus.RESOLVED),
+                customerConfirmation: getCount(client_1.CaseStatus.CUSTOMER_CONFIRMATION),
+                closed: getCount(client_1.CaseStatus.CLOSED),
+                cancelled: getCount(client_1.CaseStatus.CANCELLED),
             },
         });
     }

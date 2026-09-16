@@ -17,6 +17,8 @@ export const getPendingUsers = async () => {
     select: {
       id: true,
       firstName: true,
+      middleName: true,
+      lastName: true,
       email: true,
       gender: true,
       createdAt: true,
@@ -31,6 +33,8 @@ export const getPendingUsers = async () => {
     select: {
       id: true,
       firstName: true,
+      middleName: true,
+      lastName: true,
       email: true,
       phoneNumber: true,
       position: true,
@@ -42,9 +46,18 @@ export const getPendingUsers = async () => {
     },
   });
 
+  const formatFullName = (firstName?: string | null, middleName?: string | null, lastName?: string | null) =>
+    [firstName, middleName, lastName].filter(Boolean).join(" ").trim();
+
   return {
-    staff: pendingStaff,
-    customers: pendingCustomers,
+    staff: pendingStaff.map((staff) => ({
+      ...staff,
+      fullName: formatFullName(staff.firstName, staff.middleName, staff.lastName),
+    })),
+    customers: pendingCustomers.map((customer) => ({
+      ...customer,
+      fullName: formatFullName(customer.firstName, customer.middleName, customer.lastName),
+    })),
   };
 };
 

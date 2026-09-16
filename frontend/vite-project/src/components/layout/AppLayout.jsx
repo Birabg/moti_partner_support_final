@@ -9,26 +9,45 @@ import Header from "./Header";
 import "../../Dashboard.css";
 
 export default function AppLayout() {
-
     const { user } = useAuth();
     const [collapsed, setCollapsed] = useState(false);
 
     const isCustomer =
         user?.partyType === "CUSTOMER" ||
-        user?.isCustomer;
+        user?.isCustomer ||
+        user?.userType === "CUSTOMER";
+
+    const toggleSidebar = () => {
+        setCollapsed((value) => !value);
+    };
 
     return (
-        <div className="min-h-screen bg-slate-50">
+        <div className="min-h-screen bg-[#f5f7fa]">
             {isCustomer ? (
-                <CustomerSidebar collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
+                <CustomerSidebar
+                    collapsed={collapsed}
+                    onToggle={toggleSidebar}
+                />
             ) : (
-                <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
+                <Sidebar
+                    collapsed={collapsed}
+                    onToggle={toggleSidebar}
+                />
             )}
 
-            <div className={`flex min-h-screen flex-col transition-all duration-200 ${collapsed ? "pl-16" : "pl-64"}`}>
-                <Header collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
+            <div
+                className={`
+                    flex min-h-screen flex-col
+                    transition-[padding-left] duration-300 ease-out
+                    ${collapsed ? "pl-16" : "pl-64"}
+                `}
+            >
+                <Header
+                    collapsed={collapsed}
+                    onToggle={toggleSidebar}
+                />
 
-                <main className="flex-1 p-4 sm:p-6">
+                <main className="min-w-0 flex-1 px-4 pb-8 pt-5 sm:px-6 lg:px-7">
                     <Outlet />
                 </main>
             </div>

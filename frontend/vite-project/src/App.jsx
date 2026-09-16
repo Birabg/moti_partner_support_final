@@ -1,6 +1,7 @@
-﻿import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
+import { useAuth } from "./context/useAuth";
 
 import AppLayout from "./components/layout/AppLayout";
 
@@ -28,6 +29,8 @@ import CustomerDashboard from "./pages/customer/CustomerDashboard";
 import CreateCase from "./pages/customer/CreateCase";
 import MyCases from "./pages/customer/MyCases";
 import CaseDetails from "./pages/customer/CaseDetails";
+import CaseResolutionFeedbackPage from "./pages/customer/CaseResolutionFeedbackPage";
+import CaseResolutionRejectPage from "./pages/customer/CaseResolutionRejectPage";
 import CustomerFeedback from "./pages/customer/CustomerFeedback";
 import CustomerProfile from "./pages/customer/CustomerProfile";
 import CustomerNotifications from "./pages/customer/NotificationsPage";
@@ -62,7 +65,28 @@ import DashboardPage from "./pages/DashboardPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
+function getDefaultRouteForUser(user) {
+ if (!user) return "/login";
 
+ const isSystemAdmin = Boolean(user.isSAdmin || user.role === "SYSTEM_ADMIN" || user.userType === "SYSTEM_ADMIN");
+ const isDirector = Boolean(user.isDirector || user.role === "DIRECTOR" || user.userType === "DIRECTOR");
+ const isManager = Boolean(user.isManager || user.role === "MANAGER" || user.userType === "MANAGER" || user.managerType);
+ const isSupport = Boolean(user.isPSsupport || user.role === "PS_SUPPORT" || user.userType === "PS_SUPPORT");
+
+ if (isSystemAdmin) return "/dashboard";
+ if (isDirector) return "/director/dashboard";
+ if (isManager) return "/manager/dashboard";
+ if (isSupport) return "/support";
+ if (user.partyType === "CUSTOMER" || user.isCustomer) return "/customer/dashboard";
+ return "/dashboard";
+}
+
+function DefaultRouteRedirect() {
+ const { user } = useAuth();
+ const target = getDefaultRouteForUser(user);
+
+ return <Navigate to={target} replace />;
+}
 
 export default function App() {
 
@@ -77,14 +101,8 @@ return (
 
 <Route
 path="/"
-element={
-<Navigate
-to="/dashboard"
-replace
+element={<DefaultRouteRedirect />}
 />
-}
-/>
-
 
 <Route
 path="/login"
@@ -115,6 +133,15 @@ path="/registration-success"
 element={<RegistrationSuccessPage />}
 />
 
+<Route
+path="/cases/:id/feedback"
+element={<CaseResolutionFeedbackPage />}
+/>
+
+<Route
+path="/cases/:id/reopen"
+element={<CaseResolutionRejectPage />}
+/>
 
 <Route
 path="/unauthorized"
@@ -124,9 +151,7 @@ element={<UnauthorizedPage />}
 
 
 
-
 {/* ================= ALL AUTH USERS ================= */}
-
 
 <Route
 

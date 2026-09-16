@@ -5,22 +5,21 @@ const database_1 = require("../../../../config/database");
 const client_1 = require("../../../../../generated/prisma/client");
 const getCaseFeedbackAnalytics = async (req, res, next) => {
     try {
-        // Use correct relation filters and read rating/comment from the related Feedback record
-        const [totalClosedCases, casesWithFeedback] = await database_1.prisma.$transaction([
+        const eligibleStatuses = [client_1.CaseStatus.RESOLVED, client_1.CaseStatus.CUSTOMER_CONFIRMATION, client_1.CaseStatus.CLOSED];
+        const [totalEligibleCases, casesWithFeedback] = await database_1.prisma.$transaction([
             database_1.prisma.caseReport.count({
-                where: { status: client_1.CaseStatus.CLOSED }
+                where: { status: { in: eligibleStatuses } }
             }),
             database_1.prisma.caseReport.count({
                 where: {
-                    status: client_1.CaseStatus.CLOSED,
-                    // feedback is a one-to-one optional relation; use `feedback: { isNot: null }` to detect presence
+                    status: { in: eligibleStatuses },
                     feedback: { isNot: null }
                 }
             })
         ]);
         const trackingRecords = await database_1.prisma.caseReport.findMany({
             where: {
-                status: client_1.CaseStatus.CLOSED,
+                status: { in: eligibleStatuses },
                 feedback: { isNot: null }
             },
             select: {
@@ -62,8 +61,8 @@ const getCaseFeedbackAnalytics = async (req, res, next) => {
                 comment: record.feedback?.comment || ""
             };
         });
-        const feedbackSubmissionRate = totalClosedCases > 0
-            ? parseFloat(((casesWithFeedback / totalClosedCases) * 100).toFixed(2))
+        const feedbackSubmissionRate = totalEligibleCases > 0
+            ? parseFloat(((casesWithFeedback / totalEligibleCases) * 100).toFixed(2))
             : 0;
         const averageCustomerScore = scoredReviewsCount > 0
             ? parseFloat((totalRatingSum / scoredReviewsCount).toFixed(2))
@@ -72,7 +71,7 @@ const getCaseFeedbackAnalytics = async (req, res, next) => {
             success: true,
             data: {
                 summary: {
-                    totalClosedCases,
+                    totalClosedCases: totalEligibleCases,
                     casesWithFeedbackReceived: casesWithFeedback,
                     feedbackSubmissionRatePercentage: feedbackSubmissionRate,
                     averageSatisfactionScore: averageCustomerScore
@@ -86,11 +85,16 @@ const getCaseFeedbackAnalytics = async (req, res, next) => {
         if (error?.code === 'P2022' || /Unknown argument `customerFeedback`/.test(error?.message || '')) {
             try {
                 console.warn('[getCaseFeedbackAnalytics] primary query failed, returning best-effort feedback data:', error?.message || error);
-                const totalClosedCases = await database_1.prisma.caseReport.count({ where: { status: client_1.CaseStatus.CLOSED } });
-                // Can't reliably detect feedback presence if fields absent from DB/schema; return 0 for counts and best-effort list
-                const casesWithFeedback = 0;
+                const eligibleStatuses = [client_1.CaseStatus.RESOLVED, client_1.CaseStatus.CUSTOMER_CONFIRMATION, client_1.CaseStatus.CLOSED];
+                const totalClosedCases = await database_1.prisma.caseReport.count({ where: { status: { in: eligibleStatuses } } });
+                const casesWithFeedback = await database_1.prisma.caseReport.count({
+                    where: {
+                        status: { in: eligibleStatuses },
+                        feedback: { isNot: null },
+                    },
+                });
                 const trackingRecords = await database_1.prisma.caseReport.findMany({
-                    where: { status: client_1.CaseStatus.CLOSED },
+                    where: { status: { in: eligibleStatuses }, feedback: { isNot: null } },
                     select: {
                         id: true,
                         caseNumber: true,
@@ -125,7 +129,7 @@ const getCaseFeedbackAnalytics = async (req, res, next) => {
                     success: true,
                     data: {
                         summary: {
-                            totalClosedCases,
+                            totalClosedCases: totalClosedCases,
                             casesWithFeedbackReceived: casesWithFeedback,
                             feedbackSubmissionRatePercentage: feedbackSubmissionRate,
                             averageSatisfactionScore: averageCustomerScore

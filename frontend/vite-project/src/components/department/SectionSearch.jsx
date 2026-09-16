@@ -1,25 +1,51 @@
 import { FaSearch } from "react-icons/fa";
 
 export default function SectionSearch({
-  search,
-  setSearch,
+    search,
+    setSearch,
 }) {
+    return (
+        <div className="relative w-full">
+            <FaSearch
+                className="
+                    pointer-events-none
+                    absolute
+                    left-3.5
+                    top-1/2
+                    -translate-y-1/2
+                    text-[13px]
+                    text-slate-400
+                "
+            />
 
-  return (
-    <div className="relative">
+            <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search sections..."
+                className="
+                    w-full
+                    h-11
+                    rounded-xl
+                    border border-slate-200
+                    bg-white
+                    pl-10
+                    pr-4
+                    text-sm
+                    font-medium
+                    text-slate-800
+                    placeholder:text-slate-400
+                    shadow-[0_1px_2px_rgba(15,23,42,0.02)]
+                    outline-none
+                    transition-all duration-200
 
-      <FaSearch
-        className="absolute left-4 top-4 text-gray-400"
-      />
+                    hover:border-slate-300
 
-      <input
-        type="text"
-        value={search}
-        onChange={(e)=>setSearch(e.target.value)}
-        placeholder="Search section..."
-        className="w-full border rounded-xl py-3 pl-11 pr-4 outline-none focus:ring-2 focus:ring-navy-500"
-      />
-
-    </div>
-  );
+                    focus:border-blue-400
+                    focus:ring-4
+                    focus:ring-blue-500/10
+                "
+            />
+        </div>
+    );
 }

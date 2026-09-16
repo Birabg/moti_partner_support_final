@@ -5,15 +5,15 @@ import { CaseStatus } from "../../../../../generated/prisma/client";
 
 export const getCaseFeedbackAnalytics = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Use correct relation filters and read rating/comment from the related Feedback record
-    const [totalClosedCases, casesWithFeedback] = await prisma.$transaction([
+    const eligibleStatuses = [CaseStatus.RESOLVED, CaseStatus.CUSTOMER_CONFIRMATION, CaseStatus.CLOSED];
+
+    const [totalEligibleCases, casesWithFeedback] = await prisma.$transaction([
       prisma.caseReport.count({
-        where: { status: CaseStatus.CLOSED }
+        where: { status: { in: eligibleStatuses } }
       }),
       prisma.caseReport.count({
         where: {
-          status: CaseStatus.CLOSED,
-          // feedback is a one-to-one optional relation; use `feedback: { isNot: null }` to detect presence
+          status: { in: eligibleStatuses },
           feedback: { isNot: null } as any
         }
       })
@@ -21,7 +21,7 @@ export const getCaseFeedbackAnalytics = async (req: Request, res: Response, next
 
     const trackingRecords = await prisma.caseReport.findMany({
       where: {
-        status: CaseStatus.CLOSED,
+        status: { in: eligibleStatuses },
         feedback: { isNot: null } as any
       },
       select: {
@@ -67,22 +67,22 @@ export const getCaseFeedbackAnalytics = async (req: Request, res: Response, next
       };
     });
 
-    const feedbackSubmissionRate = totalClosedCases > 0 
-      ? parseFloat(((casesWithFeedback / totalClosedCases) * 100).toFixed(2)) 
+    const feedbackSubmissionRate = totalEligibleCases > 0
+      ? parseFloat(((casesWithFeedback / totalEligibleCases) * 100).toFixed(2))
       : 0;
 
-    const averageCustomerScore = scoredReviewsCount > 0 
-      ? parseFloat((totalRatingSum / scoredReviewsCount).toFixed(2)) 
+    const averageCustomerScore = scoredReviewsCount > 0
+      ? parseFloat((totalRatingSum / scoredReviewsCount).toFixed(2))
       : null;
 
     return res.status(200).json({
       success: true,
       data: {
         summary: {
-          totalClosedCases,
+          totalClosedCases: totalEligibleCases,
           casesWithFeedbackReceived: casesWithFeedback,
           feedbackSubmissionRatePercentage: feedbackSubmissionRate,
-          averageSatisfactionScore: averageCustomerScore 
+          averageSatisfactionScore: averageCustomerScore
         },
         reviews: feedbackList
       }
@@ -93,13 +93,18 @@ export const getCaseFeedbackAnalytics = async (req: Request, res: Response, next
       try {
         console.warn('[getCaseFeedbackAnalytics] primary query failed, returning best-effort feedback data:', error?.message || error);
 
-        const totalClosedCases = await prisma.caseReport.count({ where: { status: CaseStatus.CLOSED } });
+        const eligibleStatuses = [CaseStatus.RESOLVED, CaseStatus.CUSTOMER_CONFIRMATION, CaseStatus.CLOSED];
+        const totalClosedCases = await prisma.caseReport.count({ where: { status: { in: eligibleStatuses } } });
 
-        // Can't reliably detect feedback presence if fields absent from DB/schema; return 0 for counts and best-effort list
-        const casesWithFeedback = 0;
+        const casesWithFeedback = await prisma.caseReport.count({
+          where: {
+            status: { in: eligibleStatuses },
+            feedback: { isNot: null } as any,
+          },
+        });
 
         const trackingRecords = await prisma.caseReport.findMany({
-          where: { status: CaseStatus.CLOSED },
+          where: { status: { in: eligibleStatuses }, feedback: { isNot: null } as any },
           select: {
             id: true,
             caseNumber: true,
@@ -139,7 +144,7 @@ export const getCaseFeedbackAnalytics = async (req: Request, res: Response, next
           success: true,
           data: {
             summary: {
-              totalClosedCases,
+              totalClosedCases: totalClosedCases,
               casesWithFeedbackReceived: casesWithFeedback,
               feedbackSubmissionRatePercentage: feedbackSubmissionRate,
               averageSatisfactionScore: averageCustomerScore

@@ -5,6 +5,7 @@ interface StatusEmailInput {
   customerEmail: string;
   customerName: string;
   caseNumber: string;
+  caseId?: string;
   subjectLine: string;
   newStatus: string;
 }
@@ -48,17 +49,42 @@ export const getTransporter = () => {
 
 export const sendVerificationEmail = async (
   toEmail: string,
-  firstName: string,
-  middleName: string,
-  rawToken: string,
-  userType: "CUSTOMER" | "STAFF",
+  recipientName: string,
+  rawTokenOrBaseUrl?: string,
+  userTypeOrToken?: "CUSTOMER" | "STAFF" | string,
+  maybeUserType?: "CUSTOMER" | "STAFF" | string,
 ): Promise<boolean> => {
-  const baseUrl = ENV.FRONTEND_URL || "http://localhost:3000";
+  let rawToken = "";
+  let userType: "CUSTOMER" | "STAFF" = "CUSTOMER";
+  let baseUrl = ENV.FRONTEND_URL || "http://localhost:3000";
+
+  if (
+    typeof rawTokenOrBaseUrl === "string" &&
+    /^https?:\/\//.test(rawTokenOrBaseUrl) &&
+    typeof userTypeOrToken === "string" &&
+    maybeUserType
+  ) {
+    baseUrl = rawTokenOrBaseUrl;
+    rawToken = userTypeOrToken;
+    userType = maybeUserType.toUpperCase() as "CUSTOMER" | "STAFF";
+  } else if (
+    typeof userTypeOrToken === "string" &&
+    (userTypeOrToken.toUpperCase() === "CUSTOMER" || userTypeOrToken.toUpperCase() === "STAFF")
+  ) {
+    userType = userTypeOrToken.toUpperCase() as "CUSTOMER" | "STAFF";
+    rawToken = typeof rawTokenOrBaseUrl === "string" ? rawTokenOrBaseUrl : "";
+  } else {
+    rawToken = typeof rawTokenOrBaseUrl === "string" ? rawTokenOrBaseUrl : "";
+    userType = typeof maybeUserType === "string" && (maybeUserType.toUpperCase() === "CUSTOMER" || maybeUserType.toUpperCase() === "STAFF")
+      ? maybeUserType.toUpperCase() as "CUSTOMER" | "STAFF"
+      : "CUSTOMER";
+  }
+
   const verificationUrl = `${baseUrl}/verify-email?token=${rawToken}&type=${userType.toLowerCase()}`;
 
   const htmlContent = `
     <div style="font-family: sans-serif; color: #334155; line-height: 1.6; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <p style="font-size: 16px;">Hello ${firstName} ${middleName},</p>
+      <p style="font-size: 16px;">Hello ${recipientName},</p>
       <p style="font-size: 14px;">Thank you for registering. To complete your setup and activate your account email address, please click the verification button below within the next 24 hours:</p>
       
       <table border="0" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
@@ -113,10 +139,15 @@ export const sendVerificationEmail = async (
 };
 
 export const sendStatusUpdateEmail = async (input: StatusEmailInput) => {
-  const { customerEmail, customerName, caseNumber, subjectLine, newStatus } =
+  const { customerEmail, customerName, caseNumber, caseId, subjectLine, newStatus } =
     input;
 
+  const FRONTEND_BASE_URL = ENV.FRONTEND_URL || "http://localhost:3000";
+  const decisionLink = caseId ? `${FRONTEND_BASE_URL}/cases/${caseId}/feedback` : `${FRONTEND_BASE_URL}/track/${caseNumber}`;
+  const rejectLink = caseId ? `${FRONTEND_BASE_URL}/cases/${caseId}/reopen` : `${FRONTEND_BASE_URL}/track/${caseNumber}`;
   const frontendTrackingUrl = `${process.env.FRONTEND_APP_URL || "http://localhost:3000"}/track/${caseNumber}`;
+
+  const isResolutionDecisionEmail = newStatus === "RESOLVED" || newStatus === "CUSTOMER_CONFIRMATION";
 
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
@@ -128,13 +159,20 @@ export const sendStatusUpdateEmail = async (input: StatusEmailInput) => {
         <strong>New Status:</strong> <span style="color: #2980b9; font-weight: bold;">${newStatus}</span>
       </div>
 
-      <p>You can follow the full lifecycle timeline, status updates, and milestones anytime:</p>
+      ${isResolutionDecisionEmail ? `
+        <p>Please confirm whether this resolution is acceptable:</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${decisionLink}" style="background-color: #38a169; color: white; padding: 12px 20px; text-decoration: none; font-weight: bold; border-radius: 4px; display: inline-block; margin-right: 10px; margin-bottom: 10px;">ACCEPT</a>
+          <a href="${rejectLink}" style="background-color: #e53e3e; color: white; padding: 12px 20px; text-decoration: none; font-weight: bold; border-radius: 4px; display: inline-block; margin-bottom: 10px;">REJECT</a>
+        </div>
+      ` : `
+        <p>You can follow the full lifecycle timeline, status updates, and milestones anytime:</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${frontendTrackingUrl}" style="background-color: #3498db; color: white; padding: 12px 25px; text-decoration: none; font-weight: bold; border-radius: 4px; display: inline-block;">Track Case Progress</a>
+        </div>
+      `}
       
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="${frontendTrackingUrl}" style="background-color: #3498db; color: white; padding: 12px 25px; text-decoration: none; font-weight: bold; border-radius: 4px; display: inline-block;">Track Case Progress</a>
-      </div>
-      
-      <p style="font-size: 12px; color: #7f8c8d; margin-top: 30px;">If the button above does not load, copy and paste this address into your browser window:<br>${frontendTrackingUrl}</p>
+      <p style="font-size: 12px; color: #7f8c8d; margin-top: 30px;">If the button above does not load, copy and paste this address into your browser window:<br>${isResolutionDecisionEmail ? `${decisionLink} / ${rejectLink}` : frontendTrackingUrl}</p>
     </div>
   `;
 
@@ -185,10 +223,10 @@ export const triggerResolutionEmail = async (caseReport: any): Promise<void> => 
       
       <div style="margin-bottom: 24px;">
         <a href="${acceptAndRateLink}" style="background-color: #38a169; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; margin-right: 12px; margin-bottom: 12px;">
-          Accept & Close Case
+          ACCEPT
         </a>
         <a href="${rejectAndReopenLink}" style="background-color: #e53e3e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; margin-bottom: 12px;">
-          Reject & Reopen
+          REJECT
         </a>
       </div>
 
@@ -210,6 +248,39 @@ export const triggerResolutionEmail = async (caseReport: any): Promise<void> => 
 };
 
 
+export const triggerResolutionReminderEmail = async (caseReport: any): Promise<void> => {
+  const customerEmail = caseReport.customer?.email;
+  const customerName = caseReport.customer?.firstName || "Valued Customer";
+
+  if (!customerEmail) return;
+
+  const FRONTEND_BASE_URL = ENV.FRONTEND_URL || "http://localhost:3000";
+  const acceptLink = `${FRONTEND_BASE_URL}/cases/${caseReport.id}/feedback`;
+  const rejectLink = `${FRONTEND_BASE_URL}/cases/${caseReport.id}/reopen`;
+
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+      <h2 style="color: #2b6cb0; margin-bottom: 16px;">Reminder: Please Confirm the Resolution</h2>
+      <p>Hello ${customerName},</p>
+      <p>We resolved your case regarding <strong>"${caseReport.subject}"</strong> and are still waiting for your response.</p>
+      <p>Please review the resolution summary and choose one of the options below:</p>
+      <div style="margin: 24px 0;">
+        <a href="${acceptLink}" style="background-color: #38a169; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; margin-right: 12px; margin-bottom: 12px;">ACCEPT</a>
+        <a href="${rejectLink}" style="background-color: #e53e3e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; margin-bottom: 12px;">REJECT</a>
+      </div>
+      <p style="font-size: 12px; color: #718096; line-height: 1.5;">If you do not respond, the system will automatically close the case after the remaining confirmation window.</p>
+    </div>
+  `;
+
+  const transporter = getTransporter();
+  await transporter.sendMail({
+    from: ENV.SMTP_FROM || '"MOTI Support System"',
+    to: customerEmail,
+    subject: `Reminder: Confirm resolution for case #${caseReport.caseNumber}`,
+    html,
+  });
+};
+
 export const triggerAutoCloseEmail = async (caseReport: any): Promise<void> => {
   const customerEmail = caseReport.customer?.email;
   const customerName = caseReport.customer?.firstName || "Valued Customer";
@@ -222,8 +293,8 @@ export const triggerAutoCloseEmail = async (caseReport: any): Promise<void> => {
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
       <h2 style="color: #4a5568; margin-bottom: 16px;">Case Closed Due to Inactivity</h2>
       <p>Hello ${customerName},</p>
-      <p>Your support case regarding <strong>"${caseReport.subject}"</strong> was marked as resolved 3 days ago.</p>
-      <p>Because we didn't receive a confirmation or rejection response from you, We have closed the case</p>
+      <p>We resolved your case regarding <strong>"${caseReport.subject}"</strong>, but we did not receive your response.</p>
+      <p>Since you did not take any action, we closed the case.</p>
       
       <div style="background-color: #fffaf0; border-left: 4px solid #dd6b20; padding: 16px; margin: 20px 0; border-radius: 0 4px 4px 0;">
         <p style="margin: 0; color: #dd6b20; font-weight: bold;">Need to continue working on this issue?</p>

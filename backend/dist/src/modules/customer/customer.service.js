@@ -9,7 +9,6 @@ const bcrypt_1 = require("../../utils/bcrypt");
 const email_1 = require("../../utils/email");
 const crypto_1 = __importDefault(require("crypto"));
 const error_1 = require("../../utils/error");
-const env_1 = require("../../config/env");
 const RegisterCustomer = async (data) => {
     /*const organization = await prisma.organization.findUnique({
       where: { id: data.organizationId },
@@ -118,7 +117,7 @@ const RegisterCustomer = async (data) => {
             rawToken,
         };
     });
-    const deliverySuccess = await (0, email_1.sendVerificationEmail)(txResult.email, `${txResult.firstName} ${txResult.middleName}`, env_1.ENV.FRONTEND_URL ?? "", txResult.rawToken, "CUSTOMER");
+    const deliverySuccess = await (0, email_1.sendVerificationEmail)(txResult.email, `${txResult.firstName} ${txResult.middleName}`.trim(), txResult.rawToken, "CUSTOMER");
     await database_1.prisma.emailLog.update({
         where: { id: txResult.emailLogId },
         data: {
@@ -201,8 +200,7 @@ const resendCustomerVerification = async (email) => {
             middleName: customer.middleName,
         };
     });
-    const deliverySuccess = await (0, email_1.sendVerificationEmail)(txResult.email, txResult.firstName && txResult.middleName
-        && `${txResult.firstName} ${txResult.middleName}`, env_1.ENV.FRONTEND_URL ?? "", txResult.rawToken, "CUSTOMER");
+    const deliverySuccess = await (0, email_1.sendVerificationEmail)(txResult.email, [txResult.firstName, txResult.middleName, txResult.lastName].filter(Boolean).join(" ").trim(), txResult.rawToken, "CUSTOMER");
     await database_1.prisma.emailLog.update({
         where: { id: txResult.emailLogId },
         data: {

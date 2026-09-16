@@ -142,48 +142,10 @@ export async function updateStatus(
       sectionId: (updated as any).sectionId,
     });
 
-    // send dedicated resolution email with summary
     try {
       await triggerResolutionEmail(updated);
     } catch (e) {
       console.error("Resolution email error:", e);
-    }
-
-    // Automatically mark case as waiting for customer confirmation
-    try {
-      const SYSTEM_BOT_ID = "00000000-0000-0000-0000-000000000000";
-      await prisma.$transaction(async (tx) => {
-        await tx.caseReport.update({ where: { id: updated.id }, data: { status: CaseStatus.CUSTOMER_CONFIRMATION, updatedById: SYSTEM_BOT_ID } });
-        await createStatusHistory(tx, {
-          caseReportId: updated.id,
-          changedById: SYSTEM_BOT_ID,
-          actorType: "SYSTEM",
-          actorId: null,
-          fromStatus: CaseStatus.RESOLVED,
-          toStatus: CaseStatus.CUSTOMER_CONFIRMATION,
-          oldPriority: (updated as any).priority,
-          newPriority: (updated as any).priority,
-          oldAgentId: (updated as any).assignedSupportId,
-          newAgentId: (updated as any).assignedSupportId,
-        });
-      });
-
-      // notify customer that confirmation is required
-      try {
-        if (updated.customer?.email) {
-          await sendStatusUpdateEmail({
-            customerEmail: updated.customer.email,
-            customerName: `${updated.customer.firstName} ${updated.customer.lastName || ''}`.trim(),
-            caseNumber: (updated as any).caseNumber,
-            subjectLine: (updated as any).subject,
-            newStatus: CaseStatus.CUSTOMER_CONFIRMATION,
-          });
-        }
-      } catch (notifyErr) {
-        console.error('Customer confirmation notification error:', notifyErr);
-      }
-    } catch (autoErr) {
-      console.error('Auto transition to CUSTOMER_CONFIRMATION failed:', autoErr);
     }
   }
 
@@ -206,6 +168,7 @@ export async function updateStatus(
           customerEmail: updated.customer.email,
           customerName: `${updated.customer.firstName} ${updated.customer.lastName || ''}`.trim(),
           caseNumber: (updated as any).caseNumber,
+          caseId: updated.id,
           subjectLine: (updated as any).subject,
           newStatus: newStatus,
         });
@@ -222,6 +185,7 @@ export async function updateStatus(
         customerEmail: updated.customer.email,
         customerName: `${updated.customer.firstName} ${updated.customer.lastName || ''}`.trim(),
         caseNumber: (updated as any).caseNumber,
+        caseId: updated.id,
         subjectLine: (updated as any).subject,
         newStatus: newStatus,
       });

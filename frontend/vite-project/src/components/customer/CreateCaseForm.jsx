@@ -17,6 +17,14 @@ export default function CreateCaseForm() {
     const [subcategories, setSubcategories] = useState([]);
 
     const [loading, setLoading] = useState(false);
+    const [attachments, setAttachments] = useState([]);
+
+    const MAX_ATTACHMENTS = 5;
+    const MAX_ATTACHMENT_SIZE = 50 * 1024 * 1024;
+
+    const removeAttachment = (indexToRemove) => {
+        setAttachments((currentFiles) => currentFiles.filter((_, index) => index !== indexToRemove));
+    };
 
     const [form, setForm] = useState({
 
@@ -27,8 +35,6 @@ export default function CreateCaseForm() {
         productCategoryId: "",
 
         productSubcategoryId: "",
-
-        attachment: null,
 
     });
 
@@ -88,13 +94,24 @@ export default function CreateCaseForm() {
 
     function changeFile(e) {
 
-        setForm({
+        const selectedFiles = Array.from(e.target.files || []);
+        const nextFiles = [...attachments, ...selectedFiles].slice(0, MAX_ATTACHMENTS);
 
-            ...form,
+        if (nextFiles.length > MAX_ATTACHMENTS || selectedFiles.length + attachments.length > MAX_ATTACHMENTS) {
+            alert(`You can attach up to ${MAX_ATTACHMENTS} files per case.`);
+            e.target.value = "";
+            return;
+        }
 
-            attachment: e.target.files[0],
+        const oversizedFile = nextFiles.find(file => file.size > MAX_ATTACHMENT_SIZE);
+        if (oversizedFile) {
+            alert("Each attachment must be 50 MB or smaller.");
+            e.target.value = "";
+            return;
+        }
 
-        });
+        setAttachments(nextFiles);
+        e.target.value = "";
 
     }
 
@@ -122,12 +139,11 @@ export default function CreateCaseForm() {
                 form.productSubcategoryId
             );
 
-            if (form.attachment) {
+            if (attachments.length > 0) {
 
-                data.append(
-                    "attachment",
-                    form.attachment
-                );
+                attachments.forEach((file) => {
+                    data.append("attachments", file);
+                });
 
             }
 
@@ -145,9 +161,8 @@ export default function CreateCaseForm() {
 
                 productSubcategoryId: "",
 
-                attachment: null,
-
             });
+            setAttachments([]);
 
         } catch (err) {
 
@@ -357,12 +372,33 @@ export default function CreateCaseForm() {
                 <input
 
                     type="file"
+                    multiple
 
                     onChange={changeFile}
 
                     className="w-full"
 
                 />
+
+                {attachments.length > 0 && (
+                    <div className="mt-3 space-y-2 text-sm text-slate-600">
+                        <div>{attachments.length} file{attachments.length > 1 ? "s" : ""} selected</div>
+                        <ul className="space-y-2">
+                            {attachments.map((file, index) => (
+                                <li key={`${file.name}-${index}`} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                                    <span className="truncate">{file.name}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => removeAttachment(index)}
+                                        className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-600 hover:border-red-300 hover:text-red-600"
+                                    >
+                                        Remove
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
 
             </div>
 

@@ -11,71 +11,47 @@ export default function VerifyEmailPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
 
-  const [message, setMessage] = useState(
-    "Verifying your email..."
-  );
+  const [message, setMessage] = useState("Verifying your email...");
 
   useEffect(() => {
     const verify = async () => {
       const token = params.get("token");
-      const type = params.get("type");
-
-      console.log(
-        "Verification Token:",
-        token
-      );
-
-      console.log(
-        "Verification Type:",
-        type
-      );
+      const rawType = params.get("type");
 
       if (!token) {
-        setMessage(
-          "Invalid verification link."
-        );
+        setMessage("Invalid verification link.");
         return;
       }
 
+      const normalizedType = rawType?.toLowerCase();
+
       try {
-        /*
-          TEMPORARY FIX
+        let response;
 
-          Since the backend is currently generating:
-          ?type=http://localhost:5173
-
-          We will treat EVERYTHING except "customer"
-          as a staff verification.
-        */
-
-        const normalizedType =
-          type?.toLowerCase();
-
-        if (
-          normalizedType ===
-          "customer"
-        ) {
-          await CustomerApi.verifyEmail(
-            token
-          );
+        if (normalizedType === "customer") {
+          response = await CustomerApi.verifyEmail(token);
+        } else if (normalizedType === "staff") {
+          response = await StaffApi.verifyEmail(token);
         } else {
-          await StaffApi.verifyEmail(
-            token
-          );
+          try {
+            response = await CustomerApi.verifyEmail(token);
+          } catch {
+            response = await StaffApi.verifyEmail(token);
+          }
         }
 
-        setMessage(
-          "Thank you for your patience. Your email has been verified successfully and is now awaiting System Administrator approval."
-        );
-      } catch (error) {
-        console.log(
-          "Verification Error:",
-          error
-        );
+        const successMessage =
+          response?.data?.message ||
+          "Thank you for your patience. Your email has been verified successfully and is now awaiting System Administrator approval.";
 
-        setMessage(
-          "Verification failed or the link has expired. Please request a new verification email or contact support."
-        );
+        setMessage(successMessage);
+      } catch (error) {
+        const apiError =
+          error?.response?.data?.message ||
+          error?.response?.data?.error ||
+          "Verification failed or the link has expired. Please request a new verification email or contact support.";
+
+        setMessage(apiError);
       }
     };
 

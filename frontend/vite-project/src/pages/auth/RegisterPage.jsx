@@ -10,6 +10,30 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa'
 import { CheckCircle2 } from 'lucide-react'
 import axios from "axios";
 
+const normalizePhoneNumber = (value = '') => {
+  const digitsOnly = (value || '').replace(/\D/g, '')
+
+  if (!digitsOnly) return ''
+
+  if (digitsOnly.startsWith('251')) {
+    const trimmed = digitsOnly.slice(0, 12)
+    return `+${trimmed}`
+  }
+
+  if (digitsOnly.startsWith('0')) {
+    const trimmed = digitsOnly.slice(1, 10)
+    return `+251${trimmed}`
+  }
+
+  const trimmed = digitsOnly.slice(0, 9)
+  return `+251${trimmed}`
+}
+
+const validatePhoneNumber = (value = '') => {
+  const normalized = normalizePhoneNumber(value)
+  return /^\+251\d{9}$/.test(normalized)
+}
+
 // -----------------------------------------------------------------------
 // Customer registration form
 // -----------------------------------------------------------------------
@@ -134,6 +158,20 @@ function CustomerRegisterForm() {
     }
   }
 
+  function updatePhone(field) {
+    return (e) => {
+      const nextValue = normalizePhoneNumber(e.target.value)
+      setForm({ ...form, [field]: nextValue })
+      if (fieldErrors[field]) {
+        setFieldErrors((prev) => {
+          const next = { ...prev }
+          delete next[field]
+          return next
+        })
+      }
+    }
+  }
+
   function validate() {
     const errors = {}
 
@@ -143,7 +181,13 @@ function CustomerRegisterForm() {
     if (!form.organizationId) errors.organizationId = 'Please select your organization.'
     if (!form.position.trim()) errors.position = 'Position is required.'
     if (!form.gender) errors.gender = 'Please select your gender.'
-    if (!form.phoneNumber.trim()) errors.phoneNumber = 'Phone number is required.'
+
+    const phoneValue = form.phoneNumber.trim()
+    if (!phoneValue) {
+      errors.phoneNumber = 'Phone number is required.'
+    } else if (!validatePhoneNumber(phoneValue)) {
+      errors.phoneNumber = 'Phone number must start with +251 and contain 12 digits without the + sign.'
+    }
 
     if (!form.password) {
       errors.password = 'Password is required.'
@@ -281,18 +325,11 @@ function CustomerRegisterForm() {
               {organizationsLoading ? 'Loading organizations...' : organizations.length ? 'Select Organization' : 'No active organizations available'}
             </option>
 
-            {!organizationsLoading && organizations.map((organization) => {
-              const domains = Array.isArray(organization?.emailDomains) && organization.emailDomains.length
-                ? organization.emailDomains.map((domain) => domain?.domain).filter(Boolean)
-                : []
-              const domainLabel = domains.length ? domains.join(', ') : 'No domain configured'
-
-              return (
-                <option key={organization.id} value={organization.id}>
-                  {organization.name} {domainLabel ? `(${domainLabel})` : ''}
-                </option>
-              )
-            })}
+            {!organizationsLoading && organizations.map((organization) => (
+             <option key={organization.id} value={organization.id}>
+               {organization.name}
+             </option>
+            ))}
           </Select>
           </div>
 
@@ -365,9 +402,9 @@ function CustomerRegisterForm() {
           id="phoneNumber"
           label="Phone Number"
           required
-          placeholder="+251 9xx xxx xxx"
+          placeholder="+251912345678"
           value={form.phoneNumber}
-          onChange={update('phoneNumber')}
+          onChange={updatePhone('phoneNumber')}
           error={fieldErrors.phoneNumber}
         />
 
@@ -465,6 +502,20 @@ function StaffRegisterForm() {
     }
   }
 
+  function updatePhone(field) {
+    return (e) => {
+      const nextValue = normalizePhoneNumber(e.target.value)
+      setForm({ ...form, [field]: nextValue })
+      if (fieldErrors[field]) {
+        setFieldErrors((prev) => {
+          const next = { ...prev }
+          delete next[field]
+          return next
+        })
+      }
+    }
+  }
+
   function validate() {
     const errors = {}
 
@@ -473,7 +524,13 @@ function StaffRegisterForm() {
     if (!form.lastName.trim()) errors.lastName = 'Last name is required.'
     if (!form.email.trim()) errors.email = 'Working email is required.'
     if (!form.gender) errors.gender = 'Please select your gender.'
-    if (!form.phoneNumber.trim()) errors.phoneNumber = 'Phone number is required.'
+
+    const phoneValue = form.phoneNumber.trim()
+    if (!phoneValue) {
+      errors.phoneNumber = 'Phone number is required.'
+    } else if (!validatePhoneNumber(phoneValue)) {
+      errors.phoneNumber = 'Phone number must start with +251 and contain 12 digits without the + sign.'
+    }
 
     if (!form.password) {
       errors.password = 'Password is required.'
@@ -641,37 +698,40 @@ function StaffRegisterForm() {
           label="Phone Number"
           type="tel"
           required
-          placeholder="+251 9xx xxx xxx"
+          placeholder="+251912345678"
           value={form.phoneNumber}
-          onChange={update('phoneNumber')}
+          onChange={updatePhone('phoneNumber')}
           error={fieldErrors.phoneNumber}
-        /> 
-        <Input
-          id="staff-password"
-          label="Password"
-          type={showPassword ? 'text' : 'password'}
-          required
-          hint="At least 8 characters"
-          placeholder="••••••••"
-          value={form.password}
-          onChange={update('password')}
-          rightIcon={showPassword ? <FaEyeSlash /> : <FaEye />}
-          onRightIconClick={() => setShowPassword(!showPassword)}
-          error={fieldErrors.password}
         />
-        <Input
-          id="staff-confirmPassword"
-          label="Confirm Password"
-          type={showConfirmPassword ? 'text' : 'password'}
-          required
-          hint="Re-enter the same password"
-          placeholder="••••••••"
-          value={form.confirmPassword}
-          onChange={update('confirmPassword')}
-          rightIcon={showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-          onRightIconClick={() => setShowConfirmPassword(!showConfirmPassword)}
-          error={fieldErrors.confirmPassword}
-        />
+
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <Input
+            id="staff-password"
+            label="Password"
+            type={showPassword ? 'text' : 'password'}
+            required
+            hint="At least 8 characters"
+            placeholder="••••••••"
+            value={form.password}
+            onChange={update('password')}
+            rightIcon={showPassword ? <FaEyeSlash /> : <FaEye />}
+            onRightIconClick={() => setShowPassword(!showPassword)}
+            error={fieldErrors.password}
+          />
+          <Input
+            id="staff-confirmPassword"
+            label="Confirm Password"
+            type={showConfirmPassword ? 'text' : 'password'}
+            required
+            hint="Re-enter the same password"
+            placeholder="••••••••"
+            value={form.confirmPassword}
+            onChange={update('confirmPassword')}
+            rightIcon={showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+            onRightIconClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            error={fieldErrors.confirmPassword}
+          />
+        </div>
         <Button type="submit" className="w-full" loading={loading}>
           Create Staff Account
         </Button>

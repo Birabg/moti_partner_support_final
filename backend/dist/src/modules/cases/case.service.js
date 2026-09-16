@@ -17,6 +17,7 @@ const email_3 = require("../../utils/email");
 const env_1 = require("../../config/env");
 const email_4 = require("../../utils/email");
 const statusHistory_service_1 = require("./statusHistory.service");
+const caseNumber_1 = require("../../utils/caseNumber");
 const getAllCases = async (page = 1, limit = 10, sortBy = "createdAt", order = "desc") => {
     const skip = (page - 1) * limit;
     const orderBy = {};
@@ -185,6 +186,7 @@ const triggerStatusNotification = async (caseDetails, newStatus) => {
         customerEmail: caseDetails.customer.email,
         customerName: caseDetails.customer.fullName,
         caseNumber: caseDetails.caseNumber,
+        caseId: caseDetails.id,
         subjectLine: caseDetails.subject,
         newStatus: newStatus,
     });
@@ -211,16 +213,20 @@ const getPrivilegedBroadcastStaff = async () => {
 };
 exports.getPrivilegedBroadcastStaff = getPrivilegedBroadcastStaff;
 const createCase = async (input) => {
-    const { creationReason, staffActorId, attachments = [], ...caseData } = input;
+    const { creationReason, staffActorId, attachments = [], caseNumber, ...caseData } = input;
     const isStaff = Boolean(staffActorId);
     const uploaderType = isStaff ? "STAFF" : "CUSTOMER";
     if (isStaff && !creationReason) {
         throw new Error("Creation reason is required when staff creates a case on behalf of a customer.");
     }
     const newCase = await database_1.prisma.$transaction(async (tx) => {
+        const candidateCaseNumber = typeof caseNumber === "string" && /^MOTI-10000-M0C\d+$/.test(caseNumber)
+            ? caseNumber
+            : await (0, caseNumber_1.generateNextCaseNumber)(tx);
         const createdCase = await tx.caseReport.create({
             data: {
                 ...caseData,
+                caseNumber: candidateCaseNumber,
                 creationReason: creationReason || null,
                 status: client_1.CaseStatus.OPEN,
                 updatedById: staffActorId || null,
@@ -844,7 +850,7 @@ const resolveCase = async (caseId, resolutionSummary, agentId) => {
         const updated = await tx.caseReport.update({
             where: { id: caseId },
             data: {
-                status: client_1.CaseStatus.CUSTOMER_CONFIRMATION,
+                status: client_1.CaseStatus.RESOLVED,
                 resolutionSummary: resolutionSummary.trim(),
                 resolvedAt: new Date(),
                 updatedById: agentId,
@@ -857,7 +863,7 @@ const resolveCase = async (caseId, resolutionSummary, agentId) => {
             actorType: "STAFF",
             actorId: agentId,
             fromStatus: targetCase.status,
-            toStatus: client_1.CaseStatus.CUSTOMER_CONFIRMATION,
+            toStatus: client_1.CaseStatus.RESOLVED,
             oldPriority: targetCase.priority,
             newPriority: targetCase.priority,
             oldAgentId: targetCase.assignedSupportId,
@@ -897,6 +903,9 @@ const closeCaseWithFeedback = async (caseId, rating, comment, customerId) => {
     if (targetCase.customerId !== customerId) {
         throw new error_1.BadRequestError("Unauthorized: You do not own this case file.");
     }
+    if (targetCase.status !== client_1.CaseStatus.CUSTOMER_CONFIRMATION) {
+        throw new error_1.BadRequestError("This case is not awaiting customer confirmation feedback.");
+    }
     const closedCase = await database_1.prisma.$transaction(async (tx) => {
         await tx.feedback.create({
             data: {
@@ -907,7 +916,11 @@ const closeCaseWithFeedback = async (caseId, rating, comment, customerId) => {
         });
         const updated = await tx.caseReport.update({
             where: { id: caseId },
-            data: { status: client_1.CaseStatus.CLOSED },
+            data: {
+                status: client_1.CaseStatus.CLOSED,
+                closedAt: new Date(),
+                updatedById: null,
+            },
         });
         await (0, statusHistory_service_1.createStatusHistory)(tx, {
             caseReportId: caseId,
@@ -957,8 +970,9 @@ const reopenCase = async (caseId, customerId) => {
     if (targetCase.customerId !== customerId) {
         throw new error_1.BadRequestError("Unauthorized: You do not own this case file.");
     }
-    if (targetCase.status !== client_1.CaseStatus.CUSTOMER_CONFIRMATION) {
-        throw new error_1.BadRequestError("Validation Failure: Only cases marked as CUSTOMER_CONFIRMATION can be rejected and reopened.");
+    if (targetCase.status !== client_1.CaseStatus.RESOLVED &&
+        targetCase.status !== client_1.CaseStatus.CUSTOMER_CONFIRMATION) {
+        throw new error_1.BadRequestError("Validation Failure: Only resolved or pending-confirmation cases can be rejected and reopened.");
     }
     const reopenedCase = await database_1.prisma.$transaction(async (tx) => {
         const updated = await tx.caseReport.update({

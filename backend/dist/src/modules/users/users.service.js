@@ -90,6 +90,13 @@ const getAllApprovedUsers = async () => {
                 ],
             },
         },
+        include: {
+            staffPermissions: {
+                include: {
+                    permission: true,
+                },
+            },
+        },
     });
     const customers = await database_1.prisma.customer.findMany({
         where: {
@@ -101,16 +108,21 @@ const getAllApprovedUsers = async () => {
             },
         },
     });
-    return [
-        ...staff.map((s) => ({
+    const formatFullName = (firstName, middleName, lastName) => [firstName, middleName, lastName].filter(Boolean).join(" ").trim();
+    return [...staff.map((s) => ({
             ...s,
             type: "STAFF",
-        })),
-        ...customers.map((c) => ({
+            fullName: formatFullName(s.firstName, s.middleName, s.lastName),
+            permissions: s.staffPermissions.map((entry) => entry.permission),
+        })), ...customers.map((c) => ({
             ...c,
             type: "CUSTOMER",
-        })),
-    ];
+            fullName: formatFullName(c.firstName, c.middleName, c.lastName),
+        }))].sort((a, b) => {
+        const left = (a.fullName || `${a.firstName || ""} ${a.lastName || ""}`.trim()).toLowerCase();
+        const right = (b.fullName || `${b.firstName || ""} ${b.lastName || ""}`.trim()).toLowerCase();
+        return left.localeCompare(right);
+    });
 };
 exports.getAllApprovedUsers = getAllApprovedUsers;
 const getUserById = async (id) => {

@@ -32,23 +32,27 @@ export default function ApprovedUsersTable({
     const filteredUsers = useMemo(() => {
         const query = search.trim().toLowerCase();
 
-        return users.filter((user) => {
-            const fullName = `${user.firstName} ${user.middleName ?? ""} ${
-                user.lastName
-            }`
-                .replace(/\s+/g, " ")
-                .toLowerCase();
+        return [...users]
+            .filter((user) => {
+                const fullName = `${user.fullName || `${user.firstName || ""} ${user.middleName ?? ""} ${user.lastName || ""}`.trim()}`
+                    .replace(/\s+/g, " ")
+                    .toLowerCase();
 
-            const matchesSearch =
-                !query ||
-                fullName.includes(query) ||
-                user.email?.toLowerCase().includes(query);
+                const matchesSearch =
+                    !query ||
+                    fullName.includes(query) ||
+                    user.email?.toLowerCase().includes(query);
 
-            const matchesType =
-                typeFilter === "ALL" || user.type === typeFilter;
+                const matchesType =
+                    typeFilter === "ALL" || user.type === typeFilter;
 
-            return matchesSearch && matchesType;
-        });
+                return matchesSearch && matchesType;
+            })
+            .sort((a, b) => {
+                const left = (a.fullName || `${a.firstName || ""} ${a.middleName ?? ""} ${a.lastName || ""}`.trim()).toLowerCase();
+                const right = (b.fullName || `${b.firstName || ""} ${b.middleName ?? ""} ${b.lastName || ""}`.trim()).toLowerCase();
+                return left.localeCompare(right);
+            });
     }, [users, search, typeFilter]);
 
     return (

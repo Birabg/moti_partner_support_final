@@ -43,20 +43,12 @@ export const setServiceTypeActiveStatus = async (
   });
 };
 
-export const getAllServiceTypes = async()=>{
-
-return prisma.serviceType.findMany({
-
-where:{
-isActive:true
-},
-
-orderBy:{
-createdAt:"desc"
-}
-
-});
-
+export const getAllServiceTypes = async () => {
+ return prisma.serviceType.findMany({
+   orderBy: {
+     createdAt: "desc",
+   },
+ });
 };
 
 

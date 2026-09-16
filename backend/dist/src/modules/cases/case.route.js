@@ -43,6 +43,9 @@ const default_permission_1 = require("../../config/default.permission");
 const upload_middleware_1 = require("../../middleware/upload.middleware");
 const error_1 = require("../../utils/error");
 const router = (0, express_1.Router)();
+router.get("/public/:id", cases.getPublicCaseForConfirmation);
+router.post("/close/:id/feedback-close", cases.closeCaseWithFeedback);
+router.post("/rejectedcase/:id", cases.rejectedCase);
 router.use(auth_middleware_1.authenticateToken);
 router.get("/", (0, rbac_middleware_1.requirePermission)(default_permission_1.PERMISSIONS.CASE_READ_ALL), cases.getAllCases);
 const requireCaseReadAccess = async (req, res, next) => {
@@ -66,14 +69,12 @@ const requireCaseReadAccess = async (req, res, next) => {
     }
 };
 router.get("/:id", requireCaseReadAccess, cases.getCase);
-router.post("/create", upload_middleware_1.upload.array("attachments"), cases.createCustomerCase);
-router.post("/auth/create", upload_middleware_1.upload.array("attachments"), (0, rbac_middleware_1.requirePermission)("CASE_CREATE"), cases.createAdminCase);
+router.post("/create", upload_middleware_1.upload.array("attachments", 5), cases.createCustomerCase);
+router.post("/auth/create", upload_middleware_1.upload.array("attachments", 5), (0, rbac_middleware_1.requirePermission)("CASE_CREATE"), cases.createAdminCase);
 router.patch("/:id/assign", (0, rbac_middleware_1.requirePermission)("CASE_ASSIGN"), cases.AssignCase);
 router.patch("/:id/status", cases.updateStatus);
 router.post("/:id/confirm-resolution", cases.updateStatus);
 router.patch("/:id/reassign", (0, rbac_middleware_1.requirePermission)("CASE_ASSIGN"), cases.ReassignCase);
 router.patch("/give/:id/priority", (0, rbac_middleware_1.requirePermission)("CASE_SET_PRIORITY"), cases.GivePriority);
 router.patch("/:id/resolve", (0, rbac_middleware_1.requirePermission)("CASE_RESOLVE"), cases.resolveCase);
-router.post("/close/:id/feedback-close", cases.closeCaseWithFeedback);
-router.post("/rejectedcase/:id", cases.rejectedCase);
 exports.CaseReportRouter = router;

@@ -60,28 +60,38 @@ export const getCaseSummaryMetrics = async (req: Request, res: Response, next: N
 
     const scopeWhere = buildHierarchyWhereClause(actor);
 
-    const [totalCases, openCases, inProgressCases, closedCases] = await prisma.$transaction([
-      prisma.caseReport.count({ where: scopeWhere }),
-      prisma.caseReport.count({ where: { ...scopeWhere, status: CaseStatus.OPEN } }),
-      prisma.caseReport.count({
-        where: {
-          ...scopeWhere,
-          OR: [
-            { status: CaseStatus.IN_PROGRESS },
-            { status: CaseStatus.ASSIGNED },
-          ],
-        },
-      }),
-      prisma.caseReport.count({ where: { ...scopeWhere, status: CaseStatus.CLOSED } }),
-    ]);
+    // Derive per-status counts directly from the database in a single query so every
+    // status in the CaseStatus enum (including CANCELLED) is always represented
+    // instead of relying on a hand-maintained list of counters.
+    const grouped = await prisma.caseReport.groupBy({
+      by: ["status"],
+      where: scopeWhere,
+      _count: { _all: true },
+    });
+
+    const statusCounts: Record<string, number> = {};
+    for (const row of grouped) {
+      statusCounts[row.status] = row._count._all;
+    }
+
+    const getCount = (status: CaseStatus) => statusCounts[status] ?? 0;
+
+    const totalCases = grouped.reduce((sum, row) => sum + row._count._all, 0);
 
     return res.status(200).json({
       success: true,
       data: {
         total: totalCases,
-        open: openCases,
-        inProgress: inProgressCases,
-        closed: closedCases,
+        open: getCount(CaseStatus.OPEN),
+        // Existing application logic counts ASSIGNED cases as part of "in progress".
+        inProgress:
+          getCount(CaseStatus.IN_PROGRESS) + getCount(CaseStatus.ASSIGNED),
+        pending: getCount(CaseStatus.PENDING),
+        escalated: getCount(CaseStatus.ESCALATED),
+        resolved: getCount(CaseStatus.RESOLVED),
+        customerConfirmation: getCount(CaseStatus.CUSTOMER_CONFIRMATION),
+        closed: getCount(CaseStatus.CLOSED),
+        cancelled: getCount(CaseStatus.CANCELLED),
       },
     });
   } catch (error) {

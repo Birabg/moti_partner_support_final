@@ -21,7 +21,7 @@ exports.PERMISSIONS = {
     CASE_ASSIGN: "CASE_ASSIGN",
     CASE_SET_PRIORITY: "CASE_SET_PRIORITY",
     CASE_READ_ANALYTICS: "CASE_READ_ANALYTICS",
-    CASE_READ_OWN_ANALTICS: "CASE_READ_OWN_ANALTICS",
+    CASE_READ_OWN_ANALYTICS: "CASE_READ_OWN_ANALYTICS",
     CASE_CREATE: "CASE_CREATE",
     VIEW_ALL_CASES_METRICS: "VIEW_ALL_CASES_METRICS",
     VIEW_ALL_CASES_DETAIL: "VIEW_ALL_CASES_DETAIL",
@@ -111,7 +111,7 @@ const defaultPermissions = [
         description: "Allows viewing system-wide case volume, resolution, and feedback analytics.",
     },
     {
-        code: exports.PERMISSIONS.CASE_READ_OWN_ANALTICS,
+        code: exports.PERMISSIONS.CASE_READ_OWN_ANALYTICS,
         name: "Read Own Case Analytics",
         category: "ANALYTICS",
         description: "Allows viewing personal or unit-scoped case metrics.",

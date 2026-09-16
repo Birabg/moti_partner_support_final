@@ -90,7 +90,6 @@ export const Register = async (data: {
     const deliverySuccess = await sendVerificationEmail(
       txResult.email,
       txResult.fullName,
-      ENV.FRONTEND_URL ?? "",
       txResult.rawToken,
       "STAFF"
     );
@@ -220,10 +219,8 @@ export const resendStaffVerification = async (email: string) => {
 
   const deliverySuccess = await sendVerificationEmail(
     txResult.email,
-    txResult.firstName + " " + txResult.middleName + " " + txResult.lastName,
-    ENV.FRONTEND_URL ?? "",
+    [txResult.firstName, txResult.middleName, txResult.lastName].filter(Boolean).join(" ").trim(),
     txResult.rawToken,
-    
     "STAFF",
   );
 

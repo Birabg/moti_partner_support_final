@@ -138,8 +138,7 @@ if (!organization || !organization.isActive) {
 
   const deliverySuccess = await sendVerificationEmail(
     txResult.email,
-    `${txResult.firstName} ${txResult.middleName}`,
-    ENV.FRONTEND_URL ?? "",
+    `${txResult.firstName} ${txResult.middleName}`.trim(),
     txResult.rawToken,
     "CUSTOMER"
   );
@@ -243,9 +242,7 @@ export const resendCustomerVerification = async (email: string) => {
 
   const deliverySuccess = await sendVerificationEmail(
     txResult.email,
-    txResult.firstName && txResult.middleName
-    && `${txResult.firstName} ${txResult.middleName}`,
-     ENV.FRONTEND_URL ?? "",
+    [txResult.firstName, txResult.middleName, txResult.lastName].filter(Boolean).join(" ").trim(),
     txResult.rawToken,
     "CUSTOMER",
   );

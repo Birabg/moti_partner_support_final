@@ -32,6 +32,14 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
+  const cleanPhoneNumber = phoneNumber?.trim();
+  if (!/^\+251\d{9}$/.test(cleanPhoneNumber)) {
+    res.status(400).json({
+      error: "Phone number must start with +251 and contain 12 digits without the + sign.",
+    });
+    return;
+  }
+
   if (firstName.trim().length < 2) {
     res.status(400).json({ error: "First name parameter is too short." });
     return;
@@ -45,7 +53,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       email: email.trim().toLowerCase(),
       passwordPlain: password,
       gender,
-      phoneNumber
+      phoneNumber: cleanPhoneNumber
     });
 
     res.status(201).json({

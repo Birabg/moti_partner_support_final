@@ -33,12 +33,15 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateStatus = exports.getSupportStaff = exports.rejectedCase = exports.closeCaseWithFeedback = exports.resolveCase = exports.GivePriority = exports.ReassignCase = exports.AssignCase = exports.createAdminCase = exports.createCustomerCase = exports.assertCanAssignToStaff = exports.getCase = exports.getAllCases = void 0;
+exports.updateStatus = exports.getSupportStaff = exports.rejectedCase = exports.closeCaseWithFeedback = exports.resolveCase = exports.GivePriority = exports.ReassignCase = exports.AssignCase = exports.createAdminCase = exports.createCustomerCase = exports.assertCanAssignToStaff = exports.getPublicCaseForConfirmation = exports.getCase = exports.getAllCases = void 0;
 const CaseService = __importStar(require("./case.service"));
 const CaseStatusService = __importStar(require("./caseStatus.service"));
 const error_1 = require("../../utils/error");
 const client_1 = require("../../../generated/prisma/client");
 const database_1 = require("../../config/database");
+const client_2 = require("../../../generated/prisma/client");
+const MAX_FILES_PER_CASE = 5;
+const MAX_ATTACHMENT_SIZE_BYTES = 50 * 1024 * 1024;
 const getAllCases = async (req, res) => {
     try {
         const page = Number(req.query.page) || 1;
@@ -81,6 +84,35 @@ const getCase = async (req, res) => {
     }
 };
 exports.getCase = getCase;
+const getPublicCaseForConfirmation = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const caseData = await database_1.prisma.caseReport.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                caseNumber: true,
+                subject: true,
+                status: true,
+                description: true,
+            },
+        });
+        if (!caseData) {
+            throw new error_1.NotFoundError("Case not found.");
+        }
+        if (caseData.status !== client_2.CaseStatus.CUSTOMER_CONFIRMATION) {
+            throw new error_1.BadRequestError("This case is not awaiting customer confirmation feedback.");
+        }
+        res.status(200).json({
+            message: "Case loaded successfully.",
+            data: caseData,
+        });
+    }
+    catch (error) {
+        res.status(error.statusCode || 500).json({ message: error.message });
+    }
+};
+exports.getPublicCaseForConfirmation = getPublicCaseForConfirmation;
 const assertCanAssignToStaff = async (operator, assignedSupportId) => {
     if (operator.isSAdmin)
         return;
@@ -187,7 +219,7 @@ const createCustomerCase = async (req, res) => {
         if (!customerRecord) {
             throw new error_1.ForbiddenError("Access Denied: Only customers can access this route.");
         }
-        const { branchName, productCategoryId, productSubcategoryId, subject, description, serviceTypeId, attachments, } = req.body;
+        const { branchName, productCategoryId, productSubcategoryId, subject, description, serviceTypeId, priority, attachments, } = req.body;
         if (!branchName ||
             !productCategoryId ||
             !productSubcategoryId ||
@@ -196,14 +228,21 @@ const createCustomerCase = async (req, res) => {
             !serviceTypeId) {
             throw new error_1.BadRequestError("Missing core parameters needed to initialize Case Report.");
         }
-        const parsedAttachments = Array.isArray(req.files)
-            ? req.files.map((file) => ({
-                fileName: file.originalname,
-                storagePath: file.path || file.filename,
-                fileSizeBytes: file.size,
-                mimeType: file.mimetype,
-            }))
-            : attachments || [];
+        const rawFiles = Array.isArray(req.files) ? req.files : [];
+        const parsedAttachments = rawFiles.map((file) => ({
+            fileName: file.originalname,
+            storagePath: file.path || file.filename,
+            fileSizeBytes: file.size,
+            mimeType: file.mimetype,
+        }));
+        if (rawFiles.length + (Array.isArray(attachments) ? attachments.length : 0) > MAX_FILES_PER_CASE) {
+            throw new error_1.BadRequestError(`A case can have up to ${MAX_FILES_PER_CASE} attachments.`);
+        }
+        const oversizedFile = rawFiles.find((file) => file.size > MAX_ATTACHMENT_SIZE_BYTES);
+        if (oversizedFile) {
+            throw new error_1.BadRequestError("Each attachment must be 50 MB or smaller.");
+        }
+        const safePriority = actor?.partyType === "CUSTOMER" ? client_1.CasePriority.MEDIUM : (priority || client_1.CasePriority.MEDIUM);
         const result = await CaseService.createCase({
             branchName,
             customerId,
@@ -212,6 +251,7 @@ const createCustomerCase = async (req, res) => {
             subject,
             description,
             serviceTypeId,
+            priority: safePriority,
             attachments: parsedAttachments,
         });
         res.status(201).json({
@@ -258,14 +298,20 @@ const createAdminCase = async (req, res) => {
             throw new error_1.NotFoundError(`No customer account found with email: ${customerEmail}`);
         }
         const rawFiles = req.files;
-        const parsedAttachments = Array.isArray(rawFiles)
-            ? rawFiles.map((file) => ({
-                fileName: file.originalname,
-                storagePath: file.path || file.filename,
-                fileSizeBytes: file.size,
-                mimeType: file.mimetype,
-            }))
-            : attachments || [];
+        const normalizedRawFiles = Array.isArray(rawFiles) ? rawFiles : [];
+        if (normalizedRawFiles.length + (Array.isArray(attachments) ? attachments.length : 0) > MAX_FILES_PER_CASE) {
+            throw new error_1.BadRequestError(`A case can have up to ${MAX_FILES_PER_CASE} attachments.`);
+        }
+        const oversizedFile = normalizedRawFiles.find((file) => file.size > MAX_ATTACHMENT_SIZE_BYTES);
+        if (oversizedFile) {
+            throw new error_1.BadRequestError("Each attachment must be 50 MB or smaller.");
+        }
+        const parsedAttachments = normalizedRawFiles.map((file) => ({
+            fileName: file.originalname,
+            storagePath: file.path || file.filename,
+            fileSizeBytes: file.size,
+            mimeType: file.mimetype,
+        }));
         const result = await CaseService.createCase({
             branchName,
             customerId: targetCustomer.id,
@@ -475,8 +521,21 @@ const closeCaseWithFeedback = async (req, res) => {
         const caseId = id;
         const actor = req.user;
         const customerId = actor?.id || actor?.userId;
-        if (!customerId) {
-            throw new error_1.ForbiddenError("Access Denied: Invalid customer token credentials.");
+        const targetCase = await database_1.prisma.caseReport.findUnique({
+            where: { id: caseId },
+            select: { id: true, customerId: true, status: true },
+        });
+        if (!targetCase) {
+            throw new error_1.NotFoundError("Case file not found.");
+        }
+        if (customerId && targetCase.customerId !== customerId) {
+            throw new error_1.ForbiddenError("Access Denied: You do not own this case file.");
+        }
+        const isPublicResolutionFlow = !customerId;
+        const isAllowedCustomerActionStatus = targetCase.status === client_2.CaseStatus.RESOLVED ||
+            targetCase.status === client_2.CaseStatus.CUSTOMER_CONFIRMATION;
+        if (isPublicResolutionFlow && !isAllowedCustomerActionStatus) {
+            throw new error_1.BadRequestError("This case is not awaiting customer confirmation.");
         }
         const { rating, comment } = req.body;
         if (rating === undefined || rating === null) {
@@ -486,7 +545,8 @@ const closeCaseWithFeedback = async (req, res) => {
         if (isNaN(parsedRating) || parsedRating < 1 || parsedRating > 5) {
             throw new error_1.BadRequestError("Validation Failure: Rating metrics must be an integer between 1 and 5.");
         }
-        const result = await CaseService.closeCaseWithFeedback(caseId, parsedRating, comment, customerId);
+        const effectiveCustomerId = customerId || targetCase.customerId;
+        const result = await CaseService.closeCaseWithFeedback(caseId, parsedRating, comment, effectiveCustomerId);
         res.status(200).json({
             message: "Feedback submitted successfully. Case file marked as CLOSED.",
             data: result,
@@ -503,10 +563,24 @@ const rejectedCase = async (req, res) => {
         const caseId = id;
         const actor = req.user;
         const customerId = actor?.id || actor?.userId;
-        if (!customerId) {
-            throw new error_1.ForbiddenError("Access Denied: Invalid customer token credentials.");
+        const targetCase = await database_1.prisma.caseReport.findUnique({
+            where: { id: caseId },
+            select: { id: true, customerId: true, status: true },
+        });
+        if (!targetCase) {
+            throw new error_1.NotFoundError("Case file not found.");
         }
-        const result = await CaseService.reopenCase(caseId, customerId);
+        if (customerId && targetCase.customerId !== customerId) {
+            throw new error_1.ForbiddenError("Access Denied: You do not own this case file.");
+        }
+        const isPublicResolutionFlow = !customerId;
+        const isAllowedCustomerActionStatus = targetCase.status === client_2.CaseStatus.RESOLVED ||
+            targetCase.status === client_2.CaseStatus.CUSTOMER_CONFIRMATION;
+        if (isPublicResolutionFlow && !isAllowedCustomerActionStatus) {
+            throw new error_1.BadRequestError("This case is not awaiting customer confirmation.");
+        }
+        const effectiveCustomerId = customerId || targetCase.customerId;
+        const result = await CaseService.reopenCase(caseId, effectiveCustomerId);
         res.status(200).json({
             message: "Resolution rejected. Case file successfully returned to active status queue.",
             data: result,

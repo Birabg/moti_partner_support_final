@@ -117,6 +117,13 @@ export const getAllApprovedUsers =
             ],
           },
         },
+        include: {
+          staffPermissions: {
+            include: {
+              permission: true,
+            },
+          },
+        },
       });
 
     const customers =
@@ -131,17 +138,23 @@ export const getAllApprovedUsers =
         },
       });
 
-    return [
-      ...staff.map((s) => ({
-        ...s,
-        type: "STAFF",
-      })),
+    const formatFullName = (firstName?: string | null, middleName?: string | null, lastName?: string | null) =>
+      [firstName, middleName, lastName].filter(Boolean).join(" ").trim();
 
-      ...customers.map((c) => ({
-        ...c,
-        type: "CUSTOMER",
-      })),
-    ];
+    return [...staff.map((s) => ({
+      ...s,
+      type: "STAFF",
+      fullName: formatFullName(s.firstName, s.middleName, s.lastName),
+      permissions: s.staffPermissions.map((entry) => entry.permission),
+    })), ...customers.map((c) => ({
+      ...c,
+      type: "CUSTOMER",
+      fullName: formatFullName(c.firstName, c.middleName, c.lastName),
+    }))].sort((a, b) => {
+      const left = (a.fullName || `${a.firstName || ""} ${a.lastName || ""}`.trim()).toLowerCase();
+      const right = (b.fullName || `${b.firstName || ""} ${b.lastName || ""}`.trim()).toLowerCase();
+      return left.localeCompare(right);
+    });
   };
 
 export const getUserById =

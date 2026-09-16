@@ -2,7 +2,60 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getStaffWithPermissions = exports.syncPermissions = exports.revokePermissions = exports.grantPermissions = void 0;
 const database_1 = require("../../config/database");
+const default_permission_1 = require("../../config/default.permission");
 const error_1 = require("../../utils/error");
+const normalizePermissionCodes = (codes = []) => Array.from(new Set((codes || [])
+    .map((code) => code?.trim().toUpperCase())
+    .filter(Boolean)));
+const getStaffRolePermissionContext = async (staffId) => {
+    const staff = await database_1.prisma.staff.findUnique({
+        where: { id: staffId },
+        select: {
+            isSAdmin: true,
+            isManager: true,
+            isDirector: true,
+            isPSsupport: true,
+            managedDepartment: { select: { id: true } },
+            managedDivision: { select: { id: true } },
+            managedSection: { select: { id: true } },
+        },
+    });
+    if (!staff)
+        throw new error_1.NotFoundError("Staff record not found.");
+    let role = null;
+    let managerType = null;
+    if (staff.isSAdmin) {
+        role = "SYSTEM_ADMIN";
+    }
+    else if (staff.isDirector) {
+        role = "DIRECTOR";
+    }
+    else if (staff.isManager) {
+        role = "MANAGER";
+        if (staff.managedDepartment)
+            managerType = "DEPARTMENT";
+        else if (staff.managedDivision)
+            managerType = "DIVISION";
+        else if (staff.managedSection)
+            managerType = "SECTION";
+    }
+    else if (staff.isPSsupport) {
+        role = "PS_SUPPORT";
+    }
+    const defaultCodes = (0, default_permission_1.getDefaultPermissionCodes)(role || undefined, managerType || undefined);
+    const defaultIds = defaultCodes.length
+        ? (await database_1.prisma.permission.findMany({
+            where: { code: { in: defaultCodes.map((code) => code.toUpperCase()) } },
+            select: { id: true, code: true },
+        })).map((permission) => permission.id)
+        : [];
+    return {
+        role,
+        managerType,
+        defaultCodes: Array.from(new Set(defaultCodes.map((code) => code.toUpperCase()))),
+        defaultIds,
+    };
+};
 const verifyCanManagePermissions = async (operatorId) => {
     const operator = await database_1.prisma.staff.findUnique({
         where: { id: operatorId },
@@ -28,24 +81,28 @@ const grantPermissions = async (operatorId, targetStaffId, permissionCodes) => {
     const targetStaff = await database_1.prisma.staff.findUnique({ where: { id: targetStaffId } });
     if (!targetStaff)
         throw new error_1.NotFoundError("Target staff record not found.");
-    // FIX: normalize the same way role/managerType are normalized elsewhere
-    // in this codebase — protects against a casing mismatch (e.g.
-    // "case_read_all" vs "CASE_READ_ALL") silently matching zero rows.
-    const normalizedCodes = permissionCodes.map((c) => c.trim().toUpperCase());
+    const normalizedCodes = normalizePermissionCodes(permissionCodes);
+    const defaultContext = await getStaffRolePermissionContext(targetStaffId);
+    const extraCodes = normalizedCodes.filter((code) => !defaultContext.defaultCodes.includes(code));
+    if (extraCodes.length === 0) {
+        const updatedUser = await (0, exports.getStaffWithPermissions)(targetStaffId);
+        return {
+            ...updatedUser,
+            newlyGranted: [],
+            alreadyGranted: [],
+            unknownCodes: [],
+            ignoredDefaultCodes: normalizedCodes.filter((code) => defaultContext.defaultCodes.includes(code)),
+        };
+    }
     const matchedPermissions = await database_1.prisma.permission.findMany({
-        where: { code: { in: normalizedCodes } },
+        where: { code: { in: extraCodes } },
         select: { id: true, code: true },
     });
     if (matchedPermissions.length === 0) {
         throw new error_1.BadRequestError("None of the provided permission codes were found in the database.");
     }
-    // FIX: report codes that didn't match anything, instead of silently
-    // dropping them with no feedback.
     const matchedCodeSet = new Set(matchedPermissions.map((p) => p.code));
-    const unknownCodes = normalizedCodes.filter((c) => !matchedCodeSet.has(c));
-    // FIX: check what this staff member already has BEFORE inserting, so
-    // the response can explicitly say "already granted" instead of just
-    // silently no-op'ing via skipDuplicates with no trace of it.
+    const unknownCodes = extraCodes.filter((code) => !matchedCodeSet.has(code));
     const existing = await database_1.prisma.staffPermission.findMany({
         where: {
             staffId: targetStaffId,
@@ -53,35 +110,27 @@ const grantPermissions = async (operatorId, targetStaffId, permissionCodes) => {
         },
         select: { permissionId: true },
     });
-    const existingIds = new Set(existing.map((e) => e.permissionId));
-    const toInsert = matchedPermissions.filter((p) => !existingIds.has(p.id));
-    const alreadyGranted = matchedPermissions.filter((p) => existingIds.has(p.id)).map((p) => p.code);
-    // FIX: wrapped in a transaction, matching syncPermissions' pattern —
-    // also added console logging temporarily so you can PROVE whether the
-    // write actually lands. Remove the two console.log lines once confirmed.
+    const existingIds = new Set(existing.map((entry) => entry.permissionId));
+    const toInsert = matchedPermissions.filter((permission) => !existingIds.has(permission.id));
+    const alreadyGranted = matchedPermissions
+        .filter((permission) => existingIds.has(permission.id))
+        .map((permission) => permission.code);
     if (toInsert.length > 0) {
-        console.log(`[grantPermissions] inserting ${toInsert.length} rows for staff ${targetStaffId}:`, toInsert.map(p => p.code));
-        await database_1.prisma.$transaction(async (tx) => {
-            await tx.staffPermission.createMany({
-                data: toInsert.map((p) => ({
-                    staffId: targetStaffId,
-                    permissionId: p.id,
-                    // CONFIRM: does StaffPermission actually have a grantedById
-                    // column? If not, delete this line — if it does and you leave
-                    // it out, you lose the audit trail of who granted what.
-                })),
-                skipDuplicates: true,
-            });
+        await database_1.prisma.staffPermission.createMany({
+            data: toInsert.map((permission) => ({
+                staffId: targetStaffId,
+                permissionId: permission.id,
+            })),
+            skipDuplicates: true,
         });
-        const verifyCount = await database_1.prisma.staffPermission.count({ where: { staffId: targetStaffId } });
-        console.log(`[grantPermissions] staff ${targetStaffId} now has ${verifyCount} total permission rows`);
     }
     const updatedUser = await (0, exports.getStaffWithPermissions)(targetStaffId);
     return {
         ...updatedUser,
-        newlyGranted: toInsert.map((p) => p.code),
+        newlyGranted: toInsert.map((permission) => permission.code),
         alreadyGranted,
         unknownCodes,
+        ignoredDefaultCodes: normalizedCodes.filter((code) => defaultContext.defaultCodes.includes(code)),
     };
 };
 exports.grantPermissions = grantPermissions;
@@ -90,31 +139,40 @@ const revokePermissions = async (operatorId, targetStaffId, permissionCodes) => 
     const targetStaff = await database_1.prisma.staff.findUnique({ where: { id: targetStaffId } });
     if (!targetStaff)
         throw new error_1.NotFoundError("Target staff record not found.");
-    const normalizedCodes = permissionCodes.map((c) => c.trim().toUpperCase());
-    // FIX: check what the staff member actually holds BEFORE deleting, so
-    // the response can distinguish "revoked" from "they never had this
-    // permission in the first place" instead of both looking identical.
+    const normalizedCodes = normalizePermissionCodes(permissionCodes);
+    const defaultContext = await getStaffRolePermissionContext(targetStaffId);
+    const removableCodes = normalizedCodes.filter((code) => !defaultContext.defaultCodes.includes(code));
+    if (removableCodes.length === 0) {
+        const updatedUser = await (0, exports.getStaffWithPermissions)(targetStaffId);
+        return {
+            ...updatedUser,
+            revokedCount: 0,
+            revokedCodes: [],
+            notHeld: normalizedCodes,
+            ignoredDefaultCodes: normalizedCodes.filter((code) => defaultContext.defaultCodes.includes(code)),
+        };
+    }
     const currentlyHeld = await database_1.prisma.staffPermission.findMany({
         where: {
             staffId: targetStaffId,
-            permission: { code: { in: normalizedCodes } },
+            permission: { code: { in: removableCodes } },
         },
         select: { permission: { select: { code: true } } },
     });
-    const heldCodes = currentlyHeld.map((sp) => sp.permission.code);
+    const heldCodes = currentlyHeld.map((entry) => entry.permission.code);
     const deleteResult = await database_1.prisma.staffPermission.deleteMany({
         where: {
             staffId: targetStaffId,
-            permission: { code: { in: normalizedCodes } },
+            permission: { code: { in: removableCodes } },
         },
     });
-    console.log(`[revokePermissions] deleteMany removed ${deleteResult.count} row(s) for staff ${targetStaffId}`);
     const updatedUser = await (0, exports.getStaffWithPermissions)(targetStaffId);
     return {
         ...updatedUser,
-        revokedCount: deleteResult.count, // FIX: deleteMany's real count — proves whether anything actually happened
+        revokedCount: deleteResult.count,
         revokedCodes: heldCodes,
-        notHeld: normalizedCodes.filter((c) => !heldCodes.includes(c)), // FIX: requested codes the staff never had
+        notHeld: removableCodes.filter((code) => !heldCodes.includes(code)),
+        ignoredDefaultCodes: normalizedCodes.filter((code) => defaultContext.defaultCodes.includes(code)),
     };
 };
 exports.revokePermissions = revokePermissions;
@@ -123,27 +181,46 @@ const syncPermissions = async (operatorId, targetStaffId, permissionCodes) => {
     const targetStaff = await database_1.prisma.staff.findUnique({ where: { id: targetStaffId } });
     if (!targetStaff)
         throw new error_1.NotFoundError("Target staff record not found.");
-    const normalizedCodes = permissionCodes.map((c) => c.trim().toUpperCase());
-    const targetPermissions = await database_1.prisma.permission.findMany({
-        where: { code: { in: normalizedCodes } },
-        select: { id: true, code: true },
+    const normalizedCodes = normalizePermissionCodes(permissionCodes);
+    const defaultContext = await getStaffRolePermissionContext(targetStaffId);
+    const extraCodes = normalizedCodes.filter((code) => !defaultContext.defaultCodes.includes(code));
+    const matchedPermissions = extraCodes.length
+        ? await database_1.prisma.permission.findMany({
+            where: { code: { in: extraCodes } },
+            select: { id: true, code: true },
+        })
+        : [];
+    const matchedCodeSet = new Set(matchedPermissions.map((permission) => permission.code));
+    const unknownCodes = extraCodes.filter((code) => !matchedCodeSet.has(code));
+    await database_1.prisma.$transaction(async (tx) => {
+        if (defaultContext.defaultIds.length > 0) {
+            await tx.staffPermission.deleteMany({
+                where: {
+                    staffId: targetStaffId,
+                    permissionId: { notIn: defaultContext.defaultIds },
+                },
+            });
+        }
+        else {
+            await tx.staffPermission.deleteMany({ where: { staffId: targetStaffId } });
+        }
+        if (matchedPermissions.length > 0) {
+            await tx.staffPermission.createMany({
+                data: matchedPermissions.map((permission) => ({
+                    staffId: targetStaffId,
+                    permissionId: permission.id,
+                })),
+                skipDuplicates: true,
+            });
+        }
     });
-    // FIX: same unknown-code reporting as grantPermissions.
-    const matchedCodeSet = new Set(targetPermissions.map((p) => p.code));
-    const unknownCodes = normalizedCodes.filter((c) => !matchedCodeSet.has(c));
-    await database_1.prisma.$transaction([
-        database_1.prisma.staffPermission.deleteMany({ where: { staffId: targetStaffId } }),
-        database_1.prisma.staffPermission.createMany({
-            data: targetPermissions.map((p) => ({
-                staffId: targetStaffId,
-                permissionId: p.id,
-                grantedById: operatorId,
-            })),
-            skipDuplicates: true,
-        }),
-    ]);
     const updatedUser = await (0, exports.getStaffWithPermissions)(targetStaffId);
-    return { ...updatedUser, unknownCodes };
+    return {
+        ...updatedUser,
+        unknownCodes,
+        defaultPermissions: defaultContext.defaultCodes,
+        customPermissions: matchedPermissions.map((permission) => permission.code),
+    };
 };
 exports.syncPermissions = syncPermissions;
 const getStaffWithPermissions = async (staffId) => {

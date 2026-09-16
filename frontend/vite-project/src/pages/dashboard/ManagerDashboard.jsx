@@ -56,6 +56,49 @@ function formatScopeLabel(value) {
         : "Unit";
 }
 
+function normalizeStatusCounts(rawCounts = {}) {
+    return Object.entries(rawCounts).reduce((acc, [key, value]) => {
+        const normalizedKey = String(key).trim().toUpperCase().replace(/\s+/g, "_");
+        acc[normalizedKey] = Number(value) || 0;
+        return acc;
+    }, {});
+}
+
+function flattenStaffMembers(hierarchy = {}) {
+    const values = [];
+
+    const pushList = (list) => {
+        if (!Array.isArray(list)) return;
+        list.forEach((member) => {
+            if (!member) return;
+            if (member.id || member.name || member.email) {
+                values.push(member);
+            }
+        });
+    };
+
+    pushList(hierarchy.staffMembers);
+
+    if (Array.isArray(hierarchy.sections)) {
+        hierarchy.sections.forEach((section) => {
+            pushList(section.staffMembers);
+        });
+    }
+
+    if (Array.isArray(hierarchy.divisions)) {
+        hierarchy.divisions.forEach((division) => {
+            pushList(division.staffMembers);
+            if (Array.isArray(division.sections)) {
+                division.sections.forEach((section) => {
+                    pushList(section.staffMembers);
+                });
+            }
+        });
+    }
+
+    return values;
+}
+
 export default function ManagerDashboard() {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -103,24 +146,33 @@ export default function ManagerDashboard() {
         }, 10000);
 
         const handleFocus = () => loadDashboard();
+        const handleCasesUpdated = () => loadDashboard();
+        
         window.addEventListener("focus", handleFocus);
+        window.addEventListener("cases:updated", handleCasesUpdated);
 
         return () => {
             cancelled = true;
             window.clearInterval(refreshTimer);
             window.removeEventListener("focus", handleFocus);
+            window.removeEventListener("cases:updated", handleCasesUpdated);
         };
     }, [scopeId, scopeMeta.resource]);
 
     const summary = useMemo(() => {
         const metrics = snapshot?.caseMetrics || {};
         const hierarchy = snapshot?.hierarchyMetrics || {};
-        const cases = metrics.cases || [];
-        const countByStatus = metrics.casesByStatus || {};
+        const cases = Array.isArray(metrics.cases)
+            ? metrics.cases
+            : Array.isArray(metrics.recentCases)
+                ? metrics.recentCases
+                : [];
+        const countByStatus = normalizeStatusCounts(metrics.casesByStatus || {});
 
-        const openCases = countByStatus.OPEN || 0;
+        const openCases = countByStatus.OPEN || countByStatus.OPEN_CASES || 0;
         const inProgressCases = (countByStatus.IN_PROGRESS || 0) + (countByStatus.ASSIGNED || 0);
         const closedCases = (countByStatus.CLOSED || 0) + (countByStatus.RESOLVED || 0);
+        const staffMembers = flattenStaffMembers(hierarchy);
 
         return {
             totalCases: metrics.totalAssignedCases || cases.length || 0,
@@ -128,15 +180,11 @@ export default function ManagerDashboard() {
             inProgressCases,
             closedCases,
             avgRating: "—",
-            totalStaff:
-                hierarchy.totalSectionStaffCount ||
-                hierarchy.totalDivisionStaffCount ||
-                hierarchy.totalDepartmentStaffCount ||
-                0,
+            totalStaff: staffMembers.length || hierarchy.totalSectionStaffCount || hierarchy.totalDivisionStaffCount || hierarchy.totalDepartmentStaffCount || 0,
             scopeName: snapshot?.[scopeMeta.resource]?.name || "My Unit",
             scopeLabel: formatScopeLabel(scopeMeta.title),
             recentCases: cases.slice(0, 5),
-            staffMembers: hierarchy.staffMembers || hierarchy.sections || [],
+            staffMembers: staffMembers.slice(0, 6),
             priorityDistribution: cases.reduce((acc, item) => {
                 acc[item.priority] = (acc[item.priority] || 0) + 1;
                 return acc;
@@ -173,15 +221,15 @@ export default function ManagerDashboard() {
                 <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>
             ) : null}
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
                 {stats.map(({ label, value, icon: Icon }) => (
-                    <Card key={label}>
+                    <Card key={label} className="min-h-[150px]">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle>{label}</CardTitle>
+                            <CardTitle className="text-base font-semibold text-slate-700">{label}</CardTitle>
                             <Icon className="h-4 w-4 text-slate-400" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-slate-900">
+                        <CardContent className="pt-2">
+                            <div className="text-4xl font-bold leading-none text-slate-900">
                                 {loading ? <Loader2 className="h-6 w-6 animate-spin text-navy-500" /> : value}
                             </div>
                         </CardContent>

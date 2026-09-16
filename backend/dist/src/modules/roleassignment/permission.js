@@ -4,9 +4,11 @@ exports.syncStaffDefaultPermissions = void 0;
 const default_permission_1 = require("../../config/default.permission");
 const error_1 = require("../../utils/error");
 const syncStaffDefaultPermissions = async (tx, staffId, role, managerType, customPermissionCodes) => {
-    const codesToAssign = customPermissionCodes && customPermissionCodes.length > 0
-        ? customPermissionCodes
-        : (0, default_permission_1.getDefaultPermissionCodes)(role, managerType);
+    const defaultCodes = (0, default_permission_1.getDefaultPermissionCodes)(role, managerType);
+    const codesToAssign = Array.from(new Set([
+        ...defaultCodes,
+        ...(customPermissionCodes || []),
+    ].map((code) => code?.trim().toUpperCase())));
     const matchedPermissions = await tx.permission.findMany({
         where: { code: { in: codesToAssign } },
         select: { id: true, code: true },

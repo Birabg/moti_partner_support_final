@@ -24,22 +24,36 @@ export default function FeedbackAnalytics() {
       }
     };
 
-    const staffId = getStaffIdFromToken();
+    const loadAnalytics = () => {
+      const staffId = getStaffIdFromToken();
 
-    console.debug('Derived staffId from token:', staffId);
+      console.debug('Derived staffId from token:', staffId);
 
-    // If staffId is found, request analytics for that staff; otherwise call default endpoint.
-    SupportApi.getFeedbackAnalytics(staffId)
-      .then((res) => {
-        console.debug('GET /staff/feedback/analytics response:', res);
-        if (mounted) setAnalytics(res?.data?.data || {});
-      })
-      .catch((err) => {
-        console.error('Failed to load staff feedback analytics:', err);
-        if (mounted) setAnalytics({});
-      });
+      // If staffId is found, request analytics for that staff; otherwise call default endpoint.
+      SupportApi.getFeedbackAnalytics(staffId)
+        .then((res) => {
+          console.debug('GET /staff/feedback/analytics response:', res);
+          if (mounted) setAnalytics(res?.data?.data || {});
+        })
+        .catch((err) => {
+          console.error('Failed to load staff feedback analytics:', err);
+          if (mounted) setAnalytics({});
+        });
+    };
 
-    return () => (mounted = false);
+    loadAnalytics();
+
+    // Listen for case updates and refresh analytics
+    const handleCasesUpdated = () => {
+      loadAnalytics();
+    };
+
+    window.addEventListener("cases:updated", handleCasesUpdated);
+
+    return () => {
+      mounted = false;
+      window.removeEventListener("cases:updated", handleCasesUpdated);
+    };
   }, []);
 
   // Normalize summary fields to match admin analytics shape when possible

@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Login = void 0;
 const database_1 = require("../../config/database");
+const default_permission_1 = require("../../config/default.permission");
 const bcrypt_1 = require("../../utils/bcrypt");
 const jwt_1 = require("../../utils/jwt");
 const crypto_1 = __importDefault(require("crypto"));
@@ -43,8 +44,29 @@ const Login = async (email, passwordPlain) => {
             partyType = "CUSTOMER";
         }
     }
+    let staffRole = null;
+    if (staffUser) {
+        if (staffUser.isSAdmin) {
+            staffRole = "SYSTEM_ADMIN";
+        }
+        else if (staffUser.isDirector) {
+            staffRole = "DIRECTOR";
+        }
+        else if (staffUser.isManager) {
+            staffRole = "MANAGER";
+        }
+        else if (staffUser.isPSsupport) {
+            staffRole = "PS_SUPPORT";
+        }
+    }
+    const defaultPermissionCodes = staffUser
+        ? (0, default_permission_1.getDefaultPermissionCodes)(staffRole || undefined, calculatedManagerType || undefined)
+        : [];
     const permissionCodes = staffUser
-        ? staffUser.staffPermissions.map((sp) => sp.permission.code)
+        ? Array.from(new Set([
+            ...defaultPermissionCodes,
+            ...staffUser.staffPermissions.map((sp) => (0, default_permission_1.normalizePermissionCode)(sp.permission.code)),
+        ])).map((code) => (0, default_permission_1.normalizePermissionCode)(code))
         : [];
     if (!user) {
         throw new Error("Invalid email or password");
@@ -52,6 +74,18 @@ const Login = async (email, passwordPlain) => {
     if (user.lockedUntil && now < new Date(user.lockedUntil)) {
         const minutesLeft = Math.ceil((new Date(user.lockedUntil).getTime() - now.getTime()) / 60000);
         throw new Error(`Account is temporarily locked. Please try again in ${minutesLeft} minutes.`);
+    }
+    if (user.status === "DEACTIVATED") {
+        throw new Error("Authentication blocked. This account has been deactivated.");
+    }
+    if (partyType === "CUSTOMER") {
+        const organization = await database_1.prisma.organization.findUnique({
+            where: { id: user.organizationId },
+            select: { isActive: true },
+        });
+        if (!organization || !organization.isActive) {
+            throw new Error("Authentication blocked. This organization is inactive.");
+        }
     }
     if (user.status !== "ACTIVE") {
         throw new Error("Authentication blocked. Your account is not active.");
@@ -103,15 +137,15 @@ const Login = async (email, passwordPlain) => {
         firstName: user.firstName,
         lastName: user.lastName || null,
         partyType,
-        isSAdmin: isStaff ? user.isSAdmin : false,
-        isManager: isStaff ? user.isManager : false,
-        isDirector: isStaff ? user.isDirector : false,
+        isSAdmin: isStaff ? (user.isSAdmin || user.role === "SYSTEM_ADMIN") : false,
+        isManager: isStaff ? (user.isManager || Boolean(calculatedManagerType)) : false,
+        isDirector: isStaff ? (user.isDirector || user.role === "DIRECTOR") : false,
         managerType: isStaff ? calculatedManagerType : null,
-        isPSsupport: isStaff ? user.isPSsupport : false,
+        isPSsupport: isStaff ? (user.isPSsupport || user.role === "PS_SUPPORT") : false,
         departmentId: isStaff ? user.managedDepartment?.id || null : null,
         divisionId: isStaff ? user.managedDivision?.id || null : null,
         sectionId: isStaff ? user.section?.id || null : null,
-        permissions: permissionCodes, // ADD THIS LINE — this is the field requirePermission actually reads
+        permissions: permissionCodes,
     });
     const refreshToken = jwt_1.JwtUtils.generateRefreshToken(user.id, partyType);
     const refreshTokenHash = crypto_1.default

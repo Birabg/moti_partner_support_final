@@ -9,8 +9,12 @@ const database_1 = require("../../config/database");
 const exceljs_1 = __importDefault(require("exceljs"));
 const PDFDocument = require("pdfkit");
 const csv_writer_1 = require("csv-writer");
-const getReportData = async () => {
+const getReportData = async (userId, actorType) => {
+    const where = actorType === "CUSTOMER" && userId
+        ? { customerId: userId }
+        : {};
     const cases = await database_1.prisma.caseReport.findMany({
+        where,
         orderBy: {
             createdAt: "desc",
         },
@@ -37,8 +41,8 @@ exports.getReportData = getReportData;
 /* ==========================================================
    PDF EXPORT
 ========================================================== */
-const generatePdf = async () => {
-    const data = await (0, exports.getReportData)();
+const generatePdf = async (userId, actorType) => {
+    const data = await (0, exports.getReportData)(userId, actorType);
     return new Promise((resolve) => {
         const doc = new PDFDocument({
             margin: 40,
@@ -77,8 +81,8 @@ exports.generatePdf = generatePdf;
 /* ==========================================================
    EXCEL EXPORT
 ========================================================== */
-const generateExcel = async () => {
-    const data = await (0, exports.getReportData)();
+const generateExcel = async (userId, actorType) => {
+    const data = await (0, exports.getReportData)(userId, actorType);
     const workbook = new exceljs_1.default.Workbook();
     const sheet = workbook.addWorksheet("Reports");
     sheet.columns = [
@@ -112,8 +116,8 @@ exports.generateExcel = generateExcel;
 /* ==========================================================
    CSV EXPORT
 ========================================================== */
-const generateCsv = async () => {
-    const data = await (0, exports.getReportData)();
+const generateCsv = async (userId, actorType) => {
+    const data = await (0, exports.getReportData)(userId, actorType);
     const csv = (0, csv_writer_1.createObjectCsvStringifier)({
         header: [
             {

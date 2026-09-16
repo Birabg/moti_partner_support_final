@@ -17,6 +17,7 @@ import { getTransporter } from "../../utils/email";
 import { ENV } from "../../config/env";
 import { sendCaseCreationCustomerEmail, sendSharedSupportInboxAlert } from "../../utils/email";
 import { createStatusHistory } from "./statusHistory.service";
+import { generateNextCaseNumber } from "../../utils/caseNumber";
 
 
 
@@ -269,6 +270,7 @@ const triggerStatusNotification = async (caseDetails: any, newStatus: string) =>
     customerEmail: caseDetails.customer.email,
     customerName: caseDetails.customer.fullName,
     caseNumber: caseDetails.caseNumber,
+    caseId: caseDetails.id,
     subjectLine: caseDetails.subject,
     newStatus: newStatus,
   });
@@ -305,7 +307,7 @@ export const getPrivilegedBroadcastStaff = async () => {
 };
 
 export const createCase = async (input: any) => {
-  const { creationReason, staffActorId, attachments = [], ...caseData } = input;
+  const { creationReason, staffActorId, attachments = [], caseNumber, ...caseData } = input;
 
   const isStaff = Boolean(staffActorId);
   const uploaderType = isStaff ? "STAFF" : "CUSTOMER";
@@ -317,9 +319,15 @@ export const createCase = async (input: any) => {
   }
 
   const newCase = await prisma.$transaction(async (tx) => {
+    const candidateCaseNumber =
+      typeof caseNumber === "string" && /^MOTI-10000-M0C\d+$/.test(caseNumber)
+        ? caseNumber
+        : await generateNextCaseNumber(tx);
+
     const createdCase = await tx.caseReport.create({
       data: {
         ...caseData,
+        caseNumber: candidateCaseNumber,
         creationReason: creationReason || null,
         status: CaseStatus.OPEN,
         updatedById: staffActorId || null,
@@ -1107,7 +1115,7 @@ export const resolveCase = async (caseId: string, resolutionSummary: string, age
     const updated = await tx.caseReport.update({
       where: { id: caseId },
       data: {
-        status: CaseStatus.CUSTOMER_CONFIRMATION,
+        status: CaseStatus.RESOLVED,
         resolutionSummary: resolutionSummary.trim(),
         resolvedAt: new Date(),
         updatedById: agentId,
@@ -1121,7 +1129,7 @@ export const resolveCase = async (caseId: string, resolutionSummary: string, age
       actorType: "STAFF",
       actorId: agentId,
       fromStatus: targetCase.status as any,
-      toStatus: CaseStatus.CUSTOMER_CONFIRMATION,
+      toStatus: CaseStatus.RESOLVED,
       oldPriority: targetCase.priority,
       newPriority: targetCase.priority,
       oldAgentId: targetCase.assignedSupportId,
@@ -1138,7 +1146,6 @@ export const resolveCase = async (caseId: string, resolutionSummary: string, age
     console.error("De-coupled resolution email notification error: ", emailError);
   }
 
-  
   CaseEventBroker.emit(CASE_EVENTS.RESOLVED, {
     caseId: updatedCase.id,
     caseNumber: updatedCase.caseNumber,
@@ -1173,6 +1180,10 @@ export const closeCaseWithFeedback = async (
     throw new BadRequestError("Unauthorized: You do not own this case file.");
   }
 
+  if (targetCase.status !== CaseStatus.CUSTOMER_CONFIRMATION) {
+    throw new BadRequestError("This case is not awaiting customer confirmation feedback.");
+  }
+
   const closedCase = await prisma.$transaction(async (tx) => {
     await tx.feedback.create({
       data: {
@@ -1184,7 +1195,11 @@ export const closeCaseWithFeedback = async (
 
     const updated = await tx.caseReport.update({
       where: { id: caseId },
-      data: { status: CaseStatus.CLOSED },
+      data: {
+        status: CaseStatus.CLOSED,
+        closedAt: new Date(),
+        updatedById: null,
+      },
     });
 
     await createStatusHistory(tx, {
@@ -1246,17 +1261,20 @@ export const reopenCase = async (caseId: string, customerId: string) => {
     throw new BadRequestError("Unauthorized: You do not own this case file.");
   }
 
-  if (targetCase.status !== CaseStatus.CUSTOMER_CONFIRMATION) {
-    throw new BadRequestError("Validation Failure: Only cases marked as CUSTOMER_CONFIRMATION can be rejected and reopened.");
+  if (
+    targetCase.status !== CaseStatus.RESOLVED &&
+    targetCase.status !== CaseStatus.CUSTOMER_CONFIRMATION
+  ) {
+    throw new BadRequestError("Validation Failure: Only resolved or pending-confirmation cases can be rejected and reopened.");
   }
 
   const reopenedCase = await prisma.$transaction(async (tx) => {
     const updated = await tx.caseReport.update({
       where: { id: caseId },
       data: {
-        status: CaseStatus.IN_PROGRESS, 
-        resolvedAt: null,              
-        resolutionSummary: null,        
+        status: CaseStatus.IN_PROGRESS,
+        resolvedAt: null,
+        resolutionSummary: null,
       },
       include: { customer: true },
     });

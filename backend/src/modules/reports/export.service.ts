@@ -4,38 +4,44 @@ import { prisma } from "../../config/database";
 import ExcelJS from "exceljs";
 import PDFDocument = require("pdfkit");
 import { createObjectCsvStringifier } from "csv-writer";
-export const getReportData = async () => {
-    const cases = await prisma.caseReport.findMany({
-        orderBy: {
-            createdAt: "desc",
-        },
-        include: {
-            customer: {
-                select: {
-                    firstName: true,
-                    middleName: true,
-                    email: true,
-                },
-            },
-            assignedSupport: {
-                select: {
-                    firstName: true,
-                    middleName: true,
-                    email: true,
-                },
-            },
-        },
-    });
 
-    return cases;
+export const getReportData = async (userId?: string, actorType?: "CUSTOMER" | "STAFF") => {
+   const where = actorType === "CUSTOMER" && userId
+       ? { customerId: userId }
+       : {};
+
+   const cases = await prisma.caseReport.findMany({
+       where,
+       orderBy: {
+           createdAt: "desc",
+       },
+       include: {
+           customer: {
+               select: {
+                   firstName: true,
+                   middleName: true,
+                   email: true,
+               },
+           },
+           assignedSupport: {
+               select: {
+                   firstName: true,
+                   middleName: true,
+                   email: true,
+               },
+           },
+       },
+   });
+
+   return cases;
 };
 
 /* ==========================================================
    PDF EXPORT
 ========================================================== */
 
-export const generatePdf = async (): Promise<Buffer> => {
-    const data = await getReportData();
+export const generatePdf = async (userId?: string, actorType?: "CUSTOMER" | "STAFF"): Promise<Buffer> => {
+   const data = await getReportData(userId, actorType);
 
     return new Promise((resolve) => {
 
@@ -127,9 +133,9 @@ export const generatePdf = async (): Promise<Buffer> => {
    EXCEL EXPORT
 ========================================================== */
 
-export const generateExcel = async (): Promise<Buffer> => {
-
-    const data = await getReportData();
+export const generateExcel = async (userId?: string, actorType?: "CUSTOMER" | "STAFF"): Promise<Buffer> => {
+ 
+    const data = await getReportData(userId, actorType);
 
     const workbook =
         new ExcelJS.Workbook();
@@ -189,10 +195,10 @@ export const generateExcel = async (): Promise<Buffer> => {
    CSV EXPORT
 ========================================================== */
 
-export const generateCsv = async (): Promise<Buffer> => {
-
+export const generateCsv = async (userId?: string, actorType?: "CUSTOMER" | "STAFF"): Promise<Buffer> => {
+ 
     const data =
-        await getReportData();
+        await getReportData(userId, actorType);
 
 
     const csv =

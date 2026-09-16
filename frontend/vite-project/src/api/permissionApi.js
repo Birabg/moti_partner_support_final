@@ -5,6 +5,12 @@ export const PermissionApi = {
         return Axios.get("/permissions/getAll");
     },
 
+    getDefaultPermissionsForRole(role, managerType) {
+        return Axios.get("/permissions/default-role-permission", {
+            params: { role, managerType },
+        });
+    },
+
     grant(targetStaffId, permissionCodes) {
         return Axios.patch("/permissions/grant", {
             targetStaffId,

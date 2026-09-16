@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDefaultPermissionCodes = exports.DEFAULT_ROLE_PERMISSIONS = exports.PERMISSIONS = void 0;
+exports.getEffectivePermissionCodes = exports.getDefaultPermissionCodes = exports.DEFAULT_ROLE_PERMISSIONS = exports.normalizePermissionCode = exports.LEGACY_PERMISSION_ALIASES = exports.PERMISSIONS = void 0;
 exports.PERMISSIONS = {
     STAFF_READ_ALL: "STAFF_READ_ALL",
     CUSTOMER_READ_ALL: "CUSTOMER_READ_ALL",
@@ -15,7 +15,7 @@ exports.PERMISSIONS = {
     CASE_ASSIGN: "CASE_ASSIGN",
     CASE_SET_PRIORITY: "CASE_SET_PRIORITY",
     CASE_READ_ANALYTICS: "CASE_READ_ANALYTICS",
-    CASE_READ_OWN_ANALTICS: "CASE_READ_OWN_ANALTICS",
+    CASE_READ_OWN_ANALYTICS: "CASE_READ_OWN_ANALYTICS",
     CASE_CREATE: "CASE_CREATE",
     VIEW_ALL_CASES_METRICS: "VIEW_ALL_CASES_METRICS",
     VIEW_ALL_CASES_DETAIL: "VIEW_ALL_CASES_DETAIL",
@@ -25,8 +25,25 @@ exports.PERMISSIONS = {
     SERVICE_MANAGE: "SERVICE_MANAGE",
     ORGANIZATION_MANAGE: "ORGANIZATION_MANAGE",
     PRODUCT_MANAGE: "PRODUCT_MANAGE",
-    PRODUCT_READ_ALL: "PRODUCT_READ_ALL"
+    PRODUCT_READ_ALL: "PRODUCT_READ_ALL",
 };
+exports.LEGACY_PERMISSION_ALIASES = {
+    CASE_READ_OWN_ANALTICS: exports.PERMISSIONS.CASE_READ_OWN_ANALYTICS,
+};
+const normalizePermissionCode = (code) => {
+    if (!code)
+        return "";
+    const rawValue = typeof code === "string"
+        ? code
+        : typeof code === "object" && "code" in code && typeof code.code === "string"
+            ? code.code
+            : "";
+    const raw = rawValue.trim().toUpperCase();
+    if (!raw)
+        return "";
+    return exports.LEGACY_PERMISSION_ALIASES[raw] || raw;
+};
+exports.normalizePermissionCode = normalizePermissionCode;
 exports.DEFAULT_ROLE_PERMISSIONS = {
     SYSTEM_ADMIN: [
         exports.PERMISSIONS.STAFF_READ_ALL,
@@ -47,7 +64,7 @@ exports.DEFAULT_ROLE_PERMISSIONS = {
         exports.PERMISSIONS.VIEW_ALL_CASES_METRICS,
         exports.PERMISSIONS.VIEW_ALL_CASES_DETAIL,
         exports.PERMISSIONS.RECEIVE_NEW_CASE,
-        exports.PERMISSIONS.ACCESS_USER_DETAIL
+        exports.PERMISSIONS.ACCESS_USER_DETAIL,
     ],
     DIRECTOR: [
         exports.PERMISSIONS.USER_READ_STATS,
@@ -64,7 +81,7 @@ exports.DEFAULT_ROLE_PERMISSIONS = {
         exports.PERMISSIONS.CASE_READ_HIERARCHY,
         exports.PERMISSIONS.CASE_ASSIGN,
         exports.PERMISSIONS.CASE_SET_PRIORITY,
-        exports.PERMISSIONS.CASE_READ_OWN_ANALTICS,
+        exports.PERMISSIONS.CASE_READ_OWN_ANALYTICS,
     ],
     MANAGER_DIVISION: [
         exports.PERMISSIONS.STRUCTURE_READ_OWN,
@@ -72,7 +89,7 @@ exports.DEFAULT_ROLE_PERMISSIONS = {
         exports.PERMISSIONS.CASE_READ_HIERARCHY,
         exports.PERMISSIONS.CASE_ASSIGN,
         exports.PERMISSIONS.CASE_SET_PRIORITY,
-        exports.PERMISSIONS.CASE_READ_OWN_ANALTICS,
+        exports.PERMISSIONS.CASE_READ_OWN_ANALYTICS,
     ],
     MANAGER_SECTION: [
         exports.PERMISSIONS.STRUCTURE_READ_OWN,
@@ -81,22 +98,31 @@ exports.DEFAULT_ROLE_PERMISSIONS = {
         exports.PERMISSIONS.CASE_READ_HIERARCHY,
         exports.PERMISSIONS.CASE_ASSIGN,
         exports.PERMISSIONS.CASE_SET_PRIORITY,
-        exports.PERMISSIONS.CASE_READ_OWN_ANALTICS,
+        exports.PERMISSIONS.CASE_READ_OWN_ANALYTICS,
     ],
     PS_SUPPORT: [
         exports.PERMISSIONS.STRUCTURE_READ_OWN,
         exports.PERMISSIONS.CASE_READ_HIERARCHY,
-        exports.PERMISSIONS.CASE_READ_OWN_ANALTICS,
+        exports.PERMISSIONS.CASE_READ_OWN_ANALYTICS,
     ],
 };
 const getDefaultPermissionCodes = (role, managerType) => {
     if (!role)
         return [];
     const normalizedRole = role.trim().toUpperCase();
-    if (normalizedRole === "MANAGER") {
-        const key = managerType ? `MANAGER_${managerType.trim().toUpperCase()}` : null;
-        return key ? exports.DEFAULT_ROLE_PERMISSIONS[key] ?? [] : [];
-    }
-    return exports.DEFAULT_ROLE_PERMISSIONS[normalizedRole] ?? [];
+    const baseCodes = normalizedRole === "MANAGER"
+        ? managerType
+            ? exports.DEFAULT_ROLE_PERMISSIONS[`MANAGER_${managerType.trim().toUpperCase()}`] ?? []
+            : []
+        : exports.DEFAULT_ROLE_PERMISSIONS[normalizedRole] ?? [];
+    return baseCodes.map((code) => (0, exports.normalizePermissionCode)(code));
 };
 exports.getDefaultPermissionCodes = getDefaultPermissionCodes;
+const getEffectivePermissionCodes = (role, managerType, extraCodes = []) => {
+    const defaultCodes = (0, exports.getDefaultPermissionCodes)(role, managerType);
+    const normalizedExtra = (extraCodes || [])
+        .map((code) => (0, exports.normalizePermissionCode)(code))
+        .filter(Boolean);
+    return Array.from(new Set([...defaultCodes, ...normalizedExtra]));
+};
+exports.getEffectivePermissionCodes = getEffectivePermissionCodes;

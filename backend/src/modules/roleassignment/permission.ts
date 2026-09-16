@@ -10,11 +10,13 @@ export const syncStaffDefaultPermissions = async (
   customPermissionCodes?: string[] 
 ) => {
 
-  const codesToAssign =
-    customPermissionCodes && customPermissionCodes.length > 0
-      ? customPermissionCodes
-      : getDefaultPermissionCodes(role, managerType);
-
+  const defaultCodes = getDefaultPermissionCodes(role, managerType);
+  const codesToAssign = Array.from(
+    new Set([
+      ...defaultCodes,
+      ...(customPermissionCodes || []),
+    ].map((code) => code?.trim().toUpperCase()))
+  );
 
   const matchedPermissions = await tx.permission.findMany({
     where: { code: { in: codesToAssign } },

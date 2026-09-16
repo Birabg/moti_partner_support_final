@@ -40,12 +40,9 @@ const setServiceTypeActiveStatus = async (id, isActive) => {
 exports.setServiceTypeActiveStatus = setServiceTypeActiveStatus;
 const getAllServiceTypes = async () => {
     return database_1.prisma.serviceType.findMany({
-        where: {
-            isActive: true
-        },
         orderBy: {
-            createdAt: "desc"
-        }
+            createdAt: "desc",
+        },
     });
 };
 exports.getAllServiceTypes = getAllServiceTypes;

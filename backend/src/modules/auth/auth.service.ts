@@ -1,4 +1,5 @@
 import { prisma } from "../../config/database";
+import { getDefaultPermissionCodes, normalizePermissionCode } from "../../config/default.permission";
 import { BcryptUtils } from "../../utils/bcrypt";
 import { JwtUtils, AuthPartyType } from "../../utils/jwt";
 import crypto from "crypto";
@@ -40,12 +41,32 @@ export const Login = async (email: string, passwordPlain: string) => {
       partyType = "CUSTOMER";
     }
   }
-const permissionCodes = staffUser
-  ? staffUser.staffPermissions.map((sp) => sp.permission.code)
-  : [];
-  if (!user) {
-    throw new Error("Invalid email or password");
+let staffRole: string | null = null;
+if (staffUser) {
+  if (staffUser.isSAdmin) {
+    staffRole = "SYSTEM_ADMIN";
+  } else if (staffUser.isDirector) {
+    staffRole = "DIRECTOR";
+  } else if (staffUser.isManager) {
+    staffRole = "MANAGER";
+  } else if (staffUser.isPSsupport) {
+    staffRole = "PS_SUPPORT";
   }
+}
+
+const defaultPermissionCodes = staffUser
+  ? getDefaultPermissionCodes(staffRole || undefined, calculatedManagerType || undefined)
+  : [];
+const permissionCodes = staffUser
+  ? Array.from(new Set([
+      ...defaultPermissionCodes,
+      ...staffUser.staffPermissions.map((sp) => normalizePermissionCode(sp.permission.code)),
+    ])).map((code) => normalizePermissionCode(code))
+  : [];
+
+if (!user) {
+  throw new Error("Invalid email or password");
+}
 
   if (user.lockedUntil && now < new Date(user.lockedUntil)) {
     const minutesLeft = Math.ceil(
@@ -54,6 +75,21 @@ const permissionCodes = staffUser
     throw new Error(
       `Account is temporarily locked. Please try again in ${minutesLeft} minutes.`,
     );
+  }
+
+  if (user.status === "DEACTIVATED") {
+    throw new Error("Authentication blocked. This account has been deactivated.");
+  }
+
+  if (partyType === "CUSTOMER") {
+    const organization = await prisma.organization.findUnique({
+      where: { id: user.organizationId },
+      select: { isActive: true },
+    });
+
+    if (!organization || !organization.isActive) {
+      throw new Error("Authentication blocked. This organization is inactive.");
+    }
   }
 
   if (user.status !== "ACTIVE") {
@@ -118,15 +154,15 @@ const permissionCodes = staffUser
   firstName: user.firstName,
   lastName: user.lastName || null,
   partyType,
-  isSAdmin: isStaff ? user.isSAdmin : false,
-  isManager: isStaff ? user.isManager : false,
-  isDirector: isStaff ? user.isDirector : false,
+  isSAdmin: isStaff ? (user.isSAdmin || user.role === "SYSTEM_ADMIN") : false,
+  isManager: isStaff ? (user.isManager || Boolean(calculatedManagerType)) : false,
+  isDirector: isStaff ? (user.isDirector || user.role === "DIRECTOR") : false,
   managerType: isStaff ? calculatedManagerType : null,
-  isPSsupport: isStaff ? user.isPSsupport : false,
+  isPSsupport: isStaff ? (user.isPSsupport || user.role === "PS_SUPPORT") : false,
   departmentId: isStaff ? user.managedDepartment?.id || null : null,
   divisionId: isStaff ? user.managedDivision?.id || null : null,
   sectionId: isStaff ? user.section?.id || null : null,
-  permissions: permissionCodes, // ADD THIS LINE — this is the field requirePermission actually reads
+  permissions: permissionCodes,
 });
 
   const refreshToken = JwtUtils.generateRefreshToken(user.id, partyType);

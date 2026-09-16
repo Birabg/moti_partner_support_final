@@ -21,7 +21,7 @@ export default function ManagerSidebar() {
   const { logout, user } = useAuth();
   const organisationLabel = getOrganisationLabel(user?.managerType);
   const managerItems = [
-    { to: "/dashboard", icon: FaHome, label: "Dashboard" },
+    { to: "/manager/dashboard", icon: FaHome, label: "Dashboard" },
     { to: "/manager/organization", icon: FaBuilding, label: organisationLabel },
     { to: "/manager/staff", icon: FaUsers, label: "Staff" },
     { to: "/manager/cases", icon: FaClipboardList, label: "Cases" },

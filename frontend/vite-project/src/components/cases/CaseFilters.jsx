@@ -1,3 +1,4 @@
+import { Search, SlidersHorizontal, ChevronDown } from "lucide-react";
 import { useState } from "react";
 
 export default function CaseFilters({ onFilter }) {
@@ -6,36 +7,201 @@ export default function CaseFilters({ onFilter }) {
 
     function updateSearch(e) {
         const value = e.target.value;
+
         setSearch(value);
-        onFilter({ search: value, status });
+
+        onFilter({
+            search: value,
+            status,
+        });
     }
 
     function updateStatus(e) {
         const value = e.target.value;
+
         setStatus(value);
-        onFilter({ search, status: value });
+
+        onFilter({
+            search,
+            status: value,
+        });
     }
 
     return (
-        <>
-            <input
-                className="min-w-[220px] flex-1 rounded-md border border-navy-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500"
-                placeholder="Search cases..."
-                value={search}
-                onChange={updateSearch}
-            />
+        <div
+            className="
+                flex
+                w-full
+                flex-col
+                gap-2
+                sm:flex-row
+                sm:items-center
+            "
+        >
 
-            <select
-                className="rounded-md border border-navy-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500"
-                value={status}
-                onChange={updateStatus}
+            {/* =====================================================
+                SEARCH
+            ===================================================== */}
+
+            <div
+                className="
+                    relative
+                    min-w-0
+                    flex-1
+                "
             >
-                <option value="ALL">All Status</option>
-                <option value="OPEN">OPEN</option>
-                <option value="IN_PROGRESS">IN PROGRESS</option>
-                <option value="WAITING_CUSTOMER_FEEDBACK">WAITING CUSTOMER</option>
-                <option value="CLOSED">CLOSED</option>
-            </select>
-        </>
+
+                <Search
+                    size={15}
+                    strokeWidth={1.8}
+                    className="
+                        pointer-events-none
+                        absolute
+                        left-3
+                        top-1/2
+                        -translate-y-1/2
+                        text-slate-400
+                    "
+                />
+
+                <input
+                    type="text"
+                    value={search}
+                    onChange={updateSearch}
+                    placeholder="Search cases..."
+                    className="
+                        h-9
+                        w-full
+                        rounded-lg
+                        border
+                        border-slate-200
+                        bg-white
+                        py-2
+                        pl-9
+                        pr-3
+                        text-xs
+                        font-medium
+                        text-slate-700
+                        placeholder:text-slate-400
+                        transition-all
+                        duration-200
+                        hover:border-slate-300
+                        focus:border-blue-300
+                        focus:outline-none
+                        focus:ring-2
+                        focus:ring-blue-50
+                    "
+                />
+
+            </div>
+
+
+            {/* =====================================================
+                STATUS
+            ===================================================== */}
+
+            <div
+                className="
+                    relative
+                    shrink-0
+                "
+            >
+
+                <SlidersHorizontal
+                    size={14}
+                    strokeWidth={1.8}
+                    className="
+                        pointer-events-none
+                        absolute
+                        left-3
+                        top-1/2
+                        -translate-y-1/2
+                        text-slate-400
+                    "
+                />
+
+                <select
+                    value={status}
+                    onChange={updateStatus}
+                    className="
+                        h-9
+                        w-full
+                        appearance-none
+                        rounded-lg
+                        border
+                        border-slate-200
+                        bg-white
+                        py-2
+                        pl-9
+                        pr-9
+                        text-xs
+                        font-semibold
+                        text-slate-700
+                        transition-all
+                        duration-200
+                        hover:border-slate-300
+                        focus:border-blue-300
+                        focus:outline-none
+                        focus:ring-2
+                        focus:ring-blue-50
+                        sm:w-52
+                    "
+                >
+
+                    <option value="ALL">
+                        All statuses
+                    </option>
+
+                    <option value="OPEN">
+                        Open
+                    </option>
+
+                    <option value="IN_PROGRESS">
+                        In Progress
+                    </option>
+
+                    <option value="ESCALATED">
+                        Escalated
+                    </option>
+
+                    <option value="PENDING">
+                        Pending
+                    </option>
+
+                    <option value="AWAITING_CUSTOMER_RESPONSE">
+                        Awaiting Customer Response
+                    </option>
+
+                    <option value="WAITING_CUSTOMER_FEEDBACK">
+                        Awaiting Customer Response
+                    </option>
+
+                    <option value="CLOSED">
+                        Closed
+                    </option>
+
+                    <option value="RESOLVED">
+                        Resolved
+                    </option>
+
+                </select>
+
+
+                <ChevronDown
+                    size={14}
+                    strokeWidth={1.8}
+                    className="
+                        pointer-events-none
+                        absolute
+                        right-3
+                        top-1/2
+                        -translate-y-1/2
+                        text-slate-400
+                    "
+                />
+
+            </div>
+
+        </div>
     );
 }

@@ -135,6 +135,10 @@ const deactivateOrganization = async (id) => {
     const existing = await database_1.prisma.organization.findUnique({ where: { id } });
     if (!existing)
         throw new error_1.NotFoundError("Organization target missing.");
+    await database_1.prisma.customer.updateMany({
+        where: { organizationId: id },
+        data: { status: "DEACTIVATED" },
+    });
     return database_1.prisma.organization.update({
         where: { id },
         data: { isActive: false },
@@ -145,6 +149,13 @@ const reactivateOrganization = async (id) => {
     const existing = await database_1.prisma.organization.findUnique({ where: { id } });
     if (!existing)
         throw new error_1.NotFoundError("Organization target missing.");
+    await database_1.prisma.customer.updateMany({
+        where: {
+            organizationId: id,
+            status: "DEACTIVATED",
+        },
+        data: { status: "ACTIVE" },
+    });
     return database_1.prisma.organization.update({
         where: { id },
         data: { isActive: true },

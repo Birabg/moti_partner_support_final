@@ -34,6 +34,28 @@ async function updateStatus(caseId, newStatus, actor, opts) {
     if (!validation.allowed) {
         throw new Error(validation.reason || "Transition not allowed.");
     }
+    // Enforce Cancelled only by system admin (double-check at service layer)
+    if (newStatus === client_1.CaseStatus.CANCELLED && !actor.isSAdmin) {
+        throw new Error("Only System Administrators may cancel cases.");
+    }
+    // PENDING: require reason and restrict actors to customer (case owner), assigned agent, manager/director, or system admin
+    if (newStatus === client_1.CaseStatus.PENDING) {
+        if (!opts?.reason || typeof opts.reason !== 'string' || opts.reason.trim().length < 5) {
+            throw new Error("Pending description is required (min 5 chars).");
+        }
+        const actorIsOwnerCustomer = !!(actor.isCustomer && actorId && targetCase.customerId && actorId === targetCase.customerId);
+        const actorIsAssignedAgent = !!(actorId && targetCase.assignedSupportId && actorId === targetCase.assignedSupportId);
+        const actorIsPrivilegedStaff = !!(actor.isManager || actor.isDirector || actor.isSAdmin);
+        if (!actorIsOwnerCustomer && !actorIsAssignedAgent && !actorIsPrivilegedStaff) {
+            throw new Error("Only the case owner (customer), the assigned agent, manager/director, or system admin may place a case on PENDING.");
+        }
+    }
+    // ESCALATED: require reason
+    if (newStatus === client_1.CaseStatus.ESCALATED) {
+        if (!opts?.reason || typeof opts.reason !== 'string' || opts.reason.trim().length < 5) {
+            throw new Error("Escalation reason is required (min 5 chars).");
+        }
+    }
     // Enforce resolutionSummary when marking RESOLVED
     if (newStatus === client_1.CaseStatus.RESOLVED && (!opts?.resolutionSummary || opts.resolutionSummary.trim().length < 10)) {
         throw new Error("A detailed resolutionSummary (min 10 chars) is required when resolving a case.");
@@ -94,49 +116,11 @@ async function updateStatus(caseId, newStatus, actor, opts) {
             assignedAgentId: updated.assignedSupportId,
             sectionId: updated.sectionId,
         });
-        // send dedicated resolution email with summary
         try {
             await (0, email_1.triggerResolutionEmail)(updated);
         }
         catch (e) {
             console.error("Resolution email error:", e);
-        }
-        // Automatically mark case as waiting for customer confirmation
-        try {
-            const SYSTEM_BOT_ID = "00000000-0000-0000-0000-000000000000";
-            await database_1.prisma.$transaction(async (tx) => {
-                await tx.caseReport.update({ where: { id: updated.id }, data: { status: client_1.CaseStatus.CUSTOMER_CONFIRMATION, updatedById: SYSTEM_BOT_ID } });
-                await (0, statusHistory_service_1.createStatusHistory)(tx, {
-                    caseReportId: updated.id,
-                    changedById: SYSTEM_BOT_ID,
-                    actorType: "SYSTEM",
-                    actorId: null,
-                    fromStatus: client_1.CaseStatus.RESOLVED,
-                    toStatus: client_1.CaseStatus.CUSTOMER_CONFIRMATION,
-                    oldPriority: updated.priority,
-                    newPriority: updated.priority,
-                    oldAgentId: updated.assignedSupportId,
-                    newAgentId: updated.assignedSupportId,
-                });
-            });
-            // notify customer that confirmation is required
-            try {
-                if (updated.customer?.email) {
-                    await (0, email_1.sendStatusUpdateEmail)({
-                        customerEmail: updated.customer.email,
-                        customerName: `${updated.customer.firstName} ${updated.customer.lastName || ''}`.trim(),
-                        caseNumber: updated.caseNumber,
-                        subjectLine: updated.subject,
-                        newStatus: client_1.CaseStatus.CUSTOMER_CONFIRMATION,
-                    });
-                }
-            }
-            catch (notifyErr) {
-                console.error('Customer confirmation notification error:', notifyErr);
-            }
-        }
-        catch (autoErr) {
-            console.error('Auto transition to CUSTOMER_CONFIRMATION failed:', autoErr);
         }
     }
     if (newStatus === client_1.CaseStatus.CLOSED) {
@@ -157,6 +141,7 @@ async function updateStatus(caseId, newStatus, actor, opts) {
                     customerEmail: updated.customer.email,
                     customerName: `${updated.customer.firstName} ${updated.customer.lastName || ''}`.trim(),
                     caseNumber: updated.caseNumber,
+                    caseId: updated.id,
                     subjectLine: updated.subject,
                     newStatus: newStatus,
                 });
@@ -173,6 +158,7 @@ async function updateStatus(caseId, newStatus, actor, opts) {
                 customerEmail: updated.customer.email,
                 customerName: `${updated.customer.firstName} ${updated.customer.lastName || ''}`.trim(),
                 caseNumber: updated.caseNumber,
+                caseId: updated.id,
                 subjectLine: updated.subject,
                 newStatus: newStatus,
             });

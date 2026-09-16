@@ -3,6 +3,7 @@ import { FaChartBar, FaClipboardList, FaCheckCircle } from "react-icons/fa";
 import { directorApi } from "../../api/directorApi";
 import DirectorHeader from "../../components/director/DirectorHeader";
 import CaseStats from "../../components/cases/CaseStats";
+import CasesAnalytics from "../../components/admin/CasesAnalytics";
 import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
 
 export default function DirectorCaseAnalytics() {
@@ -28,8 +29,17 @@ export default function DirectorCaseAnalytics() {
     }
 
     loadMetrics();
+
+    // Listen for case updates and refresh analytics
+    const handleCasesUpdated = () => {
+      loadMetrics();
+    };
+
+    window.addEventListener("cases:updated", handleCasesUpdated);
+
     return () => {
       isMounted = false;
+      window.removeEventListener("cases:updated", handleCasesUpdated);
     };
   }, []);
 
@@ -66,6 +76,10 @@ export default function DirectorCaseAnalytics() {
 
       <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <CaseStats cases={statusCases} />
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <CasesAnalytics />
       </div>
 
       <Card>

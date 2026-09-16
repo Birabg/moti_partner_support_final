@@ -1,5 +1,3 @@
-import { Request, Response } from "express";
-
 export const PERMISSIONS = {
   STAFF_READ_ALL: "STAFF_READ_ALL",
   CUSTOMER_READ_ALL: "CUSTOMER_READ_ALL",
@@ -15,7 +13,7 @@ export const PERMISSIONS = {
   CASE_ASSIGN: "CASE_ASSIGN",
   CASE_SET_PRIORITY: "CASE_SET_PRIORITY",
   CASE_READ_ANALYTICS: "CASE_READ_ANALYTICS",
-  CASE_READ_OWN_ANALTICS: "CASE_READ_OWN_ANALTICS",
+  CASE_READ_OWN_ANALYTICS: "CASE_READ_OWN_ANALYTICS",
   CASE_CREATE: "CASE_CREATE",
   VIEW_ALL_CASES_METRICS: "VIEW_ALL_CASES_METRICS",
   VIEW_ALL_CASES_DETAIL: "VIEW_ALL_CASES_DETAIL",
@@ -27,9 +25,27 @@ export const PERMISSIONS = {
   SERVICE_MANAGE: "SERVICE_MANAGE",
   ORGANIZATION_MANAGE: "ORGANIZATION_MANAGE",
 
-  PRODUCT_MANAGE: "PRODUCT_MANAGE", 
-  PRODUCT_READ_ALL : "PRODUCT_READ_ALL"
+  PRODUCT_MANAGE: "PRODUCT_MANAGE",
+  PRODUCT_READ_ALL: "PRODUCT_READ_ALL",
 } as const;
+
+export const LEGACY_PERMISSION_ALIASES: Record<string, string> = {
+  CASE_READ_OWN_ANALTICS: PERMISSIONS.CASE_READ_OWN_ANALYTICS,
+};
+
+export const normalizePermissionCode = (code?: string | { code?: string } | null): string => {
+  if (!code) return "";
+
+  const rawValue = typeof code === "string"
+    ? code
+    : typeof code === "object" && "code" in code && typeof code.code === "string"
+      ? code.code
+      : "";
+
+  const raw = rawValue.trim().toUpperCase();
+  if (!raw) return "";
+  return LEGACY_PERMISSION_ALIASES[raw] || raw;
+};
 
 export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
   SYSTEM_ADMIN: [
@@ -51,10 +67,9 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.VIEW_ALL_CASES_METRICS,
     PERMISSIONS.VIEW_ALL_CASES_DETAIL,
     PERMISSIONS.RECEIVE_NEW_CASE,
-    PERMISSIONS.ACCESS_USER_DETAIL
+    PERMISSIONS.ACCESS_USER_DETAIL,
   ],
 
- 
   DIRECTOR: [
     PERMISSIONS.USER_READ_STATS,
     PERMISSIONS.CASE_READ_ALL,
@@ -71,7 +86,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.CASE_READ_HIERARCHY,
     PERMISSIONS.CASE_ASSIGN,
     PERMISSIONS.CASE_SET_PRIORITY,
-    PERMISSIONS.CASE_READ_OWN_ANALTICS,
+    PERMISSIONS.CASE_READ_OWN_ANALYTICS,
   ],
   MANAGER_DIVISION: [
     PERMISSIONS.STRUCTURE_READ_OWN,
@@ -79,7 +94,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.CASE_READ_HIERARCHY,
     PERMISSIONS.CASE_ASSIGN,
     PERMISSIONS.CASE_SET_PRIORITY,
-    PERMISSIONS.CASE_READ_OWN_ANALTICS,
+    PERMISSIONS.CASE_READ_OWN_ANALYTICS,
   ],
   MANAGER_SECTION: [
     PERMISSIONS.STRUCTURE_READ_OWN,
@@ -88,12 +103,12 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     PERMISSIONS.CASE_READ_HIERARCHY,
     PERMISSIONS.CASE_ASSIGN,
     PERMISSIONS.CASE_SET_PRIORITY,
-    PERMISSIONS.CASE_READ_OWN_ANALTICS,
+    PERMISSIONS.CASE_READ_OWN_ANALYTICS,
   ],
   PS_SUPPORT: [
     PERMISSIONS.STRUCTURE_READ_OWN,
     PERMISSIONS.CASE_READ_HIERARCHY,
-    PERMISSIONS.CASE_READ_OWN_ANALTICS,
+    PERMISSIONS.CASE_READ_OWN_ANALYTICS,
   ],
 };
 
@@ -102,10 +117,25 @@ export const getDefaultPermissionCodes = (role?: string, managerType?: string): 
 
   const normalizedRole = role.trim().toUpperCase();
 
-  if (normalizedRole === "MANAGER") {
-    const key = managerType ? `MANAGER_${managerType.trim().toUpperCase()}` : null;
-    return key ? DEFAULT_ROLE_PERMISSIONS[key] ?? [] : [];
-  }
+  const baseCodes =
+    normalizedRole === "MANAGER"
+      ? managerType
+        ? DEFAULT_ROLE_PERMISSIONS[`MANAGER_${managerType.trim().toUpperCase()}`] ?? []
+        : []
+      : DEFAULT_ROLE_PERMISSIONS[normalizedRole] ?? [];
 
-  return DEFAULT_ROLE_PERMISSIONS[normalizedRole] ?? [];
+  return baseCodes.map((code) => normalizePermissionCode(code));
+};
+
+export const getEffectivePermissionCodes = (
+  role?: string,
+  managerType?: string,
+  extraCodes: string[] = []
+): string[] => {
+  const defaultCodes = getDefaultPermissionCodes(role, managerType);
+  const normalizedExtra = (extraCodes || [])
+    .map((code) => normalizePermissionCode(code))
+    .filter(Boolean);
+
+  return Array.from(new Set([...defaultCodes, ...normalizedExtra]));
 };

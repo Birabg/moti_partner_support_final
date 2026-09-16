@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resendStaffVerification = exports.verifyStaffEmail = exports.Register = void 0;
 const database_1 = require("../../config/database");
-const env_1 = require("../../config/env");
 const bcrypt_1 = require("../../utils/bcrypt");
 const email_1 = require("../../utils/email");
 const crypto_1 = __importDefault(require("crypto"));
@@ -75,7 +74,7 @@ const Register = async (data) => {
     });
     // Attempt email delivery without breaking user creation if SMTP fails
     try {
-        const deliverySuccess = await (0, email_1.sendVerificationEmail)(txResult.email, txResult.fullName, env_1.ENV.FRONTEND_URL ?? "", txResult.rawToken, "STAFF");
+        const deliverySuccess = await (0, email_1.sendVerificationEmail)(txResult.email, txResult.fullName, txResult.rawToken, "STAFF");
         await database_1.prisma.emailLog.update({
             where: { id: txResult.emailLogId },
             data: {
@@ -177,7 +176,7 @@ const resendStaffVerification = async (email) => {
             middleName: staff.middleName,
         };
     });
-    const deliverySuccess = await (0, email_1.sendVerificationEmail)(txResult.email, txResult.firstName + " " + txResult.middleName + " " + txResult.lastName, env_1.ENV.FRONTEND_URL ?? "", txResult.rawToken, "STAFF");
+    const deliverySuccess = await (0, email_1.sendVerificationEmail)(txResult.email, [txResult.firstName, txResult.middleName, txResult.lastName].filter(Boolean).join(" ").trim(), txResult.rawToken, "STAFF");
     await database_1.prisma.emailLog.update({
         where: { id: txResult.emailLogId },
         data: {
