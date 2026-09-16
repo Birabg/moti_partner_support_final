@@ -1,13 +1,30 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+
+import {
+  UserRound,
+  Mail,
+  Phone,
+  Building2,
+  ShieldCheck,
+  CalendarDays,
+  Pencil,
+  Save,
+  X,
+  CheckCircle2,
+  BriefcaseBusiness,
+  BadgeCheck,
+  LockKeyhole,
+  CircleUserRound,
+} from "lucide-react";
+
 import SupportHeader from "../../components/support/SupportHeader";
 import SupportApi from "../../api/supportApi";
-import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
-import Button from "../../components/ui/button";
 
 export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+
   const [form, setForm] = useState({
     firstName: "",
     middleName: "",
@@ -18,59 +35,114 @@ export default function Profile() {
     department: "",
     createdAt: "",
   });
+
   const [savedForm, setSavedForm] = useState(null);
 
+  /* =========================================================
+     LOAD PROFILE
+  ========================================================= */
+
   useEffect(() => {
+    let mounted = true;
+
     async function load() {
       try {
+        setLoading(true);
+
         const res = await SupportApi.getDashboard();
+
         const data = res?.data?.data || {};
         const profile = data.profile || data.user || data || {};
+
         const nextForm = {
-          firstName: profile.firstName || profile.name?.split(" ")?.[0] || "",
-          middleName: profile.middleName || "",
+          firstName:
+            profile.firstName ||
+            profile.name?.split(" ")?.[0] ||
+            "",
+
+          middleName:
+            profile.middleName || "",
+
           lastName:
             profile.lastName ||
-            (profile.name ? profile.name.split(" ").slice(1).join(" ") : "") ||
+            (profile.name
+              ? profile.name.split(" ").slice(1).join(" ")
+              : "") ||
             "",
-          role: profile.role || "",
-          email: profile.email || "",
-          phoneNumber: profile.phoneNumber || profile.phone || profile.mobile || "",
+
+          role:
+            profile.role || "",
+
+          email:
+            profile.email || "",
+
+          phoneNumber:
+            profile.phoneNumber ||
+            profile.phone ||
+            profile.mobile ||
+            "",
+
           department:
-            data.structuralAssignment?.departmentName || data.structuralAssignment?.divisionName || "",
-          createdAt: profile.createdAt || "",
+            data.structuralAssignment?.departmentName ||
+            data.structuralAssignment?.divisionName ||
+            "",
+
+          createdAt:
+            profile.createdAt || "",
         };
-        setForm(nextForm);
-        setSavedForm(nextForm);
+
+        if (mounted) {
+          setForm(nextForm);
+          setSavedForm(nextForm);
+        }
       } catch (err) {
-        console.error(err);
+        console.error("Failed to load profile:", err);
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     }
+
     load();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
+
+  /* =========================================================
+     SAVE PROFILE
+  ========================================================= */
 
   async function handleSave(event) {
     event.preventDefault();
+
     try {
       setSaving(true);
+
       await SupportApi.updateProfile({
         firstName: form.firstName,
         middleName: form.middleName,
         lastName: form.lastName,
         phoneNumber: form.phoneNumber,
       });
+
       setSavedForm(form);
       setIsEditing(false);
+
       alert("Profile updated successfully.");
     } catch (err) {
-      console.error(err);
+      console.error("Save failed:", err);
       alert("Save failed");
     } finally {
       setSaving(false);
     }
   }
+
+  /* =========================================================
+     EDIT / CANCEL
+  ========================================================= */
 
   function handleEdit() {
     setIsEditing(true);
@@ -80,158 +152,587 @@ export default function Profile() {
     if (savedForm) {
       setForm(savedForm);
     }
+
     setIsEditing(false);
   }
 
+  function updateField(field, value) {
+    setForm((previous) => ({
+      ...previous,
+      [field]: value,
+    }));
+  }
+
+  /* =========================================================
+     HELPERS
+  ========================================================= */
+
+  const fullName = useMemo(() => {
+    return [
+      form.firstName,
+      form.middleName,
+      form.lastName,
+    ]
+      .filter(Boolean)
+      .join(" ") || "Support User";
+  }, [form]);
+
+  const initials = useMemo(() => {
+    const letters = [
+      form.firstName?.[0],
+      form.lastName?.[0],
+    ]
+      .filter(Boolean)
+      .join("");
+
+    return letters.toUpperCase() || "SU";
+  }, [form]);
+
+  const memberSince = form.createdAt
+    ? new Date(form.createdAt).toLocaleDateString(undefined, {
+        month: "short",
+        year: "numeric",
+      })
+    : "—";
+
+  const formattedRole =
+    form.role
+      ?.replace(/_/g, " ")
+      ?.replace(/\b\w/g, (letter) => letter.toUpperCase()) ||
+    "Support Staff";
+
+  /* =========================================================
+     LOADING
+  ========================================================= */
+
   if (loading) {
     return (
-      <div className="space-y-6">
-        <SupportHeader compactTitle="My Profile" />
-        <Card>
-          <CardContent>Loading…</CardContent>
-        </Card>
+      <div className="min-h-full bg-slate-50/70">
+        <SupportHeader />
+
+        <main className="ps-container space-y-6 pb-12">
+          <div className="h-44 animate-pulse rounded-[24px] bg-white border border-slate-200" />
+
+          <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
+            <div className="h-72 animate-pulse rounded-[24px] bg-white border border-slate-200" />
+
+            <div className="h-[500px] animate-pulse rounded-[24px] bg-white border border-slate-200" />
+          </div>
+        </main>
       </div>
     );
   }
 
-  const memberSince = form.createdAt ? new Date(form.createdAt).toLocaleDateString() : "";
+  /* =========================================================
+     RENDER
+  ========================================================= */
 
   return (
-    <div className="space-y-6">
-      <SupportHeader compactTitle="My Profile" />
-      <Card>
-        <form onSubmit={handleSave}>
-          <CardHeader className="items-start gap-4">
+    <div className="min-h-full bg-slate-50/70">
+      <SupportHeader />
+
+      <main className="ps-container space-y-6 pb-12">
+
+        {/* =====================================================
+            PROFILE HERO
+        ===================================================== */}
+
+        <section className="relative overflow-hidden rounded-[26px] bg-[#0b1d38] shadow-[0_14px_40px_rgba(15,35,65,0.10)]">
+
+          {/* subtle grid */}
+
+          <div
+            className="absolute inset-0 opacity-[0.07]"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px)",
+              backgroundSize: "32px 32px",
+            }}
+          />
+
+          <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-blue-400/10 blur-3xl" />
+
+          <div className="absolute -bottom-32 left-1/3 h-64 w-64 rounded-full bg-indigo-400/10 blur-3xl" />
+
+          <div className="relative flex flex-col gap-7 px-6 py-7 sm:px-8 sm:py-8 lg:flex-row lg:items-center lg:justify-between">
+
+            {/* identity */}
+
+            <div className="flex min-w-0 items-center gap-5">
+
+              <div className="relative shrink-0">
+
+                <div className="flex h-20 w-20 items-center justify-center rounded-[22px] bg-white/10 text-white ring-1 ring-white/15 backdrop-blur-sm sm:h-24 sm:w-24">
+
+                  <span className="text-2xl font-semibold tracking-tight sm:text-3xl">
+                    {initials}
+                  </span>
+
+                </div>
+
+                <div className="absolute -bottom-1.5 -right-1.5 flex h-7 w-7 items-center justify-center rounded-full border-4 border-[#0b1d38] bg-emerald-500 text-white">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                </div>
+
+              </div>
+
+              <div className="min-w-0">
+
+                <div className="mb-2 flex items-center gap-2">
+
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+
+                  <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                    Support Account
+                  </span>
+
+                </div>
+
+                <h1 className="truncate text-2xl font-semibold tracking-[-0.035em] text-white sm:text-3xl">
+                  {fullName}
+                </h1>
+
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.07] px-2.5 py-1 text-[10px] font-medium text-slate-300">
+                    <BriefcaseBusiness className="h-3 w-3" />
+                    {formattedRole}
+                  </span>
+
+                  {form.department && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.07] px-2.5 py-1 text-[10px] font-medium text-slate-300">
+                      <Building2 className="h-3 w-3" />
+                      {form.department}
+                    </span>
+                  )}
+
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* account status */}
+
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
-                <span className="text-xl font-semibold">{(form.firstName?.[0] || "S").toUpperCase()}</span>
-              </div>
-              <div>
-                <CardTitle>My Profile</CardTitle>
-                <p className="text-sm text-slate-500">Manage your personal support details loaded from registration.</p>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {!isEditing ? (
-                <Button variant="accent" size="sm" type="button" onClick={handleEdit}>
-                  Edit Profile
-                </Button>
-              ) : (
-                <>
-                  <Button variant="outline" size="sm" type="button" onClick={handleCancel}>
-                    Cancel
-                  </Button>
-                  <Button variant="accent" size="sm" type="submit" loading={saving}>
-                    {saving ? "Saving..." : "Save Changes"}
-                  </Button>
-                </>
-              )}
-            </div>
-          </CardHeader>
 
-          <CardContent>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <p className="text-sm text-slate-500">First Name</p>
-                {isEditing ? (
-                  <input
-                    name="firstName"
+              <div className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 backdrop-blur-sm">
+
+                <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-slate-500">
+                  Account Status
+                </p>
+
+                <div className="mt-1.5 flex items-center gap-2">
+
+                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
+
+                  <span className="text-sm font-semibold text-white">
+                    Active
+                  </span>
+
+                </div>
+
+              </div>
+
+              <div className="hidden h-[58px] w-[58px] items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-slate-400 sm:flex">
+                <CircleUserRound className="h-5 w-5" />
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+        {/* =====================================================
+            CONTENT
+        ===================================================== */}
+
+        <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+
+          {/* ===================================================
+              LEFT SIDEBAR
+          =================================================== */}
+
+          <aside className="space-y-4">
+
+            {/* Profile summary */}
+
+            <div className="rounded-[22px] border border-slate-200/80 bg-white p-5 shadow-[0_8px_25px_rgba(15,35,65,0.04)]">
+
+              <div className="flex items-center gap-3">
+
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                  <ShieldCheck className="h-[18px] w-[18px]" />
+                </div>
+
+                <div>
+                  <p className="text-xs font-semibold text-slate-800">
+                    Account Overview
+                  </p>
+
+                  <p className="mt-0.5 text-[10px] text-slate-400">
+                    Your support account
+                  </p>
+                </div>
+
+              </div>
+
+              <div className="mt-5 space-y-4">
+
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                    Email
+                  </p>
+
+                  <p className="mt-1 break-all text-xs font-medium text-slate-700">
+                    {form.email || "—"}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                    Department
+                  </p>
+
+                  <p className="mt-1 text-xs font-medium text-slate-700">
+                    {form.department || "—"}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                    Member Since
+                  </p>
+
+                  <div className="mt-1 flex items-center gap-1.5 text-xs font-medium text-slate-700">
+                    <CalendarDays className="h-3.5 w-3.5 text-slate-400" />
+                    {memberSince}
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* Security card */}
+
+            <div className="rounded-[22px] border border-slate-200/80 bg-white p-5 shadow-[0_8px_25px_rgba(15,35,65,0.04)]">
+
+              <div className="flex items-center gap-3">
+
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                  <LockKeyhole className="h-[17px] w-[17px]" />
+                </div>
+
+                <div>
+                  <p className="text-xs font-semibold text-slate-800">
+                    Account Security
+                  </p>
+
+                  <p className="mt-0.5 text-[10px] text-slate-400">
+                    Protected support account
+                  </p>
+                </div>
+
+              </div>
+
+              <div className="mt-5 flex items-start gap-2.5 rounded-xl bg-emerald-50/70 p-3">
+
+                <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />
+
+                <p className="text-[10px] leading-4 text-emerald-700">
+                  Your account is active and connected to the support workspace.
+                </p>
+
+              </div>
+
+            </div>
+
+          </aside>
+
+          {/* ===================================================
+              PROFILE DETAILS
+          =================================================== */}
+
+          <section className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white shadow-[0_8px_30px_rgba(15,35,65,0.045)]">
+
+            <form onSubmit={handleSave}>
+
+              {/* section header */}
+
+              <div className="border-b border-slate-100 px-6 py-5 sm:px-7">
+
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+                  <div>
+
+                    <div className="flex items-center gap-3">
+
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                        <UserRound className="h-[18px] w-[18px]" />
+                      </div>
+
+                      <div>
+
+                        <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-blue-600">
+                          Personal Information
+                        </p>
+
+                        <h2 className="text-lg font-semibold tracking-[-0.02em] text-slate-950">
+                          Profile Details
+                        </h2>
+
+                      </div>
+
+                    </div>
+
+                    <p className="mt-3 text-xs leading-5 text-slate-400">
+                      Manage the personal information associated with your support account.
+                    </p>
+
+                  </div>
+
+                  {/* actions */}
+
+                  <div className="flex shrink-0 items-center gap-2">
+
+                    {!isEditing ? (
+                      <button
+                        type="button"
+                        onClick={handleEdit}
+                        className="inline-flex h-9 items-center gap-2 rounded-xl bg-[#0b1d38] px-3.5 text-xs font-semibold text-white transition hover:bg-[#12294a]"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                        Edit Profile
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={handleCancel}
+                          className="inline-flex h-9 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                          Cancel
+                        </button>
+
+                        <button
+                          type="submit"
+                          disabled={saving}
+                          className="inline-flex h-9 items-center gap-2 rounded-xl bg-[#0b1d38] px-3.5 text-xs font-semibold text-white transition hover:bg-[#12294a] disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          <Save className="h-3.5 w-3.5" />
+
+                          {saving ? "Saving..." : "Save Changes"}
+                        </button>
+                      </>
+                    )}
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* details */}
+
+              <div className="px-6 py-6 sm:px-7">
+
+                <div className="grid gap-x-5 gap-y-6 sm:grid-cols-2">
+
+                  {/* First Name */}
+
+                  <ProfileField
+                    label="First Name"
+                    icon={UserRound}
+                    editing={isEditing}
                     value={form.firstName}
-                    onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900"
+                    onChange={(value) =>
+                      updateField("firstName", value)
+                    }
                   />
-                ) : (
-                  <h3 className="mt-1 text-base font-semibold text-slate-900">{form.firstName || "—"}</h3>
-                )}
-              </div>
 
-              <div>
-                <p className="text-sm text-slate-500">Middle Name</p>
-                {isEditing ? (
-                  <input
-                    name="middleName"
+                  {/* Middle Name */}
+
+                  <ProfileField
+                    label="Middle Name"
+                    icon={UserRound}
+                    editing={isEditing}
                     value={form.middleName}
-                    onChange={(e) => setForm({ ...form, middleName: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900"
+                    onChange={(value) =>
+                      updateField("middleName", value)
+                    }
                   />
-                ) : (
-                  <h3 className="mt-1 text-base font-semibold text-slate-900">{form.middleName || "—"}</h3>
-                )}
-              </div>
 
-              <div>
-                <p className="text-sm text-slate-500">Last Name</p>
-                {isEditing ? (
-                  <input
-                    name="lastName"
+                  {/* Last Name */}
+
+                  <ProfileField
+                    label="Last Name"
+                    icon={UserRound}
+                    editing={isEditing}
                     value={form.lastName}
-                    onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900"
+                    onChange={(value) =>
+                      updateField("lastName", value)
+                    }
                   />
-                ) : (
-                  <h3 className="mt-1 text-base font-semibold text-slate-900">{form.lastName || "—"}</h3>
-                )}
-              </div>
 
-              <div>
-                <p className="text-sm text-slate-500">Email</p>
-                <input
-                  value={form.email}
-                  disabled
-                  className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900"
-                />
-              </div>
+                  {/* Phone */}
 
-              <div>
-                <p className="text-sm text-slate-500">Phone Number</p>
-                {isEditing ? (
-                  <input
-                    name="phoneNumber"
+                  <ProfileField
+                    label="Phone Number"
+                    icon={Phone}
+                    editing={isEditing}
                     value={form.phoneNumber}
-                    onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900"
+                    onChange={(value) =>
+                      updateField("phoneNumber", value)
+                    }
                   />
-                ) : (
-                  <h3 className="mt-1 text-base font-semibold text-slate-900">{form.phoneNumber || "—"}</h3>
-                )}
-              </div>
 
-              <div>
-                <p className="text-sm text-slate-500">Department</p>
-                {isEditing ? (
-                  <input
-                    name="department"
+                  {/* Email */}
+
+                  <ProfileField
+                    label="Email Address"
+                    icon={Mail}
+                    value={form.email}
+                    disabled
+                    helper="Email address cannot be changed here."
+                  />
+
+                  {/* Department */}
+
+                  <ProfileField
+                    label="Department"
+                    icon={Building2}
                     value={form.department}
-                    onChange={(e) => setForm({ ...form, department: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900"
+                    disabled={!isEditing}
+                    helper={
+                      isEditing
+                        ? "Assigned organizational unit."
+                        : ""
+                    }
+                    onChange={(value) =>
+                      updateField("department", value)
+                    }
                   />
-                ) : (
-                  <h3 className="mt-1 text-base font-semibold text-slate-900">{form.department || "—"}</h3>
-                )}
-              </div>
 
-              <div>
-                <p className="text-sm text-slate-500">Role</p>
-                {isEditing ? (
-                  <input
-                    name="role"
+                  {/* Role */}
+
+                  <ProfileField
+                    label="Role"
+                    icon={BriefcaseBusiness}
                     value={form.role}
-                    onChange={(e) => setForm({ ...form, role: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900"
+                    disabled={!isEditing}
+                    onChange={(value) =>
+                      updateField("role", value)
+                    }
                   />
-                ) : (
-                  <h3 className="mt-1 text-base font-semibold text-slate-900">{form.role || "—"}</h3>
-                )}
+
+                  {/* Member Since */}
+
+                  <div>
+
+                    <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                      <CalendarDays className="h-3 w-3" />
+                      Member Since
+                    </label>
+
+                    <div className="mt-2 flex h-11 items-center rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-sm font-medium text-slate-600">
+                      {memberSince}
+                    </div>
+
+                  </div>
+
+                </div>
+
               </div>
 
-              <div>
-                <p className="text-sm text-slate-500">Member Since</p>
-                <h3 className="mt-1 text-base font-semibold text-slate-900">{memberSince || "—"}</h3>
+              {/* footer */}
+
+              <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4 sm:px-7">
+
+                <div className="flex items-center gap-2.5">
+
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+                    <BadgeCheck className="h-4 w-4" />
+                  </div>
+
+                  <div>
+
+                    <p className="text-[11px] font-semibold text-slate-700">
+                      Profile information
+                    </p>
+
+                    <p className="mt-0.5 text-[10px] text-slate-400">
+                      Some account details are managed by your support administration.
+                    </p>
+
+                  </div>
+
+                </div>
+
               </div>
-            </div>
-          </CardContent>
-        </form>
-      </Card>
+
+            </form>
+
+          </section>
+
+        </div>
+
+      </main>
+    </div>
+  );
+}
+
+
+/* =============================================================
+   PROFILE FIELD
+============================================================= */
+
+function ProfileField({
+  label,
+  icon: Icon,
+  value,
+  editing = false,
+  disabled = false,
+  helper = "",
+  onChange,
+}) {
+  const canEdit = editing && !disabled;
+
+  return (
+    <div>
+
+      <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+        <Icon className="h-3 w-3" />
+        {label}
+      </label>
+
+      {canEdit ? (
+        <input
+          value={value || ""}
+          onChange={(event) =>
+            onChange?.(event.target.value)
+          }
+          className="mt-2 h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
+        />
+      ) : (
+        <div
+          className={`mt-2 flex min-h-11 items-center rounded-xl border px-3.5 text-sm font-medium ${
+            disabled
+              ? "border-slate-200 bg-slate-50 text-slate-600"
+              : "border-slate-100 bg-slate-50/70 text-slate-800"
+          }`}
+        >
+          {value || "—"}
+        </div>
+      )}
+
+      {helper && (
+        <p className="mt-1.5 text-[10px] text-slate-400">
+          {helper}
+        </p>
+      )}
+
     </div>
   );
 }

@@ -1,49 +1,320 @@
+import {
+    Mail,
+    Building2,
+    BriefcaseBusiness,
+    UserRound,
+} from "lucide-react";
+
 import ApprovalActionButtons from "./ApprovalActionButtons";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../ui/table";
 
-export default function PendingCustomerTable({ customers, approveUser, rejectUser }) {
+import {
+    Table,
+    TableHeader,
+    TableBody,
+    TableRow,
+    TableHead,
+    TableCell,
+} from "../ui/table";
+
+export default function PendingCustomerTable({
+    customers = [],
+    approveUser,
+    rejectUser,
+}) {
     return (
-        <div className="rounded-lg border border-navy-100 bg-white p-5 shadow-sm">
-            <h2 className="mb-4 text-lg font-semibold text-slate-900">Pending Customers</h2>
+        <div className="w-full">
+            {/* =====================================================
+                TABLE HEADER
+            ===================================================== */}
 
-            <div className="overflow-hidden rounded-md border border-navy-100">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Position</TableHead>
-                            <TableHead>Organization</TableHead>
-                            <TableHead>Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
+            <div className="border-b border-slate-100 px-5 py-4">
+                <div className="flex items-center justify-between gap-4">
+                    <div>
+                        <h3 className="text-sm font-semibold text-slate-900">
+                            Customer registrations
+                        </h3>
 
-                    <TableBody>
-                        {customers.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={5} className="py-6 text-center text-slate-500">
-                                    No pending customers.
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            customers.map((customer) => (
-                                <TableRow key={customer.id}>
-                                    <TableCell className="font-medium text-slate-900">{customer.fullName}</TableCell>
-                                    <TableCell>{customer.email}</TableCell>
-                                    <TableCell>{customer.position}</TableCell>
-                                    <TableCell>{customer.organization?.name}</TableCell>
-                                    <TableCell>
-                                        <ApprovalActionButtons
-                                            onApprove={() => approveUser(customer.id, "CUSTOMER")}
-                                            onReject={() => rejectUser(customer.id, "CUSTOMER")}
-                                        />
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
+                        <p className="mt-1 text-xs text-slate-400">
+                            Review customer information before approving access.
+                        </p>
+                    </div>
+
+                    <div
+                        className="
+                            hidden sm:flex
+                            items-center
+                            gap-2
+                            rounded-lg
+                            border border-blue-100
+                            bg-blue-50
+                            px-3
+                            py-1.5
+                        "
+                    >
+                        <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+
+                        <span className="text-[11px] font-semibold text-blue-700">
+                            {customers.length} pending
+                        </span>
+                    </div>
+                </div>
             </div>
+
+            {/* =====================================================
+                EMPTY STATE
+            ===================================================== */}
+
+            {customers.length === 0 ? (
+                <div className="flex min-h-[220px] items-center justify-center px-6">
+                    <div className="text-center">
+                        <div
+                            className="
+                                mx-auto
+                                flex
+                                h-11
+                                w-11
+                                items-center
+                                justify-center
+                                rounded-xl
+                                bg-slate-50
+                                border border-slate-100
+                            "
+                        >
+                            <UserRound className="h-5 w-5 text-slate-400" />
+                        </div>
+
+                        <h4 className="mt-4 text-sm font-semibold text-slate-800">
+                            No pending customers
+                        </h4>
+
+                        <p className="mt-1 text-xs text-slate-400">
+                            New customer registrations will appear here.
+                        </p>
+                    </div>
+                </div>
+            ) : (
+                /* =================================================
+                   TABLE
+                ================================================= */
+
+                <div className="w-full overflow-x-auto">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="border-b border-slate-100 bg-slate-50/70 hover:bg-slate-50/70">
+                                <TableHead
+                                    className="
+                                        h-11
+                                        px-5
+                                        text-[10px]
+                                        font-bold
+                                        uppercase
+                                        tracking-[0.12em]
+                                        text-slate-400
+                                    "
+                                >
+                                    Customer
+                                </TableHead>
+
+                                <TableHead
+                                    className="
+                                        h-11
+                                        text-[10px]
+                                        font-bold
+                                        uppercase
+                                        tracking-[0.12em]
+                                        text-slate-400
+                                    "
+                                >
+                                    Contact
+                                </TableHead>
+
+                                <TableHead
+                                    className="
+                                        h-11
+                                        text-[10px]
+                                        font-bold
+                                        uppercase
+                                        tracking-[0.12em]
+                                        text-slate-400
+                                    "
+                                >
+                                    Position
+                                </TableHead>
+
+                                <TableHead
+                                    className="
+                                        h-11
+                                        text-[10px]
+                                        font-bold
+                                        uppercase
+                                        tracking-[0.12em]
+                                        text-slate-400
+                                    "
+                                >
+                                    Organization
+                                </TableHead>
+
+                                <TableHead
+                                    className="
+                                        h-11
+                                        pr-5
+                                        text-right
+                                        text-[10px]
+                                        font-bold
+                                        uppercase
+                                        tracking-[0.12em]
+                                        text-slate-400
+                                    "
+                                >
+                                    Action
+                                </TableHead>
+                            </TableRow>
+                        </TableHeader>
+
+                        <TableBody>
+                            {customers.map((customer) => {
+                                const fullName =
+                                    customer.fullName ||
+                                    customer.name ||
+                                    "Unnamed customer";
+
+                                const email =
+                                    customer.email ||
+                                    "No email provided";
+
+                                const position =
+                                    customer.position ||
+                                    "—";
+
+                                const organization =
+                                    customer.organization?.name ||
+                                    "No organization";
+
+                                return (
+                                    <TableRow
+                                        key={customer.id}
+                                        className="
+                                            group
+                                            border-b
+                                            border-slate-100
+                                            transition-colors
+                                            hover:bg-slate-50/70
+                                        "
+                                    >
+                                        {/* =================================
+                                            CUSTOMER
+                                        ================================= */}
+
+                                        <TableCell className="px-5 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div
+                                                    className="
+                                                        flex
+                                                        h-9
+                                                        w-9
+                                                        shrink-0
+                                                        items-center
+                                                        justify-center
+                                                        rounded-xl
+                                                        bg-blue-50
+                                                        text-blue-600
+                                                        border
+                                                        border-blue-100
+                                                    "
+                                                >
+                                                    <UserRound className="h-4 w-4" />
+                                                </div>
+
+                                                <div className="min-w-0">
+                                                    <p
+                                                        className="
+                                                            truncate
+                                                            text-sm
+                                                            font-semibold
+                                                            text-slate-900
+                                                        "
+                                                    >
+                                                        {fullName}
+                                                    </p>
+
+                                                    <p className="mt-0.5 text-[11px] text-slate-400">
+                                                        Customer registration
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </TableCell>
+
+                                        {/* =================================
+                                            EMAIL
+                                        ================================= */}
+
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <Mail className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+
+                                                <span className="text-sm text-slate-600">
+                                                    {email}
+                                                </span>
+                                            </div>
+                                        </TableCell>
+
+                                        {/* =================================
+                                            POSITION
+                                        ================================= */}
+
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <BriefcaseBusiness className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+
+                                                <span className="text-sm text-slate-600">
+                                                    {position}
+                                                </span>
+                                            </div>
+                                        </TableCell>
+
+                                        {/* =================================
+                                            ORGANIZATION
+                                        ================================= */}
+
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <Building2 className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+
+                                                <span className="text-sm font-medium text-slate-700">
+                                                    {organization}
+                                                </span>
+                                            </div>
+                                        </TableCell>
+
+                                        {/* =================================
+                                            ACTIONS
+                                        ================================= */}
+
+                                        <TableCell className="pr-5">
+                                            <div className="flex justify-end">
+                                                <ApprovalActionButtons
+                                                    onApprove={() =>
+                                                        approveUser(
+                                                            customer.id,
+                                                            "CUSTOMER"
+                                                        )
+                                                    }
+                                                    onReject={() =>
+                                                        rejectUser(
+                                                            customer.id,
+                                                            "CUSTOMER"
+                                                        )
+                                                    }
+                                                />
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                </div>
+            )}
         </div>
     );
 }

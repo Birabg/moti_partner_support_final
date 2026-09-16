@@ -1,162 +1,137 @@
 import { useEffect, useRef } from "react";
-import { FaBell } from "react-icons/fa";
+import {
+    FaBell,
+    FaCheck,
+} from "react-icons/fa";
 
 import CustomerNotificationItem from "./CustomerNotificationItem";
 
 import "../../styles/customerDashboard.css";
 
 export default function NotificationDropdown({
-
     notifications = [],
-
     open,
-
     onClose,
-
-    onViewAll
-
+    onViewAll,
 }) {
-
     const dropdownRef = useRef(null);
 
     useEffect(() => {
-
         function handleClickOutside(event) {
-
             if (
-
                 dropdownRef.current &&
-
                 !dropdownRef.current.contains(event.target)
-
             ) {
-
                 onClose();
-
             }
-
         }
 
         if (open) {
-
-            document.addEventListener(
-
-                "mousedown",
-
-                handleClickOutside
-
-            );
-
+            document.addEventListener("mousedown", handleClickOutside);
         }
 
-        return () =>
-
+        return () => {
             document.removeEventListener(
-
                 "mousedown",
-
                 handleClickOutside
-
             );
-
+        };
     }, [open, onClose]);
 
     if (!open) {
-
         return null;
-
     }
 
     return (
-
         <div
             ref={dropdownRef}
             className="customer-notification-dropdown"
+            role="dialog"
+            aria-label="Notifications"
         >
-
+            {/* Header */}
             <div className="customer-notification-header">
 
-                <div className="notification-title">
+                <div className="notification-header-left">
 
-                    <FaBell />
+                    <div className="notification-header-icon">
+                        <FaBell />
+                    </div>
 
-                    <span>
+                    <div className="notification-header-content">
+                        <h3>Notifications</h3>
 
-                        Notifications
-
-                    </span>
+                        <span>
+                            {notifications.length === 0
+                                ? "You're all caught up"
+                                : `${notifications.length} ${
+                                      notifications.length === 1
+                                          ? "notification"
+                                          : "notifications"
+                                  }`}
+                        </span>
+                    </div>
 
                 </div>
 
-                <span className="notification-count">
-
-                    {notifications.length}
-
-                </span>
+                {notifications.length > 0 && (
+                    <div className="notification-count">
+                        {notifications.length}
+                    </div>
+                )}
 
             </div>
 
+            {/* Body */}
             <div className="customer-notification-body">
 
-                {
+                {notifications.length === 0 ? (
+                    <div className="notification-empty">
 
-                    notifications.length === 0 && (
-
-                        <div className="notification-empty">
-
-                            <FaBell
-                                size={28}
-                                color="#94a2b8"
-                            />
-
-                            <p>
-
-                                No notifications available.
-
-                            </p>
-
+                        <div className="notification-empty-icon">
+                            <FaCheck />
                         </div>
 
-                    )
+                        <h4>No new notifications</h4>
 
-                }
+                        <p>
+                            You're all caught up. We'll let you know
+                            when something needs your attention.
+                        </p>
 
-                {
+                    </div>
+                ) : (
+                    <div className="notification-list">
 
-                    notifications.map(notification => (
+                        {notifications.map((notification) => (
+                            <CustomerNotificationItem
+                                key={notification.id}
+                                notification={notification}
+                            />
+                        ))}
 
-                        <CustomerNotificationItem
-
-                            key={notification.id}
-
-                            notification={notification}
-
-                        />
-
-                    ))
-
-                }
+                    </div>
+                )}
 
             </div>
 
+            {/* Footer */}
             <div className="customer-notification-footer">
 
                 <button
-
-                    className="customer-btn customer-btn-primary"
-
+                    type="button"
+                    className="customer-notification-view-all"
                     onClick={onViewAll}
-
                 >
+                    <span>View all notifications</span>
 
-                    View All Notifications
-
+                    <span className="notification-arrow">
+                        →
+                    </span>
                 </button>
 
             </div>
 
         </div>
-
     );
-
 }
