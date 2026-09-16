@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+/*import { useEffect, useState } from 'react'
 import {
   BarChart,
   Bar,
@@ -143,4 +143,4 @@ export default function ReportsPage() {
       </div>
     </div>
   )
-}
+}*/

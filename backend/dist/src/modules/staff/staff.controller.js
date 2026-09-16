@@ -227,10 +227,7 @@ const getStaffFeedbackAnalytics = async (req, res, next) => {
         return res.status(200).json({
             success: true,
             data: {
-                agent: {
-                    id: staffExists.id,
-                    name: `${staffExists.firstName} ${staffExists.lastName || ""}`.trim()
-                },
+                agent: agentDisplay,
                 summary: {
                     averageRating,
                     totalReviewsCount

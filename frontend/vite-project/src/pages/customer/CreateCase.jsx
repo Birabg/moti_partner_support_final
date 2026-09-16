@@ -1,712 +1,1201 @@
 import {
-useEffect,
-useState
+  useEffect,
+  useState
 } from "react";
 
-
 import {
-getCategories,
-getSubcategories,
-getServiceTypes
+  getCategories,
+  getSubcategories,
+  getServiceTypes
 } from "../../api/productserviceApi";
 
-
 import {
-createCase
+  createCase
 } from "../../api/customerCaseApi";
 
 import { useNavigate } from "react-router-dom";
 
 import {
-useAuth
+  useAuth
 } from "../../context/useAuth";
 
+import {
+  FaArrowLeft,
+  FaPaperclip,
+  FaTicketAlt,
+  FaInfoCircle
+} from "react-icons/fa";
 
 
-export default function CreateCase(){
+export default function CreateCase() {
 
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
-const {user}=useAuth();
-const navigate = useNavigate();
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+  const [services, setServices] = useState([]);
 
+  const [filteredSubcategories, setFilteredSubcategories] = useState([]);
 
+  const [form, setForm] = useState({
+    branchName: "",
+    subject: "",
+    priority: "MEDIUM",
+    description: "",
+    productCategoryId: "",
+    productSubcategoryId: "",
+    serviceTypeId: ""
+  });
 
-const [categories,setCategories]=useState([]);
+  const [file, setFile] = useState(null);
 
-const [subcategories,setSubcategories]=useState([]);
 
-const [services,setServices]=useState([]);
+  useEffect(() => {
+    loadData();
+  }, []);
 
 
+  const loadData = async () => {
 
-const [filteredSubcategories,setFilteredSubcategories]=useState([]);
+    try {
 
+      const [cat, sub, service] = await Promise.all([
+        getCategories(),
+        getSubcategories(),
+        getServiceTypes(),
+      ]);
 
+      const normalizedCategories = Array.isArray(cat?.data)
+        ? cat.data
+        : Array.isArray(cat?.data?.data)
+          ? cat.data.data
+          : Array.isArray(cat?.data?.categories)
+            ? cat.data.categories
+            : [];
 
+      const normalizedSubcategories = Array.isArray(sub?.data)
+        ? sub.data
+        : Array.isArray(sub?.data?.data)
+          ? sub.data.data
+          : Array.isArray(sub?.data?.subcategories)
+            ? sub.data.subcategories
+            : [];
 
-const [form,setForm]=useState({
+      const normalizedServices = Array.isArray(service?.data)
+        ? service.data
+        : Array.isArray(service?.data?.data)
+          ? service.data.data
+          : Array.isArray(service?.data?.serviceTypes)
+            ? service.data.serviceTypes
+            : [];
 
-branchName:"",
+      setCategories(normalizedCategories);
+      setSubcategories(normalizedSubcategories);
+      setServices(normalizedServices);
 
-subject:"",
+    } catch (error) {
 
-priority:"MEDIUM",
+      console.error(
+        "Unable to load lookup data for case creation:",
+        error
+      );
 
-description:"",
+    }
 
-productCategoryId:"",
+  };
 
-productSubcategoryId:"",
 
-serviceTypeId:""
+  const handleCategoryChange = (e) => {
 
-});
+    const categoryId = e.target.value;
 
+    setForm({
+      ...form,
+      productCategoryId: categoryId,
+      productSubcategoryId: ""
+    });
 
+    const filtered = subcategories.filter((item) => {
 
-const [file,setFile]=useState(null);
+      const itemCategoryId =
+        item.productCategoryId ??
+        item.categoryId ??
+        item.product_category_id;
 
+      return String(itemCategoryId) === String(categoryId);
 
+    });
 
+    setFilteredSubcategories(filtered);
 
+  };
 
-useEffect(()=>{
 
-loadData();
+  const handleSubmit = async (e) => {
 
-},[]);
+    e.preventDefault();
 
+    if (
+      !form.branchName ||
+      !form.subject ||
+      !form.description ||
+      !form.productCategoryId ||
+      !form.productSubcategoryId ||
+      !form.serviceTypeId
+    ) {
 
+      alert(
+        "Please complete all required case fields before submitting."
+      );
 
+      return;
+    }
 
-const loadData = async()=>{
- 
-try{
-  const [cat, sub, service] = await Promise.all([
-    getCategories(),
-    getSubcategories(),
-    getServiceTypes(),
-  ]);
+    try {
 
-  const normalizedCategories = Array.isArray(cat?.data)
-    ? cat.data
-    : Array.isArray(cat?.data?.data)
-      ? cat.data.data
-      : Array.isArray(cat?.data?.categories)
-        ? cat.data.categories
-        : [];
+      const data = new FormData();
 
-  const normalizedSubcategories = Array.isArray(sub?.data)
-    ? sub.data
-    : Array.isArray(sub?.data?.data)
-      ? sub.data.data
-      : Array.isArray(sub?.data?.subcategories)
-        ? sub.data.subcategories
-        : [];
+      data.append("branchName", form.branchName);
+      data.append("subject", form.subject);
+      data.append("description", form.description);
+      data.append(
+        "productCategoryId",
+        form.productCategoryId
+      );
+      data.append(
+        "productSubcategoryId",
+        form.productSubcategoryId
+      );
+      data.append(
+        "serviceTypeId",
+        form.serviceTypeId
+      );
+      data.append(
+        "priority",
+        form.priority || "MEDIUM"
+      );
 
-  const normalizedServices = Array.isArray(service?.data)
-    ? service.data
-    : Array.isArray(service?.data?.data)
-      ? service.data.data
-      : Array.isArray(service?.data?.serviceTypes)
-        ? service.data.serviceTypes
-        : [];
+      if (file) {
+        data.append("attachments", file);
+      }
 
-  setCategories(normalizedCategories);
-  setSubcategories(normalizedSubcategories);
-  setServices(normalizedServices);
-}
-catch(error){
-  console.error("Unable to load lookup data for case creation:", error);
-}
- 
-};
+      const response = await createCase(data);
 
+      console.log("CASE CREATED", response.data);
 
+      alert("Case created successfully");
 
+      navigate("/customer/my-cases");
 
+    } catch (error) {
 
+      console.error(
+        "CASE CREATE FAILED",
+        error?.response?.data || error
+      );
 
+      alert(
+        error?.response?.data?.message ||
+        "Failed creating case"
+      );
 
-const handleCategoryChange=(e)=>{
-const categoryId = e.target.value;
+    }
 
-setForm({
-  ...form,
-  productCategoryId: categoryId,
-  productSubcategoryId: ""
-});
+  };
 
-const filtered = subcategories.filter((item) => {
-  const itemCategoryId = item.productCategoryId ?? item.categoryId ?? item.product_category_id;
-  return String(itemCategoryId) === String(categoryId);
-});
 
-setFilteredSubcategories(filtered);
-};
+  return (
 
+    <div className="min-h-screen bg-slate-50">
 
+      {/* Header */}
 
+      <div className="bg-white border-b border-slate-200">
 
+        <div className="max-w-6xl mx-auto px-6 py-5">
 
+          <button
+            type="button"
+            onClick={() => navigate("/customer/my-cases")}
+            className="
+              flex
+              items-center
+              gap-2
+              text-sm
+              font-medium
+              text-slate-500
+              hover:text-slate-900
+              transition
+              mb-4
+            "
+          >
 
-const handleSubmit=async(e)=>{
- e.preventDefault();
+            <FaArrowLeft size={13} />
 
- if (!form.branchName || !form.subject || !form.description || !form.productCategoryId || !form.productSubcategoryId || !form.serviceTypeId) {
-   alert("Please complete all required case fields before submitting.");
-   return;
- }
+            Back to My Cases
 
- try {
-   const data = new FormData();
+          </button>
 
-   data.append("branchName", form.branchName);
-   data.append("subject", form.subject);
-   data.append("description", form.description);
-   data.append("productCategoryId", form.productCategoryId);
-   data.append("productSubcategoryId", form.productSubcategoryId);
-   data.append("serviceTypeId", form.serviceTypeId);
-   data.append("priority", form.priority || "MEDIUM");
 
-   if (file) {
-     data.append("attachments", file);
-   }
+          <div className="flex items-center gap-4">
 
-   const response = await createCase(data);
-   console.log("CASE CREATED", response.data);
-   alert("Case created successfully");
-   navigate("/customer/my-cases");
- } catch (error) {
-   console.error("CASE CREATE FAILED", error?.response?.data || error);
-   alert(error?.response?.data?.message || "Failed creating case");
- }
-};
+            <div
+              className="
+                w-12
+                h-12
+                rounded-xl
+                bg-blue-50
+                text-blue-600
+                flex
+                items-center
+                justify-center
+              "
+            >
 
+              <FaTicketAlt size={20} />
 
+            </div>
 
 
+            <div>
 
+              <h1 className="
+                text-2xl
+                font-bold
+                text-slate-900
+                tracking-tight
+              ">
 
+                Create Support Case
 
-return (
+              </h1>
 
-<div className="
-min-h-screen
-bg-slate-50
-p-8
-">
+              <p className="
+                text-sm
+                text-slate-500
+                mt-1
+              ">
 
+                Tell us what you need help with and our support team will assist you.
 
-<div className="
-max-w-3xl
-mx-auto
-bg-white
-rounded-lg
-border border-navy-100
-shadow-sm
-p-8
-">
+              </p>
 
+            </div>
 
-<h1 className="
-text-2xl
-font-bold
-tracking-tight
-text-slate-900
-mb-8
-">
+          </div>
 
-Create Support Case
+        </div>
 
-</h1>
+      </div>
 
 
+      {/* Main Content */}
 
+      <main className="max-w-6xl mx-auto px-6 py-8">
 
-<form
-onSubmit={handleSubmit}
-className="
-space-y-6
-">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
 
+          {/* Form */}
 
+          <div className="lg:col-span-2">
 
+            <form
+              onSubmit={handleSubmit}
+              className="
+                bg-white
+                rounded-2xl
+                border
+                border-slate-200
+                shadow-sm
+                overflow-hidden
+              "
+            >
 
-{/* Branch */}
 
-<div>
+              {/* Form Header */}
 
-<label>
-Branch Name
-</label>
+              <div className="
+                px-7
+                py-5
+                border-b
+                border-slate-100
+              ">
 
+                <h2 className="
+                  text-base
+                  font-bold
+                  text-slate-900
+                ">
 
-<input
+                  Case Information
 
-className="
-w-full
-border
-rounded-xl
-p-3
-"
+                </h2>
 
-value={form.branchName}
+                <p className="
+                  text-sm
+                  text-slate-500
+                  mt-1
+                ">
 
-onChange={(e)=>
+                  Provide the details below so we can understand your issue.
 
-setForm({
-...form,
-branchName:e.target.value
-})
+                </p>
 
-}
+              </div>
 
-/>
 
+              <div className="p-7 space-y-7">
 
-</div>
 
+                {/* Branch + Subject */}
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
+                  <div>
 
+                    <label className="
+                      block
+                      text-sm
+                      font-semibold
+                      text-slate-700
+                      mb-2
+                    ">
 
+                      Branch Name
+                      <span className="text-red-500 ml-1">*</span>
 
+                    </label>
 
-{/* Subject */}
+                    <input
+                      type="text"
+                      value={form.branchName}
+                      placeholder="Enter branch name"
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          branchName: e.target.value
+                        })
+                      }
+                      className="
+                        w-full
+                        h-11
+                        px-4
+                        rounded-xl
+                        border
+                        border-slate-200
+                        bg-slate-50
+                        text-sm
+                        text-slate-900
+                        outline-none
+                        transition
+                        focus:bg-white
+                        focus:border-blue-500
+                        focus:ring-4
+                        focus:ring-blue-500/10
+                      "
+                    />
 
-<div>
+                  </div>
 
 
-<label>
-Case Subject
-</label>
+                  <div>
 
+                    <label className="
+                      block
+                      text-sm
+                      font-semibold
+                      text-slate-700
+                      mb-2
+                    ">
 
-<input
+                      Case Subject
+                      <span className="text-red-500 ml-1">*</span>
 
-className="
-w-full
-border
-rounded-xl
-p-3
-"
+                    </label>
 
-value={form.subject}
+                    <input
+                      type="text"
+                      value={form.subject}
+                      placeholder="Briefly describe the issue"
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          subject: e.target.value
+                        })
+                      }
+                      className="
+                        w-full
+                        h-11
+                        px-4
+                        rounded-xl
+                        border
+                        border-slate-200
+                        bg-slate-50
+                        text-sm
+                        text-slate-900
+                        outline-none
+                        transition
+                        focus:bg-white
+                        focus:border-blue-500
+                        focus:ring-4
+                        focus:ring-blue-500/10
+                      "
+                    />
 
-onChange={(e)=>
+                  </div>
 
-setForm({
-...form,
-subject:e.target.value
-})
+                </div>
 
-}
 
-/>
+                {/* Product Section */}
 
+                <div>
 
-</div>
+                  <div className="mb-4">
 
+                    <h3 className="
+                      text-sm
+                      font-bold
+                      text-slate-900
+                    ">
 
-{/* Category */}
+                      Product & Service
 
-<div>
+                    </h3>
 
+                    <p className="
+                      text-xs
+                      text-slate-500
+                      mt-1
+                    ">
 
-<label>
-Select Category
-</label>
+                      Select the product and service related to your issue.
 
+                    </p>
 
-<select
+                  </div>
 
-className="
-w-full
-border
-rounded-xl
-p-3
-"
 
+                  <div className="
+                    grid
+                    grid-cols-1
+                    md:grid-cols-3
+                    gap-5
+                  ">
 
-value={form.productCategoryId}
 
+                    {/* Category */}
 
-onChange={handleCategoryChange}
+                    <div>
 
->
+                      <label className="
+                        block
+                        text-sm
+                        font-semibold
+                        text-slate-700
+                        mb-2
+                      ">
 
+                        Category
+                        <span className="text-red-500 ml-1">*</span>
 
-<option>
-Select Category
-</option>
+                      </label>
 
+                      <select
+                        value={form.productCategoryId}
+                        onChange={handleCategoryChange}
+                        className="
+                          w-full
+                          h-11
+                          px-3
+                          rounded-xl
+                          border
+                          border-slate-200
+                          bg-slate-50
+                          text-sm
+                          text-slate-700
+                          outline-none
+                          focus:bg-white
+                          focus:border-blue-500
+                          focus:ring-4
+                          focus:ring-blue-500/10
+                        "
+                      >
 
+                        <option value="">
+                          Select category
+                        </option>
 
-{
-categories.map(cat=>(
+                        {categories.map((cat) => (
 
-<option
-key={cat.id}
-value={cat.id}
->
+                          <option
+                            key={cat.id}
+                            value={cat.id}
+                          >
 
-{cat.name}
+                            {cat.name}
 
-</option>
+                          </option>
 
-))
-}
+                        ))}
 
+                      </select>
 
-</select>
+                    </div>
 
 
+                    {/* Subcategory */}
 
-</div>
+                    <div>
 
+                      <label className="
+                        block
+                        text-sm
+                        font-semibold
+                        text-slate-700
+                        mb-2
+                      ">
 
+                        Subcategory
+                        <span className="text-red-500 ml-1">*</span>
 
+                      </label>
 
+                      <select
+                        value={form.productSubcategoryId}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            productSubcategoryId:
+                              e.target.value
+                          })
+                        }
+                        disabled={!form.productCategoryId}
+                        className="
+                          w-full
+                          h-11
+                          px-3
+                          rounded-xl
+                          border
+                          border-slate-200
+                          bg-slate-50
+                          text-sm
+                          text-slate-700
+                          outline-none
+                          disabled:opacity-50
+                          disabled:cursor-not-allowed
+                          focus:bg-white
+                          focus:border-blue-500
+                          focus:ring-4
+                          focus:ring-blue-500/10
+                        "
+                      >
 
+                        <option value="">
+                          Select subcategory
+                        </option>
 
+                        {filteredSubcategories.map((sub) => (
 
+                          <option
+                            key={sub.id}
+                            value={sub.id}
+                          >
 
+                            {sub.name}
 
-{/* Subcategory */}
+                          </option>
 
-<div>
+                        ))}
 
+                      </select>
 
-<label>
-Select Subcategory
-</label>
+                    </div>
 
 
+                    {/* Service */}
 
-<select
+                    <div>
 
-className="
-w-full
-border
-rounded-xl
-p-3
-"
+                      <label className="
+                        block
+                        text-sm
+                        font-semibold
+                        text-slate-700
+                        mb-2
+                      ">
 
+                        Service
+                        <span className="text-red-500 ml-1">*</span>
 
-value={form.productSubcategoryId}
+                      </label>
 
+                      <select
+                        value={form.serviceTypeId}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            serviceTypeId:
+                              e.target.value
+                          })
+                        }
+                        className="
+                          w-full
+                          h-11
+                          px-3
+                          rounded-xl
+                          border
+                          border-slate-200
+                          bg-slate-50
+                          text-sm
+                          text-slate-700
+                          outline-none
+                          focus:bg-white
+                          focus:border-blue-500
+                          focus:ring-4
+                          focus:ring-blue-500/10
+                        "
+                      >
+
+                        <option value="">
+                          Select service
+                        </option>
 
-onChange={(e)=>
+                        {services.map((service) => (
+
+                          <option
+                            key={service.id}
+                            value={service.id}
+                          >
+
+                            {
+                              service.name ||
+                              service.serviceName
+                            }
 
-setForm({
+                          </option>
 
-...form,
+                        ))}
 
-productSubcategoryId:e.target.value
+                      </select>
 
-})
+                    </div>
 
-}
+                  </div>
 
+                </div>
 
->
 
+                {/* Priority */}
 
-<option>
-Select Subcategory
-</option>
+                <div>
 
+                  <label className="
+                    block
+                    text-sm
+                    font-semibold
+                    text-slate-700
+                    mb-3
+                  ">
 
+                    Priority
 
-{
-filteredSubcategories.map(sub=>(
+                  </label>
 
-<option
 
-key={sub.id}
+                  <div className="
+                    grid
+                    grid-cols-3
+                    gap-3
+                  ">
 
-value={sub.id}
+                    {[
+                      {
+                        value: "LOW",
+                        label: "Low",
+                        description: "General issue"
+                      },
+                      {
+                        value: "MEDIUM",
+                        label: "Medium",
+                        description: "Needs attention"
+                      },
+                      {
+                        value: "HIGH",
+                        label: "High",
+                        description: "Urgent issue"
+                      }
+                    ].map((item) => (
+
+                      <button
+                        type="button"
+                        key={item.value}
+                        onClick={() =>
+                          setForm({
+                            ...form,
+                            priority: item.value
+                          })
+                        }
+                        className={`
+                          text-left
+                          rounded-xl
+                          border
+                          p-3
+                          transition
+                          ${
+                            form.priority === item.value
+                              ? "border-blue-500 bg-blue-50 ring-2 ring-blue-500/10"
+                              : "border-slate-200 bg-white hover:border-slate-300"
+                          }
+                        `}
+                      >
+
+                        <div className="
+                          text-sm
+                          font-bold
+                          text-slate-800
+                        ">
 
->
+                          {item.label}
 
-{sub.name}
+                        </div>
 
-</option>
+                        <div className="
+                          text-xs
+                          text-slate-500
+                          mt-1
+                        ">
+
+                          {item.description}
+
+                        </div>
+
+                      </button>
+
+                    ))}
+
+                  </div>
+
+                </div>
+
+
+                {/* Description */}
+
+                <div>
+
+                  <label className="
+                    block
+                    text-sm
+                    font-semibold
+                    text-slate-700
+                    mb-2
+                  ">
+
+                    Explain Your Problem
+                    <span className="text-red-500 ml-1">*</span>
+
+                  </label>
+
+                  <textarea
+                    rows="6"
+                    value={form.description}
+                    placeholder="Please describe your issue in as much detail as possible..."
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        description: e.target.value
+                      })
+                    }
+                    className="
+                      w-full
+                      px-4
+                      py-3
+                      rounded-xl
+                      border
+                      border-slate-200
+                      bg-slate-50
+                      text-sm
+                      text-slate-900
+                      resize-none
+                      outline-none
+                      transition
+                      focus:bg-white
+                      focus:border-blue-500
+                      focus:ring-4
+                      focus:ring-blue-500/10
+                    "
+                  />
+
+                  <p className="
+                    text-xs
+                    text-slate-400
+                    mt-2
+                  ">
+
+                    Include any error messages, steps you've already tried, or other useful details.
+
+                  </p>
+
+                </div>
+
+
+                {/* Attachment */}
+
+                <div>
+
+                  <label className="
+                    block
+                    text-sm
+                    font-semibold
+                    text-slate-700
+                    mb-2
+                  ">
+
+                    Attachment
+
+                  </label>
+
+
+                  <label className="
+                    flex
+                    flex-col
+                    items-center
+                    justify-center
+                    w-full
+                    min-h-[130px]
+                    rounded-xl
+                    border-2
+                    border-dashed
+                    border-slate-200
+                    bg-slate-50
+                    hover:bg-slate-100
+                    hover:border-blue-300
+                    transition
+                    cursor-pointer
+                  ">
+
+                    <FaPaperclip
+                      className="text-slate-400 mb-3"
+                      size={20}
+                    />
+
+                    <span className="
+                      text-sm
+                      font-medium
+                      text-slate-600
+                    ">
+
+                      {file
+                        ? file.name
+                        : "Click to attach a file"
+                      }
+
+                    </span>
+
+                    <span className="
+                      text-xs
+                      text-slate-400
+                      mt-1
+                    ">
+
+                      Screenshots or documents can help us resolve your case faster.
+
+                    </span>
+
+                    <input
+                      type="file"
+                      className="hidden"
+                      onChange={(e) =>
+                        setFile(
+                          e.target.files[0]
+                        )
+                      }
+                    />
+
+                  </label>
+
+                </div>
+
+
+              </div>
+
+
+              {/* Footer */}
+
+              <div className="
+                px-7
+                py-5
+                bg-slate-50
+                border-t
+                border-slate-100
+                flex
+                items-center
+                justify-between
+                gap-4
+              ">
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate("/customer/my-cases")
+                  }
+                  className="
+                    px-5
+                    py-2.5
+                    rounded-xl
+                    text-sm
+                    font-semibold
+                    text-slate-600
+                    hover:bg-white
+                    transition
+                  "
+                >
+
+                  Cancel
+
+                </button>
+
+
+                <button
+                  type="submit"
+                  className="
+                    px-7
+                    py-2.5
+                    rounded-xl
+                    bg-blue-600
+                    hover:bg-blue-700
+                    text-white
+                    text-sm
+                    font-bold
+                    shadow-sm
+                    hover:shadow
+                    transition
+                  "
+                >
 
-))
+                  Submit Case
 
-}
+                </button>
 
+              </div>
 
 
-</select>
+            </form>
 
+          </div>
 
-</div>
 
+          {/* Right Information Panel */}
 
+          <div className="space-y-5">
 
 
+            <div className="
+              bg-white
+              rounded-2xl
+              border
+              border-slate-200
+              shadow-sm
+              p-6
+            ">
 
+              <div className="
+                w-10
+                h-10
+                rounded-xl
+                bg-blue-50
+                text-blue-600
+                flex
+                items-center
+                justify-center
+                mb-4
+              ">
 
+                <FaInfoCircle size={18} />
 
+              </div>
 
 
-{/* Service */}
+              <h3 className="
+                text-base
+                font-bold
+                text-slate-900
+              ">
 
-<div>
+                Before you submit
 
+              </h3>
 
-<label>
-Select Service
-</label>
 
+              <div className="
+                mt-4
+                space-y-4
+              ">
 
+                <div>
 
-<select
+                  <p className="
+                    text-sm
+                    font-semibold
+                    text-slate-700
+                  ">
 
-className="
-w-full
-border
-rounded-xl
-p-3
-"
+                    Be specific
 
+                  </p>
 
-value={form.serviceTypeId}
+                  <p className="
+                    text-xs
+                    text-slate-500
+                    mt-1
+                    leading-5
+                  ">
 
+                    Give us enough information to understand exactly what is happening.
 
-onChange={(e)=>
+                  </p>
 
-setForm({
+                </div>
 
-...form,
 
-serviceTypeId:e.target.value
+                <div>
 
-})
+                  <p className="
+                    text-sm
+                    font-semibold
+                    text-slate-700
+                  ">
 
-}
+                    Add screenshots
 
+                  </p>
 
->
+                  <p className="
+                    text-xs
+                    text-slate-500
+                    mt-1
+                    leading-5
+                  ">
 
+                    If you're seeing an error, attaching a screenshot can make troubleshooting much faster.
 
-<option>
-Select Service
-</option>
+                  </p>
 
+                </div>
 
 
-{
-services.map(service=>(
+                <div>
 
-<option
+                  <p className="
+                    text-sm
+                    font-semibold
+                    text-slate-700
+                  ">
 
-key={service.id}
+                    Choose the right priority
 
-value={service.id}
+                  </p>
 
->
+                  <p className="
+                    text-xs
+                    text-slate-500
+                    mt-1
+                    leading-5
+                  ">
 
-{
-service.name ||
-service.serviceName
-}
-</option>
+                    Use High only when the issue is seriously affecting your work.
 
-))
+                  </p>
 
-}
+                </div>
 
+              </div>
 
+            </div>
 
-</select>
 
+            {/* Required Fields */}
 
+            <div className="
+              rounded-2xl
+              bg-slate-900
+              p-6
+              text-white
+            ">
 
-</div>
+              <h3 className="
+                text-sm
+                font-bold
+              ">
 
+                Required information
 
-{/* Priority */}
+              </h3>
 
-<div>
 
+              <ul className="
+                mt-4
+                space-y-3
+                text-sm
+                text-slate-300
+              ">
 
-<label>
-Priority
-</label>
+                <li className="flex gap-2">
 
+                  <span className="text-blue-400">•</span>
 
-<select
+                  Branch name
 
-className="
-w-full
-border
-rounded-xl
-p-3
-"
+                </li>
 
-value={form.priority}
+                <li className="flex gap-2">
 
-onChange={(e)=>
+                  <span className="text-blue-400">•</span>
 
-setForm({
-...form,
-priority:e.target.value
-})
+                  Case subject
 
-}
+                </li>
 
->
+                <li className="flex gap-2">
 
+                  <span className="text-blue-400">•</span>
 
-<option value="LOW">
-LOW
-</option>
+                  Product category
 
+                </li>
 
-<option value="MEDIUM">
-MEDIUM
-</option>
+                <li className="flex gap-2">
 
+                  <span className="text-blue-400">•</span>
 
-<option value="HIGH">
-HIGH
-</option>
+                  Subcategory and service
 
+                </li>
 
-</select>
+                <li className="flex gap-2">
 
+                  <span className="text-blue-400">•</span>
 
-</div>
+                  Problem description
 
+                </li>
 
-{/* Description */}
+              </ul>
 
-<div>
+            </div>
 
 
-<label>
-Explain Your Problem
-</label>
+          </div>
 
 
-<textarea
+        </div>
 
-rows="5"
+      </main>
 
-className="
-w-full
-border
-rounded-xl
-p-3
-"
+    </div>
 
-
-value={form.description}
-
-
-onChange={(e)=>
-
-setForm({
-...form,
-description:e.target.value
-})
-
-}
-
-
-/>
-
-
-</div>
-
-
-
-
-
-
-
-{/* File */}
-
-<div>
-
-
-<label>
-Attachment
-</label>
-
-
-<input
-
-type="file"
-
-className="
-w-full
-border
-rounded-xl
-p-3
-"
-
-
-onChange={(e)=>
-
-setFile(
-e.target.files[0]
-)
-
-}
-
-
-/>
-
-
-</div>
-
-
-
-
-
-
-
-
-
-<button
-
-className="
-w-full
-bg-navy-600
-hover:bg-navy-700
-text-white
-py-3
-rounded-xl
-font-bold
-"
-
->
-
-
-Submit Case
-
-
-</button>
-
-
-
-</form>
-
-
-
-</div>
-
-
-</div>
-
-
-);
-
+  );
 
 }

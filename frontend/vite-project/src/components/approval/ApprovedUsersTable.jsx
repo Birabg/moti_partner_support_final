@@ -1,143 +1,128 @@
-import { useState, useMemo } from "react";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../ui/table";
+import {
+    Users,
+    UserRoundCog,
+    Clock3,
+    ArrowUpRight,
+} from "lucide-react";
 
-const TYPE_FILTERS = ["ALL", "CUSTOMER", "STAFF"];
-
-function ActionButton({ onClick, children, variant = "outline" }) {
-    const base = "rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors";
-    const variants = {
-        primary: "bg-navy-900 text-white hover:bg-navy-800",
-        success: "bg-emerald-600 text-white hover:bg-emerald-700",
-        warning: "bg-amber-600 text-white hover:bg-amber-700",
-        outline: "border border-navy-200 text-slate-600 hover:bg-navy-50",
-    };
-    return (
-        <button onClick={onClick} className={`${base} ${variants[variant] || variants.outline}`}>
-            {children}
-        </button>
-    );
-}
-
-export default function ApprovedUsersTable({
-    users,
-    onViewDetails,
-    onAddPermission,
-    onDeactivate,
-    onReactivate,
-    isSystemAdmin,
+export default function ApprovalStatistics({
+    customers = [],
+    staff = [],
 }) {
-    const [search, setSearch] = useState("");
-    const [typeFilter, setTypeFilter] = useState("ALL");
+    const total = customers.length + staff.length;
 
-    const filteredUsers = useMemo(() => {
-        const query = search.trim().toLowerCase();
-
-        return users.filter((user) => {
-            const fullName = `${user.firstName} ${user.middleName ?? ""} ${
-                user.lastName
-            }`
-                .replace(/\s+/g, " ")
-                .toLowerCase();
-
-            const matchesSearch =
-                !query ||
-                fullName.includes(query) ||
-                user.email?.toLowerCase().includes(query);
-
-            const matchesType =
-                typeFilter === "ALL" || user.type === typeFilter;
-
-            return matchesSearch && matchesType;
-        });
-    }, [users, search, typeFilter]);
+    const statistics = [
+        {
+            label: "Pending Customers",
+            value: customers.length,
+            description: "Customer registrations awaiting approval",
+            icon: Users,
+            iconClass: "bg-blue-50 text-blue-600",
+            valueClass: "text-blue-600",
+            borderClass: "border-blue-500",
+        },
+        {
+            label: "Pending Staff",
+            value: staff.length,
+            description: "Staff registrations awaiting approval",
+            icon: UserRoundCog,
+            iconClass: "bg-amber-50 text-amber-600",
+            valueClass: "text-amber-600",
+            borderClass: "border-amber-500",
+        },
+        {
+            label: "Total Pending",
+            value: total,
+            description: "All registrations requiring review",
+            icon: Clock3,
+            iconClass: "bg-slate-100 text-slate-600",
+            valueClass: "text-slate-900",
+            borderClass: "border-slate-900",
+        },
+    ];
 
     return (
-        <div className="rounded-lg border border-navy-100 bg-white p-5 shadow-sm">
-            <h2 className="mb-4 text-lg font-semibold text-slate-900">Approved Users</h2>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {statistics.map((item) => {
+                const Icon = item.icon;
 
-            <div className="mb-4 flex flex-col justify-end gap-3 sm:flex-row">
-                <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search by name or email..."
-                    className="w-48 rounded-md border border-navy-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500"
-                />
+                return (
+                    <div
+                        key={item.label}
+                        className={`
+                            group
+                            relative
+                            overflow-hidden
+                            rounded-2xl
+                            border
+                            border-slate-200
+                            bg-white
+                            shadow-[0_4px_20px_-12px_rgba(15,23,42,0.18)]
+                            transition-all
+                            duration-200
+                            hover:-translate-y-0.5
+                            hover:shadow-[0_12px_30px_-15px_rgba(15,23,42,0.22)]
+                        `}
+                    >
+                        {/* Bottom accent */}
+                        <div
+                            className={`
+                                absolute
+                                bottom-0
+                                left-0
+                                right-0
+                                h-[2px]
+                                ${item.borderClass}
+                            `}
+                        />
 
-                <select
-                    value={typeFilter}
-                    onChange={(e) => setTypeFilter(e.target.value)}
-                    className="rounded-md border border-navy-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500"
-                >
-                    {TYPE_FILTERS.map((type) => (
-                        <option key={type} value={type}>
-                            {type === "ALL" ? "All Types" : type}
-                        </option>
-                    ))}
-                </select>
-            </div>
+                        <div className="p-5">
+                            <div className="flex items-start justify-between gap-4">
+                                <div
+                                    className={`
+                                        flex
+                                        h-10
+                                        w-10
+                                        items-center
+                                        justify-center
+                                        rounded-xl
+                                        ${item.iconClass}
+                                    `}
+                                >
+                                    <Icon className="h-5 w-5" />
+                                </div>
 
-            <div className="overflow-hidden rounded-md border border-navy-100">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="min-w-[220px]">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
+                                <div className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-300">
+                                    Overview
+                                    <ArrowUpRight className="h-3 w-3" />
+                                </div>
+                            </div>
 
-                    <TableBody>
-                        {filteredUsers.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={5} className="py-6 text-center text-slate-500">
-                                    No users match your search/filter.
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            filteredUsers.map((user) => (
-                                <TableRow key={user.id}>
-                                    <TableCell className="font-medium text-slate-900">
-                                        {user.firstName} {user.middleName} {user.lastName}
-                                    </TableCell>
+                            <div className="mt-5">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                                    {item.label}
+                                </p>
 
-                                    <TableCell>{user.email}</TableCell>
+                                <p
+                                    className={`
+                                        mt-2
+                                        text-3xl
+                                        font-semibold
+                                        tracking-tight
+                                        ${item.valueClass}
+                                    `}
+                                >
+                                    {item.value}
+                                </p>
 
-                                    <TableCell>{user.type}</TableCell>
-
-                                    <TableCell>{user.status}</TableCell>
-
-                                    <TableCell>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            <ActionButton onClick={() => onViewDetails(user)} variant="primary">
-                                                View Details
-                                            </ActionButton>
-
-                                            {user.type === "STAFF" && (
-                                                <ActionButton onClick={() => onAddPermission(user)} variant="success">
-                                                    Add Permission
-                                                </ActionButton>
-                                            )}
-                                            {isSystemAdmin &&
-                                                (user.status === "ACTIVE" ? (
-                                                    <ActionButton onClick={() => onDeactivate(user.id, user.type)} variant="warning">
-                                                        Deactivate
-                                                    </ActionButton>
-                                                ) : (
-                                                    <ActionButton onClick={() => onReactivate(user.id, user.type)} variant="primary">
-                                                        Reactivate
-                                                    </ActionButton>
-                                                ))}
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
+                                <p className="mt-1.5 text-xs text-slate-400">
+                                    {item.description}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })}
         </div>
     );
 }

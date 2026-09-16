@@ -19,6 +19,10 @@ function canTransition(current, next, actor) {
     // System admins may perform any transition
     if (actor?.isSAdmin)
         return { allowed: true };
+    // Prevent cancellation unless system admin
+    if (next === client_1.CaseStatus.CANCELLED) {
+        return { allowed: false, reason: 'Only System Administrators may cancel cases.' };
+    }
     // If same status, allow as no-op
     if (current === next)
         return { allowed: true };

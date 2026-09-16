@@ -1,22 +1,22 @@
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import {
+    PieChart,
+    Pie,
+    Cell,
+    Tooltip,
+    ResponsiveContainer,
+} from "recharts";
 
 const COLORS = [
-  "#5780be", // Open
-  "#0ea5ff", // In Progress
-  "#8b5cf6", // Pending
-  "#ef4444", // Escalated
-  "#10b981", // Resolved
-  "#a78bfa", // Awaiting Customer
-  "#6b7280", // Closed
+    "#5780be",
+    "#0ea5e9",
+    "#8b5cf6",
+    "#ef4444",
+    "#10b981",
+    "#a78bfa",
+    "#64748b",
 ];
 
-export default function StatusPieChart({ data = [] }) {
-  const normalized = (data || []).map((d) => ({ ...d, name: String(d.name).trim() }));
-  const hasData = normalized.some((item) => Number(item.value) > 0);
-
-  // Recharts cannot render a pie when every value is 0.
-  // Use tiny placeholder values so the chart still appears.
-  const defaultOrder = [
+const STATUS_ORDER = [
     "Open",
     "In Progress",
     "Pending",
@@ -24,83 +24,201 @@ export default function StatusPieChart({ data = [] }) {
     "Resolved",
     "Awaiting Customer",
     "Closed",
-  ];
+];
 
-  const buildPlaceholder = () => defaultOrder.map((name) => ({ name, value: 1, displayValue: 0 }));
+export default function StatusPieChart({ data = [] }) {
+    const normalized = data.map((item) => ({
+        ...item,
+        name: String(item.name || "").trim(),
+        value: Number(item.value || 0),
+    }));
 
-  const chartData = hasData
-    ? defaultOrder.map((name) => {
-        const found = normalized.find((i) => i.name === name);
-        return found ? { ...found } : { name, value: 0 };
-      })
-    : buildPlaceholder();
+    const hasData = normalized.some(
+        (item) => item.value > 0
+    );
 
-  return (
-    <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 h-full">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900">Case Distribution</h2>
-          <p className="text-sm text-slate-500">Current case status breakdown</p>
-        </div>
-      </div>
+    const chartData = STATUS_ORDER.map((name) => {
+        const found = normalized.find(
+            (item) => item.name === name
+        );
 
-      <div className="h-72">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={chartData}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              innerRadius={70}
-              outerRadius={100}
-              paddingAngle={3}
-              stroke="#ffffff"
-              strokeWidth={2}
-            >
-              {chartData.map((entry, index) => (
-                <Cell
-                  key={entry.name}
-                  fill={COLORS[index % COLORS.length]}
-                  fillOpacity={hasData ? 1 : 0.35}
-                />
-              ))}
-            </Pie>
+        return found || {
+            name,
+            value: 0,
+        };
+    });
 
-            <Tooltip
-              formatter={(value, name, props) => {
-                const realValue = props?.payload?.displayValue ?? value;
-                return [realValue, name];
-              }}
-            />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
+    const displayData = hasData
+        ? chartData
+        : STATUS_ORDER.map((name) => ({
+              name,
+              value: 1,
+              displayValue: 0,
+          }));
 
-      <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-        {(hasData ? chartData : buildPlaceholder()).map((item, index) => (
-          <div key={item.name} className="flex items-center gap-2">
-            <span
-              className="w-3 h-3 rounded-full"
-              style={{
-                backgroundColor: COLORS[index % COLORS.length],
-                opacity: hasData ? 1 : 0.5,
-              }}
-            />
-            <span className="text-slate-600">{item.name}</span>
-            <span className="ml-auto font-medium text-slate-900">
-              {item.displayValue ?? item.value}
-            </span>
-          </div>
-        ))}
-      </div>
+    const total = normalized.reduce(
+        (sum, item) => sum + item.value,
+        0
+    );
 
-      {!hasData && (
-        <p className="text-center text-xs text-slate-400 mt-3">
-          No case data yet
-        </p>
-      )}
-    </div>
-  );
+    return (
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_24px_-12px_rgba(15,23,42,0.15)]">
+            {/* HEADER */}
+            <div className="flex items-start justify-between border-b border-slate-100 px-6 py-5">
+                <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                        Case Overview
+                    </p>
+
+                    <h2 className="mt-1 text-lg font-semibold tracking-tight text-slate-900">
+                        Case Distribution
+                    </h2>
+
+                    <p className="mt-1 text-sm text-slate-500">
+                        Current support case status breakdown
+                    </p>
+                </div>
+
+                <div className="rounded-xl bg-slate-50 px-4 py-2.5 text-right">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                        Total
+                    </p>
+
+                    <p className="mt-0.5 text-lg font-semibold text-slate-900">
+                        {total}
+                    </p>
+                </div>
+            </div>
+
+            {/* CHART */}
+            <div className="px-6 pt-6">
+                <div className="relative h-[290px]">
+                    <ResponsiveContainer
+                        width="100%"
+                        height="100%"
+                    >
+                        <PieChart>
+                            <Pie
+                                data={displayData}
+                                dataKey="value"
+                                nameKey="name"
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={82}
+                                outerRadius={112}
+                                paddingAngle={3}
+                                stroke="#ffffff"
+                                strokeWidth={3}
+                            >
+                                {displayData.map(
+                                    (entry, index) => (
+                                        <Cell
+                                            key={entry.name}
+                                            fill={
+                                                COLORS[
+                                                    index %
+                                                        COLORS.length
+                                                ]
+                                            }
+                                            fillOpacity={
+                                                hasData
+                                                    ? 1
+                                                    : 0.3
+                                            }
+                                        />
+                                    )
+                                )}
+                            </Pie>
+
+                            <Tooltip
+                                formatter={(
+                                    value,
+                                    name,
+                                    props
+                                ) => {
+                                    const realValue =
+                                        props?.payload
+                                            ?.displayValue ??
+                                        value;
+
+                                    return [
+                                        realValue,
+                                        name,
+                                    ];
+                                }}
+                                contentStyle={{
+                                    border: "1px solid #e2e8f0",
+                                    borderRadius: "12px",
+                                    boxShadow:
+                                        "0 10px 30px -15px rgba(15,23,42,0.25)",
+                                    fontSize: "12px",
+                                }}
+                            />
+                        </PieChart>
+                    </ResponsiveContainer>
+
+                    {/* CENTER VALUE */}
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                        <div className="text-center">
+                            <p className="text-3xl font-semibold tracking-tight text-slate-900">
+                                {total}
+                            </p>
+
+                            <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                                Total Cases
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* LEGEND */}
+            <div className="border-t border-slate-100 px-6 py-5">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {displayData.map((item, index) => {
+                        const value =
+                            item.displayValue ??
+                            item.value;
+
+                        return (
+                            <div
+                                key={item.name}
+                                className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-slate-50"
+                            >
+                                <span
+                                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                                    style={{
+                                        backgroundColor:
+                                            COLORS[
+                                                index %
+                                                    COLORS.length
+                                            ],
+                                        opacity: hasData
+                                            ? 1
+                                            : 0.45,
+                                    }}
+                                />
+
+                                <span className="min-w-0 truncate text-xs font-medium text-slate-600">
+                                    {item.name}
+                                </span>
+
+                                <span className="ml-auto text-xs font-semibold text-slate-900">
+                                    {value}
+                                </span>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {!hasData && (
+                    <div className="mt-4 rounded-xl bg-slate-50 px-4 py-3 text-center">
+                        <p className="text-xs text-slate-400">
+                            No case data available yet.
+                        </p>
+                    </div>
+                )}
+            </div>
+        </section>
+    );
 }

@@ -60,7 +60,16 @@ export const getCaseSummaryMetrics = async (req: Request, res: Response, next: N
 
     const scopeWhere = buildHierarchyWhereClause(actor);
 
-    const [totalCases, openCases, inProgressCases, closedCases] = await prisma.$transaction([
+    const [
+      totalCases,
+      openCases,
+      inProgressCases,
+      pendingCases,
+      escalatedCases,
+      resolvedCases,
+      customerConfirmationCases,
+      closedCases,
+    ] = await prisma.$transaction([
       prisma.caseReport.count({ where: scopeWhere }),
       prisma.caseReport.count({ where: { ...scopeWhere, status: CaseStatus.OPEN } }),
       prisma.caseReport.count({
@@ -72,6 +81,10 @@ export const getCaseSummaryMetrics = async (req: Request, res: Response, next: N
           ],
         },
       }),
+      prisma.caseReport.count({ where: { ...scopeWhere, status: CaseStatus.PENDING } }),
+      prisma.caseReport.count({ where: { ...scopeWhere, status: CaseStatus.ESCALATED } }),
+      prisma.caseReport.count({ where: { ...scopeWhere, status: CaseStatus.RESOLVED } }),
+      prisma.caseReport.count({ where: { ...scopeWhere, status: CaseStatus.CUSTOMER_CONFIRMATION } }),
       prisma.caseReport.count({ where: { ...scopeWhere, status: CaseStatus.CLOSED } }),
     ]);
 
@@ -81,6 +94,10 @@ export const getCaseSummaryMetrics = async (req: Request, res: Response, next: N
         total: totalCases,
         open: openCases,
         inProgress: inProgressCases,
+        pending: pendingCases,
+        escalated: escalatedCases,
+        resolved: resolvedCases,
+        customerConfirmation: customerConfirmationCases,
         closed: closedCases,
       },
     });

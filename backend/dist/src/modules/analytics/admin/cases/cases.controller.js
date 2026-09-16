@@ -46,7 +46,7 @@ const getCaseSummaryMetrics = async (req, res, next) => {
             throw new error_1.ForbiddenError("Access Denied: Authentication required.");
         }
         const scopeWhere = (0, exports.buildHierarchyWhereClause)(actor);
-        const [totalCases, openCases, inProgressCases, closedCases] = await database_1.prisma.$transaction([
+        const [totalCases, openCases, inProgressCases, pendingCases, escalatedCases, resolvedCases, customerConfirmationCases, closedCases,] = await database_1.prisma.$transaction([
             database_1.prisma.caseReport.count({ where: scopeWhere }),
             database_1.prisma.caseReport.count({ where: { ...scopeWhere, status: client_1.CaseStatus.OPEN } }),
             database_1.prisma.caseReport.count({
@@ -58,6 +58,10 @@ const getCaseSummaryMetrics = async (req, res, next) => {
                     ],
                 },
             }),
+            database_1.prisma.caseReport.count({ where: { ...scopeWhere, status: client_1.CaseStatus.PENDING } }),
+            database_1.prisma.caseReport.count({ where: { ...scopeWhere, status: client_1.CaseStatus.ESCALATED } }),
+            database_1.prisma.caseReport.count({ where: { ...scopeWhere, status: client_1.CaseStatus.RESOLVED } }),
+            database_1.prisma.caseReport.count({ where: { ...scopeWhere, status: client_1.CaseStatus.CUSTOMER_CONFIRMATION } }),
             database_1.prisma.caseReport.count({ where: { ...scopeWhere, status: client_1.CaseStatus.CLOSED } }),
         ]);
         return res.status(200).json({
@@ -66,6 +70,10 @@ const getCaseSummaryMetrics = async (req, res, next) => {
                 total: totalCases,
                 open: openCases,
                 inProgress: inProgressCases,
+                pending: pendingCases,
+                escalated: escalatedCases,
+                resolved: resolvedCases,
+                customerConfirmation: customerConfirmationCases,
                 closed: closedCases,
             },
         });

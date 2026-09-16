@@ -1,125 +1,214 @@
 import api from "./axios";
 
+/*
+|--------------------------------------------------------------------------
+| Notify the application that case data has changed
+|--------------------------------------------------------------------------
+*/
 const notifyCaseRefresh = () => {
     if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("cases:updated"));
     }
 };
 
+
+/*
+|--------------------------------------------------------------------------
+| Customer Case API
+|--------------------------------------------------------------------------
+*/
 const customerCaseApi = {
 
-
-    getDashboard(){
-
-        return api.get(
-            "/customer/analytics"
-        );
-
+    /*
+    |--------------------------------------------------------------------------
+    | Customer Dashboard
+    |--------------------------------------------------------------------------
+    */
+    getDashboard() {
+        return api.get("/customer/analytics");
     },
 
 
-    getCustomerCases(){
-
-        return api.get(
-            "/customer/analytics"
-        );
-
+    /*
+    |--------------------------------------------------------------------------
+    | Get all cases belonging to the logged-in customer
+    |--------------------------------------------------------------------------
+    */
+    getCustomerCases() {
+        return api.get("/customer/analytics");
     },
 
 
-    getMyCases(){
-
-        return api.get(
-            "/customer/analytics"
-        );
-
+    /*
+    |--------------------------------------------------------------------------
+    | Alias for customer cases
+    |--------------------------------------------------------------------------
+    */
+    getMyCases() {
+        return api.get("/customer/analytics");
     },
 
 
-    getCaseDetails(caseId){
+    /*
+    |--------------------------------------------------------------------------
+    | Get one case
+    |--------------------------------------------------------------------------
+    */
+    getCaseDetails(caseId) {
+        if (!caseId) {
+            return Promise.reject(
+                new Error("Case ID is required")
+            );
+        }
 
-        return api.get(
-            `/cases/${caseId}`
-        );
-
+        return api.get(`/cases/${caseId}`);
     },
 
 
-    createCase(data){
+    /*
+    |--------------------------------------------------------------------------
+    | Create Case
+    |--------------------------------------------------------------------------
+    */
+    createCase(data) {
         return api.post(
             "/cases/create",
             data,
-            {
-                headers: data instanceof FormData ? undefined : { "Content-Type": "application/json" }
-            }
-        ).then((response)=>{
+            data instanceof FormData
+                ? undefined
+                : {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+        ).then((response) => {
             notifyCaseRefresh();
             return response;
         });
     },
 
 
-    closeCase(caseId,data){
+    /*
+    |--------------------------------------------------------------------------
+    | Close Case
+    |--------------------------------------------------------------------------
+    */
+    closeCase(caseId, data = {}) {
+        if (!caseId) {
+            return Promise.reject(
+                new Error("Case ID is required")
+            );
+        }
 
         return api.post(
             `/cases/close/${caseId}/feedback-close`,
             data
-        ).then((response)=>{
+        ).then((response) => {
             notifyCaseRefresh();
             return response;
         });
-
     },
 
 
-    rejectCase(caseId){
+    /*
+    |--------------------------------------------------------------------------
+    | Reject Case / Resolution
+    |--------------------------------------------------------------------------
+    */
+    rejectCase(caseId) {
+        if (!caseId) {
+            return Promise.reject(
+                new Error("Case ID is required")
+            );
+        }
 
         return api.post(
             `/cases/rejectedcase/${caseId}`
-        ).then((response)=>{
+        ).then((response) => {
             notifyCaseRefresh();
             return response;
         });
-
     },
 
 
-    reopenCase(caseId){
+    /*
+    |--------------------------------------------------------------------------
+    | Reopen Case
+    |--------------------------------------------------------------------------
+    */
+    reopenCase(caseId) {
+        if (!caseId) {
+            return Promise.reject(
+                new Error("Case ID is required")
+            );
+        }
 
         return api.post(
             `/cases/rejectedcase/${caseId}`
-        ).then((response)=>{
+        ).then((response) => {
             notifyCaseRefresh();
             return response;
         });
-
     },
 
 
-    submitFeedback(caseId, rating, comment){
+    /*
+    |--------------------------------------------------------------------------
+    | Submit Feedback
+    |--------------------------------------------------------------------------
+    */
+    submitFeedback(caseId, rating, comment) {
+        if (!caseId) {
+            return Promise.reject(
+                new Error("Case ID is required")
+            );
+        }
+
         return api.post(
             `/cases/close/${caseId}/feedback-close`,
-            { rating, comment }
-        ).then((response)=>{
+            {
+                rating,
+                comment,
+            }
+        ).then((response) => {
             notifyCaseRefresh();
             return response;
         });
     },
-    markNotificationRead(notificationId){
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mark Notification As Read
+    |--------------------------------------------------------------------------
+    */
+    markNotificationRead(notificationId) {
+        if (!notificationId) {
+            return Promise.reject(
+                new Error("Notification ID is required")
+            );
+        }
 
         return api.patch(
             `/notification/read/${notificationId}`
         );
-
-},
-
+    },
 };
 
 
+/*
+|--------------------------------------------------------------------------
+| Default export
+|--------------------------------------------------------------------------
+*/
 export default customerCaseApi;
 
 
-// named exports
+/*
+|--------------------------------------------------------------------------
+| Named exports
+|--------------------------------------------------------------------------
+*/
 export const {
     getDashboard,
     getCustomerCases,
@@ -130,6 +219,5 @@ export const {
     rejectCase,
     reopenCase,
     submitFeedback,
-    markNotificationRead
-
+    markNotificationRead,
 } = customerCaseApi;

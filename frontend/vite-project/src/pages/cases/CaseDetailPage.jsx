@@ -217,7 +217,7 @@ export default function CaseDetailPage() {
 
   const caseActions = []
   if (currentStatus === 'IN_PROGRESS') {
-    if (isManagerOrStaff || caseItem.customer?.id === user?.id) {
+    if (isManagerOrStaff) {
       caseActions.push({ label: 'Put on Pending', onClick: () => setShowPendingModal(true), color: 'bg-amber-500 text-white hover:bg-amber-600' })
     }
     if (isManagerOrStaff) {

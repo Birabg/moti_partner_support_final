@@ -3,151 +3,318 @@ import {
     FaCheckCircle,
     FaExclamationCircle,
     FaInfoCircle,
-    FaClock
+    FaClock,
+    FaArrowRight,
 } from "react-icons/fa";
 
-import "../../styles/customerDashboard.css";
-
 export default function CustomerNotificationItem({
-
-    notification
-
+    notification,
 }) {
-
-    function getIcon(type) {
-
+    function getNotificationConfig(type) {
         switch (type) {
-
             case "CASE_ASSIGNED":
-
-                return (
-                    <FaBell
-                        className="notification-icon assigned"
-                    />
-                );
+                return {
+                    icon: FaBell,
+                    label: "Case Assigned",
+                    iconBg: "bg-blue-50",
+                    iconColor: "text-blue-600",
+                    accent: "bg-blue-500",
+                };
 
             case "CASE_RESOLVED":
-
-                return (
-                    <FaCheckCircle
-                        className="notification-icon resolved"
-                    />
-                );
+                return {
+                    icon: FaCheckCircle,
+                    label: "Case Resolved",
+                    iconBg: "bg-emerald-50",
+                    iconColor: "text-emerald-600",
+                    accent: "bg-emerald-500",
+                };
 
             case "CASE_REASSIGNED":
-
-                return (
-                    <FaExclamationCircle
-                        className="notification-icon warning"
-                    />
-                );
+                return {
+                    icon: FaExclamationCircle,
+                    label: "Case Reassigned",
+                    iconBg: "bg-amber-50",
+                    iconColor: "text-amber-600",
+                    accent: "bg-amber-500",
+                };
 
             case "CASE_CLOSED":
-
-                return (
-                    <FaCheckCircle
-                        className="notification-icon closed"
-                    />
-                );
+                return {
+                    icon: FaCheckCircle,
+                    label: "Case Closed",
+                    iconBg: "bg-slate-100",
+                    iconColor: "text-slate-600",
+                    accent: "bg-slate-500",
+                };
 
             default:
-
-                return (
-                    <FaInfoCircle
-                        className="notification-icon info"
-                    />
-                );
-
+                return {
+                    icon: FaInfoCircle,
+                    label: "Notification",
+                    iconBg: "bg-indigo-50",
+                    iconColor: "text-indigo-600",
+                    accent: "bg-indigo-500",
+                };
         }
-
     }
 
     function formatDate(date) {
-
         if (!date) return "";
 
-        return new Date(date).toLocaleString(
+        const notificationDate = new Date(date);
 
-            undefined,
+        if (Number.isNaN(notificationDate.getTime())) {
+            return "";
+        }
 
-            {
-
-                year: "numeric",
-
-                month: "short",
-
-                day: "numeric",
-
-                hour: "2-digit",
-
-                minute: "2-digit"
-
-            }
-
-        );
-
+        return notificationDate.toLocaleString(undefined, {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+        });
     }
 
+    function formatRelativeTime(date) {
+        if (!date) return "";
+
+        const notificationDate = new Date(date);
+
+        if (Number.isNaN(notificationDate.getTime())) {
+            return "";
+        }
+
+        const now = new Date();
+        const difference =
+            now.getTime() - notificationDate.getTime();
+
+        const seconds = Math.floor(difference / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+
+        if (seconds < 60) {
+            return "Just now";
+        }
+
+        if (minutes < 60) {
+            return `${minutes}m ago`;
+        }
+
+        if (hours < 24) {
+            return `${hours}h ago`;
+        }
+
+        if (days < 7) {
+            return `${days}d ago`;
+        }
+
+        return notificationDate.toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+        });
+    }
+
+    const config = getNotificationConfig(
+        notification?.type
+    );
+
+    const Icon = config.icon;
+
+    const isUnread = !notification?.read;
+
     return (
-
         <div
+            className={`
+                group
+                relative
+                flex
+                gap-4
+                px-5
+                py-4
+                border-b
+                border-slate-100
+                transition-all
+                duration-200
+                cursor-pointer
 
-            className={
-
-                notification.read
-
-                    ? "customer-notification-item"
-
-                    : "customer-notification-item unread"
-
-            }
-
+                ${
+                    isUnread
+                        ? "bg-blue-50/40 hover:bg-blue-50"
+                        : "bg-white hover:bg-slate-50"
+                }
+            `}
         >
 
-            <div className="notification-left">
+            {/* UNREAD ACCENT */}
+            {isUnread && (
+                <div
+                    className={`
+                        absolute
+                        left-0
+                        top-0
+                        bottom-0
+                        w-1
+                        ${config.accent}
+                    `}
+                />
+            )}
 
-                {getIcon(notification.type)}
+            {/* ICON */}
+            <div className="shrink-0">
+
+                <div
+                    className={`
+                        flex
+                        h-11
+                        w-11
+                        items-center
+                        justify-center
+                        rounded-2xl
+                        ${config.iconBg}
+                        ${config.iconColor}
+                        transition-transform
+                        duration-200
+                        group-hover:scale-105
+                    `}
+                >
+                    <Icon className="text-lg" />
+                </div>
 
             </div>
 
-            <div className="notification-content">
+            {/* CONTENT */}
+            <div className="min-w-0 flex-1">
 
-                <p className="notification-message">
+                {/* TOP ROW */}
+                <div className="flex items-start justify-between gap-3">
 
-                    {notification.message}
+                    <div className="min-w-0">
 
+                        <div className="flex items-center gap-2">
+
+                            <p
+                                className={`
+                                    truncate
+                                    text-sm
+                                    ${
+                                        isUnread
+                                            ? "font-bold text-slate-900"
+                                            : "font-semibold text-slate-700"
+                                    }
+                                `}
+                            >
+                                {config.label}
+                            </p>
+
+                            {isUnread && (
+                                <span
+                                    className="
+                                        inline-flex
+                                        h-1.5
+                                        w-1.5
+                                        shrink-0
+                                        rounded-full
+                                        bg-blue-500
+                                    "
+                                />
+                            )}
+
+                        </div>
+
+                    </div>
+
+                    {/* RELATIVE TIME */}
+                    <span
+                        className="
+                            shrink-0
+                            text-[11px]
+                            font-medium
+                            text-slate-400
+                        "
+                        title={formatDate(notification?.createdAt)}
+                    >
+                        {formatRelativeTime(
+                            notification?.createdAt
+                        )}
+                    </span>
+
+                </div>
+
+                {/* MESSAGE */}
+                <p
+                    className={`
+                        mt-1.5
+                        text-sm
+                        leading-6
+                        ${
+                            isUnread
+                                ? "text-slate-700"
+                                : "text-slate-500"
+                        }
+                    `}
+                >
+                    {notification?.message ||
+                        "You have a new notification."}
                 </p>
 
-                <div className="notification-time">
+                {/* FOOTER */}
+                <div
+                    className="
+                        mt-3
+                        flex
+                        items-center
+                        justify-between
+                        gap-3
+                    "
+                >
 
-                    <FaClock />
+                    <div
+                        className="
+                            flex
+                            items-center
+                            gap-1.5
+                            text-[11px]
+                            font-medium
+                            text-slate-400
+                        "
+                    >
+                        <FaClock className="text-[10px]" />
 
-                    <span>
+                        <span>
+                            {formatDate(
+                                notification?.createdAt
+                            )}
+                        </span>
+                    </div>
 
-                        {formatDate(
+                    <div
+                        className="
+                            flex
+                            items-center
+                            gap-1
+                            text-xs
+                            font-semibold
+                            text-slate-400
+                            opacity-0
+                            transition-all
+                            duration-200
+                            group-hover:translate-x-0
+                            group-hover:opacity-100
+                        "
+                    >
+                        <span>View</span>
 
-                            notification.createdAt
-
-                        )}
-
-                    </span>
+                        <FaArrowRight className="text-[10px]" />
+                    </div>
 
                 </div>
 
             </div>
 
-            {
-
-                !notification.read && (
-
-                    <span className="notification-dot" />
-
-                )
-
-            }
-
         </div>
-
     );
-
 }
