@@ -22,10 +22,13 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(uploadsDir));
-app.use(
-    "/api/profile",
-    ProfileRouter
-);
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.set("Cache-Control", "no-store");
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
+  next();
+});
+app.use("/api/profile", ProfileRouter);
 app.use("/api", ApiRouter);
 
 

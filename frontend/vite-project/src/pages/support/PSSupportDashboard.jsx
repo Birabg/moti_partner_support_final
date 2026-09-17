@@ -37,10 +37,10 @@ function StatCard({
         overflow-hidden
         rounded-2xl
         border
-        border-slate-200
+        border-ink-300
         bg-white
         p-6
-        shadow-[0_2px_10px_rgba(15,23,42,0.03)]
+        shadow-[0_8px_30px_rgba(16,32,55,0.04)]
         transition-all
         duration-200
         hover:-translate-y-0.5
@@ -59,7 +59,7 @@ function StatCard({
           h-32
           w-32
           rounded-full
-          bg-slate-50
+          bg-ink-50
           opacity-60
           blur-3xl
         "
@@ -89,7 +89,7 @@ function StatCard({
           <ArrowUpRight
             size={17}
             className="
-              text-slate-300
+              text-ink-300
               transition-transform
               duration-200
               group-hover:-translate-y-0.5
@@ -108,7 +108,7 @@ function StatCard({
               font-bold
               uppercase
               tracking-[0.12em]
-              text-slate-400
+              text-ink-400
             "
           >
             {label}
@@ -122,7 +122,7 @@ function StatCard({
                 text-3xl
                 font-bold
                 tracking-tight
-                text-slate-950
+                text-ink-950
               "
             >
               {value}
@@ -135,7 +135,7 @@ function StatCard({
             className="
               mt-2
               text-xs
-              text-slate-400
+              text-ink-400
             "
           >
             {description}
@@ -193,7 +193,7 @@ function SectionLabel({
             text-xl
             font-semibold
             tracking-tight
-            text-slate-950
+            text-ink-950
           "
         >
           {title}
@@ -204,7 +204,7 @@ function SectionLabel({
             className="
               mt-1
               text-sm
-              text-slate-400
+              text-ink-400
             "
           >
             {description}
@@ -417,7 +417,7 @@ export default function PSSupportDashboard() {
     <div
       className="
         min-h-full
-        space-y-8
+        space-y-6
         pb-10
       "
     >
@@ -432,10 +432,10 @@ export default function PSSupportDashboard() {
           relative
           overflow-hidden
           rounded-3xl
-          bg-[#0b1f3a]
+          bg-[#0b1b33]
           px-7
           py-9
-          shadow-[0_10px_35px_rgba(15,23,42,0.12)]
+          shadow-[0_8px_30px_rgba(16,32,55,0.04)]
           sm:px-10
           sm:py-11
         "
@@ -537,7 +537,7 @@ export default function PSSupportDashboard() {
                   font-bold
                   uppercase
                   tracking-[0.18em]
-                  text-slate-400
+                  text-ink-400
                 "
               >
                 Support Operations
@@ -566,7 +566,7 @@ export default function PSSupportDashboard() {
                 max-w-2xl
                 text-sm
                 leading-6
-                text-slate-300
+                text-ink-300
                 sm:text-base
               "
             >
@@ -594,7 +594,7 @@ export default function PSSupportDashboard() {
               py-2.5
               text-xs
               font-semibold
-              text-slate-200
+              text-ink-300
               backdrop-blur-sm
             "
           >
@@ -635,7 +635,7 @@ export default function PSSupportDashboard() {
                 items-center
                 gap-2
                 text-xs
-                text-slate-400
+                text-ink-400
                 sm:flex
               "
             >
@@ -678,7 +678,7 @@ export default function PSSupportDashboard() {
                         h-7
                         w-7
                         animate-spin
-                        text-slate-300
+                        text-ink-300
                       "
                     />
                   ) : (
@@ -716,13 +716,13 @@ export default function PSSupportDashboard() {
                 gap-2
                 rounded-full
                 border
-                border-slate-200
+                border-ink-300
                 bg-white
                 px-3
                 py-1.5
                 text-xs
                 font-semibold
-                text-slate-600
+                text-ink-600
               "
             >
 
@@ -750,9 +750,9 @@ export default function PSSupportDashboard() {
             overflow-hidden
             rounded-2xl
             border
-            border-slate-200
+            border-ink-300
             bg-white
-            shadow-[0_2px_10px_rgba(15,23,42,0.03)]
+            shadow-[0_8px_30px_rgba(16,32,55,0.04)]
           "
         >
 
@@ -764,7 +764,7 @@ export default function PSSupportDashboard() {
               flex-col
               gap-4
               border-b
-              border-slate-100
+              border-ink-100
               px-6
               py-5
               sm:flex-row
@@ -806,7 +806,7 @@ export default function PSSupportDashboard() {
                   className="
                     text-sm
                     font-semibold
-                    text-slate-900
+                    text-ink-900
                   "
                 >
                   Assigned Cases
@@ -816,7 +816,7 @@ export default function PSSupportDashboard() {
                   className="
                     mt-0.5
                     text-xs
-                    text-slate-400
+                    text-ink-400
                   "
                 >
                   Cases requiring your attention
@@ -841,11 +841,11 @@ export default function PSSupportDashboard() {
                   items-center
                   gap-2
                   rounded-lg
-                  bg-slate-50
+                  bg-ink-50
                   px-3
                   py-2
                   text-xs
-                  text-slate-500
+                  text-ink-500
                 "
               >
 
@@ -899,9 +899,9 @@ export default function PSSupportDashboard() {
             overflow-hidden
             rounded-2xl
             border
-            border-slate-200
+            border-ink-300
             bg-white
-            shadow-[0_2px_10px_rgba(15,23,42,0.03)]
+            shadow-[0_8px_30px_rgba(16,32,55,0.04)]
           "
         >
 
@@ -911,7 +911,7 @@ export default function PSSupportDashboard() {
               items-center
               gap-3
               border-b
-              border-slate-100
+              border-ink-100
               px-6
               py-5
             "
@@ -944,7 +944,7 @@ export default function PSSupportDashboard() {
                 className="
                   text-sm
                   font-semibold
-                  text-slate-900
+                  text-ink-900
                 "
               >
                 Customer feedback
@@ -954,7 +954,7 @@ export default function PSSupportDashboard() {
                 className="
                   mt-0.5
                   text-xs
-                  text-slate-400
+                  text-ink-400
                 "
               >
                 Latest feedback received
@@ -970,7 +970,7 @@ export default function PSSupportDashboard() {
             <div
               className="
                 rounded-xl
-                bg-slate-50
+                bg-ink-50
                 p-5
               "
             >
@@ -998,10 +998,10 @@ export default function PSSupportDashboard() {
           flex-col
           gap-3
           border-t
-          border-slate-200
+          border-ink-300
           pt-5
           text-xs
-          text-slate-400
+          text-ink-400
           sm:flex-row
           sm:items-center
           sm:justify-between
@@ -1052,3 +1052,11 @@ export default function PSSupportDashboard() {
     </div>
   );
 }
+
+
+
+
+
+
+
+

@@ -12,3 +12,4 @@ export default function CustomerSidebar({ collapsed, onToggle }) {
 
     return <SidebarShell items={items} collapsed={collapsed} onToggle={onToggle} />;
 }
+

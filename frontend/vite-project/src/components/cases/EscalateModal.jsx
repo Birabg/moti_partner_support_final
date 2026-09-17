@@ -63,3 +63,4 @@ export default function EscalateModal({ caseData, close, refresh }) {
     </div>
   );
 }
+

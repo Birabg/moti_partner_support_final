@@ -12,3 +12,9 @@ export default function SupportHeader({ compactTitle = "Support Dashboard" }) {
     />
   );
 }
+
+
+
+
+
+

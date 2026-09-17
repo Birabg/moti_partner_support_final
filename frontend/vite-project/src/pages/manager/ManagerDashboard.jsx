@@ -499,7 +499,7 @@ export default function ManagerDashboard() {
                             }) => (
                                 <div
                                     key={label}
-                                    className="group rounded-[22px] border border-slate-200/80 bg-white p-5 shadow-[0_8px_25px_rgba(15,35,65,0.045)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(15,35,65,0.07)]"
+                                    className="group rounded-[22px] border border-slate-200/80 bg-white p-5 shadow-[0_8px_25px_rgba(15,35,65,0.045)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(16,32,55,0.07)]"
                                 >
 
                                     <div className="flex items-start justify-between">

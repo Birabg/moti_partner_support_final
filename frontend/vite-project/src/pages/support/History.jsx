@@ -167,7 +167,7 @@ export default function History() {
         return "bg-emerald-50 text-emerald-700 border-emerald-100";
 
       case "CLOSED":
-        return "bg-slate-100 text-slate-700 border-slate-200";
+        return "bg-ink-100 text-ink-700 border-ink-300";
 
       case "IN_PROGRESS":
         return "bg-blue-50 text-blue-700 border-blue-100";
@@ -185,7 +185,7 @@ export default function History() {
         return "bg-rose-50 text-rose-700 border-rose-100";
 
       default:
-        return "bg-slate-50 text-slate-600 border-slate-200";
+        return "bg-ink-50 text-ink-600 border-ink-300";
     }
   };
 
@@ -263,16 +263,16 @@ export default function History() {
   ========================================================= */
 
   return (
-    <div className="min-h-full bg-slate-50/70">
+    <div className="min-h-full bg-ink-50">
       <SupportHeader />
 
-      <main className="ps-container space-y-7 pb-12">
+      <main className=" space-y-6 pb-12">
 
         {/* =====================================================
             CLEAN HEADER
         ===================================================== */}
 
-        <section className="rounded-[22px] border border-slate-200 bg-white shadow-[0_6px_24px_rgba(15,35,65,0.04)]">
+        <section className="rounded-2xl border border-ink-300 bg-white shadow-[0_8px_30px_rgba(16,32,55,0.04)]">
 
           <div className="flex flex-col gap-6 px-6 py-6 sm:px-7 lg:flex-row lg:items-center lg:justify-between">
 
@@ -290,11 +290,11 @@ export default function History() {
 
               </div>
 
-              <h1 className="text-2xl font-semibold tracking-[-0.035em] text-slate-950 sm:text-[28px]">
+              <h1 className="text-2xl font-semibold tracking-[-0.035em] text-ink-950 sm:text-[28px]">
                 Case History
               </h1>
 
-              <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">
+              <p className="mt-2 max-w-xl text-sm leading-6 text-ink-500">
                 Review previously handled cases and keep track of your
                 support activity.
               </p>
@@ -305,19 +305,19 @@ export default function History() {
 
             <div className="flex items-center gap-3">
 
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3.5">
+              <div className="rounded-2xl border border-ink-300 bg-ink-50 px-5 py-3.5">
 
-                <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">
+                <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-ink-400">
                   Total Cases
                 </p>
 
                 <div className="mt-1 flex items-baseline gap-2">
 
-                  <span className="text-2xl font-semibold tracking-[-0.04em] text-slate-950">
+                  <span className="text-2xl font-semibold tracking-[-0.04em] text-ink-950">
                     {loading ? "—" : statistics.total}
                   </span>
 
-                  <span className="text-[11px] font-medium text-slate-400">
+                  <span className="text-[11px] font-medium text-ink-400">
                     historical
                   </span>
 
@@ -344,7 +344,7 @@ export default function History() {
             History Overview
           </p>
 
-          <h2 className="mt-1 text-xl font-semibold tracking-[-0.025em] text-slate-950">
+          <h2 className="mt-1 text-xl font-semibold tracking-[-0.025em] text-ink-950">
             Case workload
           </h2>
         </section>
@@ -365,7 +365,7 @@ export default function History() {
             }) => (
               <div
                 key={label}
-                className="group relative rounded-[22px] border border-slate-200/80 bg-white p-5 shadow-[0_8px_25px_rgba(15,35,65,0.045)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(15,35,65,0.07)]"
+                className="group relative rounded-2xl border border-ink-300 bg-white p-5 shadow-[0_8px_30px_rgba(16,32,55,0.04)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(16,32,55,0.07)]"
               >
 
                 <div className="flex items-start justify-between">
@@ -376,29 +376,29 @@ export default function History() {
                     <Icon className="h-[18px] w-[18px]" />
                   </div>
 
-                  <ArrowUpRight className="h-3.5 w-3.5 text-slate-200 transition group-hover:text-slate-300" />
+                  <ArrowUpRight className="h-3.5 w-3.5 text-ink-300 transition group-hover:text-ink-300" />
 
                 </div>
 
                 <div className="mt-6">
 
-                  <p className="text-xs font-medium text-slate-500">
+                  <p className="text-xs font-medium text-ink-500">
                     {label}
                   </p>
 
                   <div className="mt-1.5">
 
                     {loading ? (
-                      <div className="h-9 w-12 animate-pulse rounded-md bg-slate-100" />
+                      <div className="h-9 w-12 animate-pulse rounded-md bg-ink-100" />
                     ) : (
-                      <span className="text-3xl font-semibold tracking-[-0.04em] text-slate-950">
+                      <span className="text-3xl font-semibold tracking-[-0.04em] text-ink-950">
                         {value}
                       </span>
                     )}
 
                   </div>
 
-                  <p className="mt-2 text-[11px] text-slate-400">
+                  <p className="mt-2 text-[11px] text-ink-400">
                     {description}
                   </p>
 
@@ -414,11 +414,11 @@ export default function History() {
             CASE MANAGEMENT
         ===================================================== */}
 
-        <section className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white shadow-[0_8px_30px_rgba(15,35,65,0.045)]">
+        <section className="overflow-hidden rounded-2xl border border-ink-300 bg-white shadow-[0_8px_30px_rgba(16,32,55,0.04)]">
 
           {/* Header */}
 
-          <div className="border-b border-slate-100 px-6 py-5 sm:px-7">
+          <div className="border-b border-ink-100 px-6 py-5 sm:px-7">
 
             <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
 
@@ -436,7 +436,7 @@ export default function History() {
                       Case Management
                     </p>
 
-                    <h2 className="text-lg font-semibold tracking-[-0.02em] text-slate-950">
+                    <h2 className="text-lg font-semibold tracking-[-0.02em] text-ink-950">
                       Your case history
                     </h2>
 
@@ -444,7 +444,7 @@ export default function History() {
 
                 </div>
 
-                <p className="mt-3 text-sm text-slate-400">
+                <p className="mt-3 text-sm text-ink-400">
                   Review previously handled cases and their latest status.
                 </p>
 
@@ -456,7 +456,7 @@ export default function History() {
 
                 <div className="relative">
 
-                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
 
                   <input
                     type="text"
@@ -465,7 +465,7 @@ export default function History() {
                       setSearch(event.target.value)
                     }
                     placeholder="Search cases..."
-                    className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50/60 pl-9 pr-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:bg-white focus:ring-2 focus:ring-blue-100 sm:w-56"
+                    className="h-10 w-full rounded-xl border border-ink-300 bg-ink-50 pl-9 pr-3 text-sm text-ink-900 outline-none transition placeholder:text-ink-400 focus:border-navy-500 focus:bg-white focus:ring-2 focus:ring-navy-500/10 sm:w-56"
                   />
 
                 </div>
@@ -475,7 +475,7 @@ export default function History() {
                   onChange={(event) =>
                     setStatusFilter(event.target.value)
                   }
-                  className="h-10 rounded-xl border border-slate-200 bg-slate-50/60 px-3 text-sm font-medium text-slate-700 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                  className="h-10 rounded-xl border border-ink-300 bg-ink-50 px-3 text-sm font-medium text-ink-700 outline-none transition focus:border-navy-500 focus:bg-white focus:ring-2 focus:ring-navy-500/10"
                 >
                   <option value="ALL">All statuses</option>
                   <option value="RESOLVED">Resolved</option>
@@ -497,13 +497,13 @@ export default function History() {
               STATUS BAR
           ================================================= */}
 
-          <div className="flex min-h-[48px] items-center justify-between border-b border-slate-100 bg-slate-50/40 px-6 sm:px-7">
+          <div className="flex min-h-[48px] items-center justify-between border-b border-ink-100 bg-ink-50/40 px-6 sm:px-7">
 
             <div className="flex items-center gap-2">
 
-              <Activity className="h-3.5 w-3.5 text-slate-400" />
+              <Activity className="h-3.5 w-3.5 text-ink-400" />
 
-              <span className="text-xs font-medium text-slate-500">
+              <span className="text-xs font-medium text-ink-500">
                 {loading
                   ? "Loading history..."
                   : `${filteredItems.length} ${
@@ -518,18 +518,18 @@ export default function History() {
             <div className="flex items-center gap-3">
 
               {!loading && (
-                <span className="hidden text-[10px] text-slate-400 sm:block">
+                <span className="hidden text-[10px] text-ink-400 sm:block">
                   {filteredItems.length} of {items.length} shown
                 </span>
               )}
 
-              <div className="h-3 w-px bg-slate-200" />
+              <div className="h-3 w-px bg-ink-300" />
 
               <button
                 type="button"
                 onClick={() => loadHistory(true)}
                 disabled={refreshing}
-                className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-slate-500 transition hover:text-blue-600 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-ink-500 transition hover:text-blue-600 disabled:opacity-50"
               >
                 <RefreshCw
                   className={`h-3 w-3 ${
@@ -542,7 +542,7 @@ export default function History() {
 
               {(search || statusFilter !== "ALL") && (
                 <>
-                  <div className="h-3 w-px bg-slate-200" />
+                  <div className="h-3 w-px bg-ink-300" />
 
                   <button
                     type="button"
@@ -566,7 +566,7 @@ export default function History() {
           ================================================= */}
 
           {loading ? (
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-ink-100">
 
               {[1, 2, 3, 4].map((item) => (
                 <div
@@ -574,19 +574,19 @@ export default function History() {
                   className="flex items-center gap-4 px-6 py-5 sm:px-7"
                 >
 
-                  <div className="h-9 w-9 animate-pulse rounded-xl bg-slate-100" />
+                  <div className="h-9 w-9 animate-pulse rounded-xl bg-ink-100" />
 
                   <div className="flex-1 space-y-2">
 
-                    <div className="h-3.5 w-1/3 animate-pulse rounded bg-slate-100" />
+                    <div className="h-3.5 w-1/3 animate-pulse rounded bg-ink-100" />
 
-                    <div className="h-3 w-1/2 animate-pulse rounded bg-slate-100" />
+                    <div className="h-3 w-1/2 animate-pulse rounded bg-ink-100" />
 
                   </div>
 
-                  <div className="hidden h-7 w-20 animate-pulse rounded-full bg-slate-100 sm:block" />
+                  <div className="hidden h-7 w-20 animate-pulse rounded-full bg-ink-100 sm:block" />
 
-                  <div className="hidden h-4 w-24 animate-pulse rounded bg-slate-100 md:block" />
+                  <div className="hidden h-4 w-24 animate-pulse rounded bg-ink-100 md:block" />
 
                 </div>
               ))}
@@ -601,7 +601,7 @@ export default function History() {
 
             <div className="px-6 py-16 text-center">
 
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-400">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-ink-50 text-ink-400">
 
                 {items.length ? (
                   <Search className="h-6 w-6" />
@@ -611,13 +611,13 @@ export default function History() {
 
               </div>
 
-              <h3 className="mt-5 text-sm font-semibold text-slate-900">
+              <h3 className="mt-5 text-sm font-semibold text-ink-900">
                 {items.length
                   ? "No matching cases"
                   : "No case history yet"}
               </h3>
 
-              <p className="mx-auto mt-2 max-w-md text-xs leading-5 text-slate-500">
+              <p className="mx-auto mt-2 max-w-md text-xs leading-5 text-ink-500">
                 {items.length
                   ? "Try changing your search term or status filter."
                   : "Your historical support activity will appear here once cases have been handled."}
@@ -630,7 +630,7 @@ export default function History() {
                     setSearch("");
                     setStatusFilter("ALL");
                   }}
-                  className="mt-5 rounded-xl bg-[#0b1d38] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#12294a]"
+                  className="mt-5 rounded-xl bg-[#0b1b33] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#12294a]"
                 >
                   View all cases
                 </button>
@@ -650,25 +650,25 @@ export default function History() {
 
                 <thead>
 
-                  <tr className="border-b border-slate-100 bg-slate-50/30">
+                  <tr className="border-b border-ink-100 bg-ink-50/30">
 
-                    <th className="px-6 py-3.5 text-left text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400 sm:px-7">
+                    <th className="px-6 py-3.5 text-left text-[9px] font-bold uppercase tracking-[0.16em] text-ink-400 sm:px-7">
                       Case
                     </th>
 
-                    <th className="px-4 py-3.5 text-left text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">
+                    <th className="px-4 py-3.5 text-left text-[9px] font-bold uppercase tracking-[0.16em] text-ink-400">
                       Subject
                     </th>
 
-                    <th className="px-4 py-3.5 text-left text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">
+                    <th className="px-4 py-3.5 text-left text-[9px] font-bold uppercase tracking-[0.16em] text-ink-400">
                       Status
                     </th>
 
-                    <th className="px-4 py-3.5 text-left text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">
+                    <th className="px-4 py-3.5 text-left text-[9px] font-bold uppercase tracking-[0.16em] text-ink-400">
                       Created
                     </th>
 
-                    <th className="px-6 py-3.5 text-right text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400 sm:px-7">
+                    <th className="px-6 py-3.5 text-right text-[9px] font-bold uppercase tracking-[0.16em] text-ink-400 sm:px-7">
                       Activity
                     </th>
 
@@ -676,7 +676,7 @@ export default function History() {
 
                 </thead>
 
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-ink-100">
 
                   {filteredItems.map((item) => {
 
@@ -695,7 +695,7 @@ export default function History() {
                     return (
                       <tr
                         key={item.id || caseNumber}
-                        className="group transition hover:bg-slate-50/60"
+                        className="group transition hover:bg-ink-100"
                       >
 
                         {/* Case */}
@@ -704,17 +704,17 @@ export default function History() {
 
                           <div className="flex items-center gap-3">
 
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-500 transition group-hover:bg-blue-50 group-hover:text-blue-600">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-ink-50 text-ink-500 transition group-hover:bg-blue-50 group-hover:text-blue-600">
                               <Inbox className="h-4 w-4" />
                             </div>
 
                             <div className="min-w-0">
 
-                              <p className="text-sm font-semibold text-slate-900">
+                              <p className="text-sm font-semibold text-ink-900">
                                 {caseNumber}
                               </p>
 
-                              <p className="mt-0.5 max-w-[180px] truncate text-[11px] text-slate-400">
+                              <p className="mt-0.5 max-w-[180px] truncate text-[11px] text-ink-400">
                                 {customer}
                               </p>
 
@@ -730,13 +730,13 @@ export default function History() {
 
                           <div className="max-w-[300px]">
 
-                            <p className="truncate text-sm font-medium text-slate-800">
+                            <p className="truncate text-sm font-medium text-ink-900">
                               {item.subject ||
                                 "No subject provided"}
                             </p>
 
                             {item.description && (
-                              <p className="mt-1 truncate text-[11px] text-slate-400">
+                              <p className="mt-1 truncate text-[11px] text-ink-400">
                                 {item.description}
                               </p>
                             )}
@@ -769,11 +769,11 @@ export default function History() {
 
                           <div>
 
-                            <p className="text-xs font-medium text-slate-600">
+                            <p className="text-xs font-medium text-ink-600">
                               {formatDate(item.createdAt)}
                             </p>
 
-                            <p className="mt-1 text-[10px] text-slate-400">
+                            <p className="mt-1 text-[10px] text-ink-400">
                               {formatDateTime(item.createdAt)}
                             </p>
 
@@ -787,7 +787,7 @@ export default function History() {
 
                           <button
                             type="button"
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-ink-300 bg-white text-ink-400 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
                           >
                             <ArrowUpRight className="h-3.5 w-3.5" />
                           </button>
@@ -812,7 +812,7 @@ export default function History() {
         ===================================================== */}
 
         {!loading && items.length > 0 && (
-          <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white px-5 py-4 shadow-[0_4px_18px_rgba(15,35,65,0.035)] sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 rounded-2xl border border-ink-300 bg-white px-5 py-4 shadow-[0_4px_18px_rgba(15,35,65,0.035)] sm:flex-row sm:items-center sm:justify-between">
 
             <div className="flex items-center gap-3">
 
@@ -822,11 +822,11 @@ export default function History() {
 
               <div>
 
-                <p className="text-xs font-semibold text-slate-700">
+                <p className="text-xs font-semibold text-ink-700">
                   Support history is up to date
                 </p>
 
-                <p className="mt-0.5 text-[10px] text-slate-400">
+                <p className="mt-0.5 text-[10px] text-ink-400">
                   Historical assignments are synchronized with the
                   support workspace.
                 </p>
@@ -835,7 +835,7 @@ export default function History() {
 
             </div>
 
-            <div className="text-[10px] font-medium text-slate-400">
+            <div className="text-[10px] font-medium text-ink-400">
               {filteredItems.length} of {items.length} cases displayed
             </div>
 
@@ -846,3 +846,11 @@ export default function History() {
     </div>
   );
 }
+
+
+
+
+
+
+
+

@@ -17,3 +17,4 @@ export default function DashboardCard({ title, value, caption, icon: Icon, loadi
     </Card>
   );
 }
+

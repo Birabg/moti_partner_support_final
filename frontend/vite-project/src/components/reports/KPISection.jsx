@@ -28,3 +28,4 @@ export default function KPISection({ metrics = {} }) {
         </div>
     );
 }
+

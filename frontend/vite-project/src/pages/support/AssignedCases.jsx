@@ -21,7 +21,7 @@ import StatusBadge from "../../components/support/StatusBadge";
 import ResolutionModal from "../../components/support/ResolutionModal";
 import CaseDetailsDrawer from "../../components/cases/CaseDetailsDrawer";
 import SupportHeader from "../../components/support/SupportHeader";
-import Button from "../../components/ui/button";
+import Button from "../../components/ui/Button";
 
 export default function AssignedCases() {
   const [cases, setCases] = useState([]);
@@ -136,13 +136,13 @@ export default function AssignedCases() {
   );
 
   return (
-    <div className="min-h-full space-y-7">
+    <div className="min-h-full space-y-6">
 
       {/* =====================================================
           PAGE HERO
       ===================================================== */}
 
-      <section className="relative overflow-hidden rounded-[24px] bg-[#0b1b33] text-white shadow-[0_18px_50px_rgba(11,27,51,0.14)]">
+      <section className="relative overflow-hidden rounded-2xl bg-[#0b1b33] text-white shadow-[0_8px_30px_rgba(16,32,55,0.04)]">
 
         <div className="pointer-events-none absolute -right-32 -top-40 h-[390px] w-[390px] rounded-full bg-[#416da8]/20 blur-[90px]" />
 
@@ -217,11 +217,11 @@ export default function AssignedCases() {
 
         <div className="mb-4">
 
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#567fbd]">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[navy-500]">
             Queue overview
           </p>
 
-          <h2 className="mt-1 text-lg font-bold tracking-[-0.025em] text-[#101a28]">
+          <h2 className="mt-1 text-lg font-bold tracking-[-0.025em] text-[ink-900]">
             Case workload
           </h2>
 
@@ -273,27 +273,27 @@ export default function AssignedCases() {
           CASE QUEUE
       ===================================================== */}
 
-      <section className="overflow-hidden rounded-[22px] border border-slate-200/80 bg-white shadow-[0_8px_30px_rgba(16,32,55,0.045)]">
+      <section className="overflow-hidden rounded-2xl border border-ink-300 bg-white shadow-[0_8px_30px_rgba(16,32,55,0.045)]">
 
         {/* Header */}
 
-        <div className="flex flex-col gap-4 border-b border-slate-100 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <div className="flex flex-col gap-4 border-b border-ink-100 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
 
           <div>
 
             <div className="flex items-center gap-2">
 
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#edf4fd] text-[#527eb9]">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[navy-50] text-[navy-500]">
                 <ClipboardList className="h-4 w-4" />
               </div>
 
               <div>
 
-                <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">
+                <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-ink-400">
                   Case management
                 </p>
 
-                <h2 className="mt-0.5 text-base font-bold tracking-[-0.02em] text-[#101a28]">
+                <h2 className="mt-0.5 text-base font-bold tracking-[-0.02em] text-[ink-900]">
                   Your case queue
                 </h2>
 
@@ -301,7 +301,7 @@ export default function AssignedCases() {
 
             </div>
 
-            <p className="mt-3 text-[11px] leading-5 text-slate-400">
+            <p className="mt-3 text-[11px] leading-5 text-ink-400">
               Review assigned cases and take action when required.
             </p>
 
@@ -309,7 +309,7 @@ export default function AssignedCases() {
 
           <div className="flex items-center gap-3">
 
-            <div className="flex items-center gap-2 text-[10px] text-slate-400">
+            <div className="flex items-center gap-2 text-[10px] text-ink-400">
 
               <RefreshCw className="h-3 w-3" />
 
@@ -317,7 +317,7 @@ export default function AssignedCases() {
 
             </div>
 
-            <span className="hidden h-4 w-px bg-slate-200 sm:block" />
+            <span className="hidden h-4 w-px bg-ink-300 sm:block" />
 
             <span className="flex items-center gap-1.5 text-[10px] font-semibold text-emerald-600">
 
@@ -373,7 +373,7 @@ export default function AssignedCases() {
 
       {!loading && cases.length > 0 && (
 
-        <div className="flex flex-col gap-3 border-t border-slate-200/80 pt-5 text-[10px] text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 border-t border-border-ink-300 pt-5 text-[10px] text-ink-400 sm:flex-row sm:items-center sm:justify-between">
 
           <div className="flex items-center gap-2">
 
@@ -457,9 +457,9 @@ function CaseRow({
     MEDIUM:
       "bg-amber-50 text-amber-600 border-amber-100",
     NORMAL:
-      "bg-slate-50 text-slate-500 border-slate-200",
+      "bg-ink-50 text-ink-500 border-ink-300",
     LOW:
-      "bg-slate-50 text-slate-400 border-slate-200",
+      "bg-ink-50 text-ink-400 border-ink-300",
   };
 
   return (
@@ -467,13 +467,13 @@ function CaseRow({
     <div
       className="
         group relative overflow-hidden
-        rounded-[18px]
-        border border-slate-100
+        rounded-xl
+        border border-ink-100
         bg-white
         px-4 py-4
         transition-all duration-300
-        hover:border-slate-200
-        hover:bg-slate-[0.2]
+        hover:border-ink-300
+        hover:bg-ink-100
         hover:shadow-[0_8px_25px_rgba(16,32,55,0.055)]
         sm:px-5
       "
@@ -489,7 +489,7 @@ function CaseRow({
             isResolved
               ? "bg-emerald-400 opacity-50"
               : isInProgress
-              ? "bg-[#527eb9] opacity-60"
+              ? "bg-[navy-500] opacity-60"
               : "bg-amber-400 opacity-50"
           }
         `}
@@ -501,7 +501,7 @@ function CaseRow({
 
         <div className="flex min-w-0 flex-1 items-start gap-4">
 
-          <div className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-[9px] font-bold text-slate-300 sm:flex">
+          <div className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-ink-50 text-[9px] font-bold text-ink-300 sm:flex">
             {String(index + 1).padStart(2, "0")}
           </div>
 
@@ -509,7 +509,7 @@ function CaseRow({
 
             <div className="flex flex-wrap items-center gap-2">
 
-              <p className="text-[11px] font-bold tracking-[0.01em] text-[#101a28]">
+              <p className="text-[11px] font-bold tracking-[0.01em] text-[ink-900]">
                 {caseItem.caseNumber || caseItem.id}
               </p>
 
@@ -534,11 +534,11 @@ function CaseRow({
 
             </div>
 
-            <p className="mt-1.5 line-clamp-2 text-[12px] font-medium leading-5 text-slate-600">
+            <p className="mt-1.5 line-clamp-2 text-[12px] font-medium leading-5 text-ink-600">
               {caseItem.subject || "Support request"}
             </p>
 
-            <div className="mt-2 flex flex-wrap items-center gap-3 text-[9px] text-slate-400">
+            <div className="mt-2 flex flex-wrap items-center gap-3 text-[9px] text-ink-400">
 
               {caseItem.organization?.name && (
 
@@ -549,7 +549,7 @@ function CaseRow({
               )}
 
               {caseItem.organization?.name && (
-                <span className="h-1 w-1 rounded-full bg-slate-200" />
+                <span className="h-1 w-1 rounded-full bg-ink-300" />
               )}
 
               <span>
@@ -566,13 +566,13 @@ function CaseRow({
 
         <div className="flex items-center gap-2 lg:w-[150px]">
 
-          <span className="text-[8px] font-bold uppercase tracking-[0.12em] text-slate-300 lg:hidden">
+          <span className="text-[8px] font-bold uppercase tracking-[0.12em] text-ink-300 lg:hidden">
             Status
           </span>
 
           <StatusBadge status={caseItem.status} />
 
-          <span className="hidden text-[9px] font-medium text-slate-400 xl:block">
+          <span className="hidden text-[9px] font-medium text-ink-400 xl:block">
             {statusLabel}
           </span>
 
@@ -589,15 +589,15 @@ function CaseRow({
             className="
               h-9
               rounded-xl
-              border-slate-200
+              border-ink-300
               px-3
               text-[10px]
               font-semibold
               shadow-none
               transition-all
-              hover:border-[#527eb9]
-              hover:bg-[#edf4fd]
-              hover:text-[#527eb9]
+              hover:border-[navy-500]
+              hover:bg-[navy-50]
+              hover:text-[navy-500]
             "
           >
             <Eye className="mr-1.5 h-3.5 w-3.5" />
@@ -633,10 +633,10 @@ function CaseRow({
               h-9 w-9
               items-center justify-center
               rounded-xl
-              text-slate-300
+              text-ink-300
               transition-all
-              hover:bg-slate-50
-              hover:text-[#527eb9]
+              hover:bg-ink-100
+              hover:text-[navy-500]
               xl:flex
             "
             aria-label="Open case"
@@ -667,16 +667,16 @@ function QueueMetric({
 }) {
   const tones = {
     blue: {
-      icon: "bg-[#edf4fd] text-[#527eb9]",
-      accent: "bg-[#527eb9]",
+      icon: "bg-[navy-50] text-[navy-500]",
+      accent: "bg-[navy-500]",
     },
     amber: {
-      icon: "bg-[#fff7e8] text-[#c58a27]",
-      accent: "bg-[#c58a27]",
+      icon: "bg-[gold-50] text-[gold-500]",
+      accent: "bg-[gold-500]",
     },
     green: {
-      icon: "bg-[#edf8f4] text-[#37876c]",
-      accent: "bg-[#37876c]",
+      icon: "bg-[success-50] text-[success-500]",
+      accent: "bg-[success-500]",
     },
   };
 
@@ -687,14 +687,14 @@ function QueueMetric({
     <div
       className="
         group relative overflow-hidden
-        rounded-[20px]
-        border border-slate-200/80
+        rounded-2xl
+        border border-ink-300
         bg-white
         p-5
         shadow-[0_8px_30px_rgba(16,32,55,0.045)]
         transition-all duration-300
         hover:-translate-y-0.5
-        hover:border-slate-300
+        hover:border-ink-300
         hover:shadow-[0_16px_38px_rgba(16,32,55,0.075)]
       "
     >
@@ -720,13 +720,13 @@ function QueueMetric({
           <Icon className="h-4 w-4" />
         </div>
 
-        <ArrowUpRight className="h-3.5 w-3.5 text-slate-200 transition-colors group-hover:text-slate-400" />
+        <ArrowUpRight className="h-3.5 w-3.5 text-ink-300 transition-colors group-hover:text-ink-400" />
 
       </div>
 
       <div className="mt-6">
 
-        <p className="text-[10px] font-medium text-slate-400">
+        <p className="text-[10px] font-medium text-ink-400">
           {label}
         </p>
 
@@ -734,11 +734,11 @@ function QueueMetric({
 
           {loading ? (
 
-            <div className="h-7 w-10 animate-pulse rounded-md bg-slate-100" />
+            <div className="h-7 w-10 animate-pulse rounded-md bg-ink-100" />
 
           ) : (
 
-            <p className="font-display text-[29px] font-bold tracking-[-0.045em] text-[#101a28]">
+            <p className="font-display text-[29px] font-bold tracking-[-0.045em] text-[ink-900]">
               {value}
             </p>
 
@@ -746,7 +746,7 @@ function QueueMetric({
 
         </div>
 
-        <p className="mt-2 text-[10px] text-slate-400">
+        <p className="mt-2 text-[10px] text-ink-400">
           {description}
         </p>
 
@@ -770,26 +770,26 @@ function LoadingQueue() {
 
         <div
           key={item}
-          className="animate-pulse rounded-[18px] border border-slate-100 p-5"
+          className="animate-pulse rounded-xl border border-ink-100 p-5"
         >
 
           <div className="flex items-center gap-4">
 
-            <div className="h-9 w-9 rounded-xl bg-slate-100" />
+            <div className="h-9 w-9 rounded-xl bg-ink-100" />
 
             <div className="flex-1">
 
-              <div className="h-3 w-28 rounded bg-slate-100" />
+              <div className="h-3 w-28 rounded bg-ink-100" />
 
-              <div className="mt-2 h-3 w-64 max-w-full rounded bg-slate-100" />
+              <div className="mt-2 h-3 w-64 max-w-full rounded bg-ink-100" />
 
-              <div className="mt-2 h-2 w-24 rounded bg-slate-100" />
+              <div className="mt-2 h-2 w-24 rounded bg-ink-100" />
 
             </div>
 
-            <div className="hidden h-7 w-20 rounded-full bg-slate-100 sm:block" />
+            <div className="hidden h-7 w-20 rounded-full bg-ink-100 sm:block" />
 
-            <div className="hidden h-8 w-20 rounded-xl bg-slate-100 sm:block" />
+            <div className="hidden h-8 w-20 rounded-xl bg-ink-100 sm:block" />
 
           </div>
 
@@ -809,9 +809,9 @@ function LoadingQueue() {
 function EmptyQueue() {
   return (
 
-    <div className="flex flex-col items-center justify-center rounded-[20px] bg-slate-50/70 px-6 py-14 text-center">
+    <div className="flex flex-col items-center justify-center rounded-2xl bg-ink-50 px-6 py-14 text-center">
 
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-300 shadow-sm">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-ink-300 shadow-sm">
 
         <Inbox className="h-6 w-6" />
 
@@ -819,15 +819,15 @@ function EmptyQueue() {
 
       <div className="mt-5 flex items-center gap-2">
 
-        <Sparkles className="h-3.5 w-3.5 text-[#527eb9]" />
+        <Sparkles className="h-3.5 w-3.5 text-[navy-500]" />
 
-        <p className="text-sm font-bold text-[#101a28]">
+        <p className="text-sm font-bold text-[ink-900]">
           Your queue is clear
         </p>
 
       </div>
 
-      <p className="mt-2 max-w-sm text-[11px] leading-5 text-slate-400">
+      <p className="mt-2 max-w-sm text-[11px] leading-5 text-ink-400">
         There are no assigned cases requiring your attention
         right now. New support requests will appear here when
         they are assigned to you.
@@ -837,3 +837,11 @@ function EmptyQueue() {
 
   );
 }
+
+
+
+
+
+
+
+

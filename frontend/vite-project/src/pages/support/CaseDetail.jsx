@@ -120,8 +120,8 @@ const getStatusConfig = (status) => {
     IN_PROGRESS: {
       label: "In Progress",
       icon: PlayCircle,
-      className: "bg-[#edf4fd] text-[#527eb9] border-[#dbe8f7]",
-      dot: "bg-[#527eb9]",
+      className: "bg-[navy-50] text-[navy-500] border-[#dbe8f7]",
+      dot: "bg-[navy-500]",
     },
 
     PENDING: {
@@ -148,8 +148,8 @@ const getStatusConfig = (status) => {
     CLOSED: {
       label: "Closed",
       icon: CheckCircle2,
-      className: "bg-slate-100 text-slate-600 border-slate-200",
-      dot: "bg-slate-400",
+      className: "bg-ink-100 text-ink-600 border-ink-300",
+      dot: "bg-ink-400",
     },
 
     CANCELLED: {
@@ -164,8 +164,8 @@ const getStatusConfig = (status) => {
     configs[normalized] || {
       label: normalized || "Unknown",
       icon: Clock3,
-      className: "bg-slate-100 text-slate-600 border-slate-200",
-      dot: "bg-slate-400",
+      className: "bg-ink-100 text-ink-600 border-ink-300",
+      dot: "bg-ink-400",
     }
   );
 };
@@ -409,7 +409,7 @@ export default function CaseDetail() {
       <div className="min-h-full">
         <SupportHeader />
 
-        <div className="ps-container space-y-6 py-6">
+        <div className=" space-y-6 py-6">
           <CaseDetailSkeleton />
         </div>
       </div>
@@ -425,17 +425,17 @@ export default function CaseDetail() {
       <div className="min-h-full">
         <SupportHeader />
 
-        <div className="ps-container py-10">
-          <div className="border border-slate-200 bg-white px-6 py-14 text-center shadow-sm">
+        <div className=" py-10">
+          <div className="border border-ink-300 bg-white px-6 py-14 text-center shadow-sm">
             <div className="mx-auto flex h-12 w-12 items-center justify-center bg-red-50 text-red-500">
               <AlertTriangle className="h-5 w-5" />
             </div>
 
-            <h2 className="mt-4 text-lg font-bold text-[#101a28]">
+            <h2 className="mt-4 text-lg font-bold text-[ink-900]">
               Case could not be loaded
             </h2>
 
-            <p className="mx-auto mt-2 max-w-md text-sm text-slate-400">
+            <p className="mx-auto mt-2 max-w-md text-sm text-ink-400">
               We couldn't retrieve the requested support case.
               Please refresh the page and try again.
             </p>
@@ -443,7 +443,7 @@ export default function CaseDetail() {
             <button
               type="button"
               onClick={() => loadCase()}
-              className="mt-6 inline-flex h-9 items-center gap-2 bg-[#0b1b33] px-4 text-xs font-semibold text-white transition hover:bg-[#142b4b]"
+              className="mt-6 inline-flex h-9 items-center gap-2 bg-[#0b1b33] px-4 text-xs font-semibold text-white transition hover:bg-[#102949]"
             >
               <RefreshCw className="h-3.5 w-3.5" />
               Try again
@@ -462,11 +462,11 @@ export default function CaseDetail() {
     <div className="min-h-full">
       <SupportHeader />
 
-      <main className="ps-container space-y-6 py-6">
+      <main className=" space-y-6 py-6">
 
         {/* CASE HERO */}
 
-        <section className="relative overflow-hidden rounded-[22px] bg-[#0b1b33] shadow-[0_16px_45px_rgba(11,27,51,0.12)]">
+        <section className="relative overflow-hidden rounded-2xl bg-[#0b1b33] shadow-[0_8px_30px_rgba(16,32,55,0.04)]">
           <div className="pointer-events-none absolute -right-32 -top-40 h-[350px] w-[350px] rounded-full bg-[#416da8]/20 blur-[90px]" />
 
           <div className="pointer-events-none absolute -bottom-40 left-1/2 h-[250px] w-[250px] rounded-full bg-[#5f86b9]/10 blur-[80px]" />
@@ -563,16 +563,16 @@ export default function CaseDetail() {
         {/* ACTION BAR */}
 
         {(hasActions || isAdmin) && (
-          <section className="border border-slate-200/80 bg-white shadow-[0_8px_30px_rgba(16,32,55,0.04)]">
+          <section className="border border-ink-300 bg-white shadow-[0_8px_30px_rgba(16,32,55,0.04)]">
             <div className="flex flex-col gap-4 px-5 py-4 sm:px-6">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
 
                 <div>
-                  <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#527eb9]">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[navy-500]">
                     Case controls
                   </p>
 
-                  <p className="mt-1 text-[11px] text-slate-400">
+                  <p className="mt-1 text-[11px] text-ink-400">
                     Manage the current case workflow.
                   </p>
                 </div>
@@ -583,10 +583,10 @@ export default function CaseDetail() {
 
                     const styles = {
                       primary:
-                        "bg-[#0b1b33] text-white hover:bg-[#142b4b]",
+                        "bg-[#0b1b33] text-white hover:bg-[#102949]",
 
                       secondary:
-                        "border border-slate-200 bg-white text-slate-600 hover:border-[#b8cce5] hover:bg-[#f4f8fd] hover:text-[#527eb9]",
+                        "border border-ink-300 bg-white text-ink-600 hover:border-[#b8cce5] hover:bg-[#f4f8fd] hover:text-[navy-500]",
 
                       warning:
                         "bg-orange-50 text-orange-700 hover:bg-orange-100",
@@ -607,7 +607,7 @@ export default function CaseDetail() {
 
                   {isAdmin && currentStatus !== "CANCELLED" && (
                     <>
-                      <span className="mx-1 hidden h-5 w-px bg-slate-200 sm:block" />
+                      <span className="mx-1 hidden h-5 w-px bg-ink-300 sm:block" />
 
                       <button
                         type="button"
@@ -672,27 +672,27 @@ export default function CaseDetail() {
 
           {/* TIMELINE */}
 
-          <section className="border border-slate-200/80 bg-white shadow-[0_8px_30px_rgba(16,32,55,0.04)]">
-            <div className="border-b border-slate-100 px-5 py-5 sm:px-6">
+          <section className="border border-ink-300 bg-white shadow-[0_8px_30px_rgba(16,32,55,0.04)]">
+            <div className="border-b border-ink-100 px-5 py-5 sm:px-6">
               <div className="flex items-center justify-between">
 
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center bg-[#edf4fd] text-[#527eb9]">
+                  <div className="flex h-9 w-9 items-center justify-center bg-[navy-50] text-[navy-500]">
                     <Clock3 className="h-4 w-4" />
                   </div>
 
                   <div>
-                    <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-ink-400">
                       Case history
                     </p>
 
-                    <h2 className="mt-0.5 text-base font-bold tracking-[-0.02em] text-[#101a28]">
+                    <h2 className="mt-0.5 text-base font-bold tracking-[-0.02em] text-[ink-900]">
                       Activity timeline
                     </h2>
                   </div>
                 </div>
 
-                <span className="hidden text-[9px] text-slate-400 sm:block">
+                <span className="hidden text-[9px] text-ink-400 sm:block">
                   {data.timeline?.length || 0} events
                 </span>
               </div>
@@ -703,13 +703,13 @@ export default function CaseDetail() {
                 <StatusTimeline events={data.timeline || []} />
               ) : (
                 <div className="py-12 text-center">
-                  <Clock3 className="mx-auto h-5 w-5 text-slate-300" />
+                  <Clock3 className="mx-auto h-5 w-5 text-ink-300" />
 
-                  <p className="mt-3 text-xs font-semibold text-slate-500">
+                  <p className="mt-3 text-xs font-semibold text-ink-500">
                     No timeline events yet
                   </p>
 
-                  <p className="mt-1 text-[10px] text-slate-400">
+                  <p className="mt-1 text-[10px] text-ink-400">
                     Case activity will appear here as the case progresses.
                   </p>
                 </div>
@@ -723,18 +723,18 @@ export default function CaseDetail() {
 
             {/* CASE INFORMATION */}
 
-            <section className="border border-slate-200/80 bg-white shadow-[0_8px_30px_rgba(16,32,55,0.04)]">
-              <div className="border-b border-slate-100 px-5 py-4">
-                <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400">
+            <section className="border border-ink-300 bg-white shadow-[0_8px_30px_rgba(16,32,55,0.04)]">
+              <div className="border-b border-ink-100 px-5 py-4">
+                <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-ink-400">
                   Case information
                 </p>
 
-                <h2 className="mt-1 text-sm font-bold text-[#101a28]">
+                <h2 className="mt-1 text-sm font-bold text-[ink-900]">
                   Details
                 </h2>
               </div>
 
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-ink-100">
                 <InfoRow
                   label="Case number"
                   value={data.caseNumber || data.id}
@@ -776,21 +776,21 @@ export default function CaseDetail() {
             {/* ATTACHMENTS */}
 
             {data.attachments?.length > 0 && (
-              <section className="border border-slate-200/80 bg-white shadow-[0_8px_30px_rgba(16,32,55,0.04)]">
-                <div className="border-b border-slate-100 px-5 py-4">
+              <section className="border border-ink-300 bg-white shadow-[0_8px_30px_rgba(16,32,55,0.04)]">
+                <div className="border-b border-ink-100 px-5 py-4">
                   <div className="flex items-center justify-between">
 
                     <div>
-                      <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400">
+                      <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-ink-400">
                         Supporting files
                       </p>
 
-                      <h2 className="mt-1 text-sm font-bold text-[#101a28]">
+                      <h2 className="mt-1 text-sm font-bold text-[ink-900]">
                         Attachments
                       </h2>
                     </div>
 
-                    <Paperclip className="h-4 w-4 text-slate-300" />
+                    <Paperclip className="h-4 w-4 text-ink-300" />
                   </div>
                 </div>
 
@@ -823,7 +823,7 @@ export default function CaseDetail() {
 
         {/* BOTTOM CONTEXT */}
 
-        <div className="flex flex-col gap-2 border-t border-slate-200/70 pt-4 text-[9px] text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2 border-t border-ink-300/70 pt-4 text-[9px] text-ink-400 sm:flex-row sm:items-center sm:justify-between">
 
           <div className="flex items-center gap-2">
             <span
@@ -990,12 +990,12 @@ function InfoRow({
 }) {
   return (
     <div className="flex items-start justify-between gap-4 px-5 py-3.5">
-      <span className="text-[9px] font-medium uppercase tracking-[0.08em] text-slate-400">
+      <span className="text-[9px] font-medium uppercase tracking-[0.08em] text-ink-400">
         {label}
       </span>
 
       <span
-        className={`max-w-[170px] text-right text-[10px] font-semibold text-slate-600 ${
+        className={`max-w-[170px] text-right text-[10px] font-semibold text-ink-600 ${
           mono ? "font-mono" : ""
         }`}
       >
@@ -1014,21 +1014,21 @@ function AttachmentItem({
   url,
 }) {
   return (
-    <div className="group flex items-center gap-3 border border-slate-100 bg-slate-50/60 p-3 transition hover:border-slate-200 hover:bg-white">
+    <div className="group flex items-center gap-3 border border-ink-100 bg-ink-50 p-3 transition hover:border-ink-300 hover:bg-white">
 
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center bg-white text-[#527eb9] shadow-sm">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center bg-white text-[navy-500] shadow-sm">
         <FileText className="h-3.5 w-3.5" />
       </div>
 
       <div className="min-w-0 flex-1">
         <p
-          className="truncate text-[10px] font-semibold text-slate-600"
+          className="truncate text-[10px] font-semibold text-ink-600"
           title={label}
         >
           {label}
         </p>
 
-        <p className="mt-0.5 text-[8px] uppercase tracking-[0.08em] text-slate-300">
+        <p className="mt-0.5 text-[8px] uppercase tracking-[0.08em] text-ink-300">
           Attachment
         </p>
       </div>
@@ -1038,13 +1038,13 @@ function AttachmentItem({
           href={url}
           target="_blank"
           rel="noreferrer"
-          className="flex h-7 w-7 shrink-0 items-center justify-center text-slate-300 transition hover:bg-[#edf4fd] hover:text-[#527eb9]"
+          className="flex h-7 w-7 shrink-0 items-center justify-center text-ink-300 transition hover:bg-[navy-50] hover:text-[navy-500]"
           aria-label={`Download ${label}`}
         >
           <Download className="h-3.5 w-3.5" />
         </a>
       ) : (
-        <span className="text-[8px] text-slate-300">
+        <span className="text-[8px] text-ink-300">
           Unavailable
         </span>
       )}
@@ -1060,7 +1060,7 @@ function CaseDetailSkeleton() {
   return (
     <div className="space-y-6">
 
-      <div className="animate-pulse overflow-hidden rounded-[22px] bg-[#0b1b33] px-6 py-8 sm:px-8">
+      <div className="animate-pulse overflow-hidden rounded-2xl bg-[#0b1b33] px-6 py-8 sm:px-8">
         <div className="h-2 w-28 bg-white/10" />
 
         <div className="mt-8 h-9 max-w-xl bg-white/10" />
@@ -1068,31 +1068,39 @@ function CaseDetailSkeleton() {
         <div className="mt-4 h-2.5 max-w-md bg-white/10" />
       </div>
 
-      <div className="animate-pulse border border-slate-200 bg-white px-6 py-5">
+      <div className="animate-pulse border border-ink-300 bg-white px-6 py-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 
           <div>
-            <div className="h-2 w-24 bg-slate-100" />
-            <div className="mt-2 h-3 w-48 bg-slate-100" />
+            <div className="h-2 w-24 bg-ink-100" />
+            <div className="mt-2 h-3 w-48 bg-ink-100" />
           </div>
 
           <div className="flex gap-2">
-            <div className="h-9 w-28 bg-slate-100" />
-            <div className="h-9 w-24 bg-slate-100" />
+            <div className="h-9 w-28 bg-ink-100" />
+            <div className="h-9 w-24 bg-ink-100" />
           </div>
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
 
-        <div className="h-[500px] animate-pulse border border-slate-200 bg-white" />
+        <div className="h-[500px] animate-pulse border border-ink-300 bg-white" />
 
         <div className="space-y-4">
-          <div className="h-64 animate-pulse border border-slate-200 bg-white" />
+          <div className="h-64 animate-pulse border border-ink-300 bg-white" />
 
-          <div className="h-48 animate-pulse border border-slate-200 bg-white" />
+          <div className="h-48 animate-pulse border border-ink-300 bg-white" />
         </div>
       </div>
     </div>
   );
 }
+
+
+
+
+
+
+
+

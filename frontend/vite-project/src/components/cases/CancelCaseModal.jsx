@@ -54,3 +54,4 @@ export default function CancelCaseModal({ caseData, close, refresh }) {
     </div>
   );
 }
+

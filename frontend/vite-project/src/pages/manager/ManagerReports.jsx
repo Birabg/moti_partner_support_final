@@ -109,3 +109,4 @@ function buildMonthlyTrend(cases = []) {
 
   return MONTHS.map((month) => ({ month, cases: counts[month] || 0 }));
 }
+

@@ -337,3 +337,4 @@ export default function CaseTimeline({ history = [], caseDetails = null }) {
     </div>
   );
 }
+

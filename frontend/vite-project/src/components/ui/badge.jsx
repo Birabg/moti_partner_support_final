@@ -16,3 +16,4 @@ export function Badge({ tone = "default", className = "", children, ...props }) 
     </span>
   );
 }
+

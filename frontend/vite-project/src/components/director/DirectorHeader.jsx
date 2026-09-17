@@ -9,3 +9,4 @@ export default function DirectorHeader({ eyebrow, title, subtitle }) {
     />
   );
 }
+

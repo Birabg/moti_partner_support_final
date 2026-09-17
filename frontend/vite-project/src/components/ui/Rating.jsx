@@ -24,3 +24,4 @@ export default function Rating({ label, value, onChange, readOnly = false }) {
     </div>
   )
 }
+

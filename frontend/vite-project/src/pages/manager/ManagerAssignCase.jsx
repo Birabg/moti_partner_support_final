@@ -1133,7 +1133,7 @@ function AssignmentMetric({
                 transition
                 duration-200
                 hover:-translate-y-0.5
-                hover:shadow-[0_12px_30px_rgba(15,35,65,0.07)]
+                hover:shadow-[0_12px_30px_rgba(16,32,55,0.07)]
             "
         >
 

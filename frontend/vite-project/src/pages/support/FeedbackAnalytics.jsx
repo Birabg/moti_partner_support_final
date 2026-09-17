@@ -71,11 +71,11 @@ export default function FeedbackAnalytics() {
 
   return (
     <div className="ps-support-dashboard">
-      <div className="ps-container">
+      <div className="">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-navy-600">Feedback Analytics</p>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Customer feedback overview</h1>
-          <p className="text-sm text-slate-500 mt-1">Understand ratings, response trends, and customer sentiment in one view.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-ink-900">Customer feedback overview</h1>
+          <p className="text-sm text-ink-500 mt-1">Understand ratings, response trends, and customer sentiment in one view.</p>
         </div>
 
         <div className="ps-stats-row">
@@ -120,7 +120,7 @@ export default function FeedbackAnalytics() {
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="text-sm font-medium">{agentName}</div>
-                          <div className="text-xs text-slate-500">Case #{caseNumber}</div>
+                          <div className="text-xs text-ink-500">Case #{caseNumber}</div>
                         </div>
 
                         <div className="flex gap-1">
@@ -130,15 +130,15 @@ export default function FeedbackAnalytics() {
                         </div>
                       </div>
 
-                      <p className="mt-2 text-sm text-slate-700">{comment || 'No additional comments provided.'}</p>
+                      <p className="mt-2 text-sm text-ink-700">{comment || 'No additional comments provided.'}</p>
 
-                      <div className="mt-2 text-xs text-slate-400">{closedAt ? new Date(closedAt).toLocaleDateString() : ''}</div>
+                      <div className="mt-2 text-xs text-ink-400">{closedAt ? new Date(closedAt).toLocaleDateString() : ''}</div>
                     </div>
                   );
                 })}
               </div>
             ) : (
-              <div className="mt-3 text-sm text-slate-500">No recent feedback items for your assigned cases.</div>
+              <div className="mt-3 text-sm text-ink-500">No recent feedback items for your assigned cases.</div>
             )}
           </div>
         </div>
@@ -146,3 +146,12 @@ export default function FeedbackAnalytics() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+

@@ -47,3 +47,4 @@ export function TableCell({ className = "", ...props }) {
     <td className={cx("whitespace-nowrap px-3 py-3 align-middle text-sm text-slate-700", className)} {...props} />
   );
 }
+

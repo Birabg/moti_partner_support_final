@@ -13,7 +13,7 @@ export default function ResolutionTrendChart({ data = {} }) {
       {
         label: "Resolutions",
         data: values,
-        borderColor: "#3b86f6",
+        borderColor: 'navy-500',
         backgroundColor: "rgba(59,130,246,0.2)",
       },
     ],
@@ -26,3 +26,11 @@ export default function ResolutionTrendChart({ data = {} }) {
     </div>
   );
 }
+
+
+
+
+
+
+
+

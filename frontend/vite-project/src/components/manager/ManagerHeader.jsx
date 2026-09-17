@@ -9,3 +9,4 @@ export default function ManagerHeader({ user, orgPath, managerRole }) {
     />
   );
 }
+

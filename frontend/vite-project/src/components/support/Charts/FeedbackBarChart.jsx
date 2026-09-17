@@ -44,11 +44,11 @@ export default function FeedbackBarChart({ data = {} }) {
         data: values,
 
         backgroundColor: [
-          "#0b1d38",
-          "#527eb9",
-          "#7c9bc4",
-          "#c58a27",
-          "#d1d5db",
+          "#0b1b33",
+          'navy-500',
+          "navy-400",
+          'gold-500',
+          "ink-200",
         ],
 
         borderRadius: 8,
@@ -70,7 +70,7 @@ export default function FeedbackBarChart({ data = {} }) {
       },
 
       tooltip: {
-        backgroundColor: "#0b1d38",
+        backgroundColor: "#0b1b33",
         titleColor: "#ffffff",
         bodyColor: "#ffffff",
         padding: 12,
@@ -103,7 +103,7 @@ export default function FeedbackBarChart({ data = {} }) {
         },
 
         ticks: {
-          color: "#64748b",
+          color: "ink-500",
           font: {
             size: 11,
             weight: "600",
@@ -116,14 +116,14 @@ export default function FeedbackBarChart({ data = {} }) {
 
         ticks: {
           precision: 0,
-          color: "#94a3b8",
+          color: "ink-400",
           font: {
             size: 10,
           },
         },
 
         grid: {
-          color: "#eef2f7",
+          color: "ink-50",
           drawBorder: false,
         },
 
@@ -144,13 +144,13 @@ export default function FeedbackBarChart({ data = {} }) {
 
   if (!hasData) {
     return (
-      <div className="flex h-[300px] items-center justify-center rounded-2xl bg-slate-50">
+      <div className="flex h-[300px] items-center justify-center rounded-2xl bg-ink-50">
         <div className="text-center">
-          <p className="text-sm font-semibold text-slate-500">
+          <p className="text-sm font-semibold text-ink-500">
             No rating data
           </p>
 
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-ink-400">
             Customer ratings will appear here once feedback is received.
           </p>
         </div>
@@ -169,3 +169,10 @@ export default function FeedbackBarChart({ data = {} }) {
     </div>
   );
 }
+
+
+
+
+
+
+

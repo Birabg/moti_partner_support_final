@@ -207,16 +207,16 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="min-h-full bg-slate-50/70">
+      <div className="min-h-full bg-ink-50">
         <SupportHeader />
 
-        <main className="ps-container space-y-6 pb-12">
-          <div className="h-44 animate-pulse rounded-[24px] bg-white border border-slate-200" />
+        <main className=" space-y-6 pb-12">
+          <div className="h-44 animate-pulse rounded-2xl bg-white border border-ink-300" />
 
           <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
-            <div className="h-72 animate-pulse rounded-[24px] bg-white border border-slate-200" />
+            <div className="h-72 animate-pulse rounded-2xl bg-white border border-ink-300" />
 
-            <div className="h-[500px] animate-pulse rounded-[24px] bg-white border border-slate-200" />
+            <div className="h-[500px] animate-pulse rounded-2xl bg-white border border-ink-300" />
           </div>
         </main>
       </div>
@@ -228,16 +228,16 @@ export default function Profile() {
   ========================================================= */
 
   return (
-    <div className="min-h-full bg-slate-50/70">
+    <div className="min-h-full bg-ink-50">
       <SupportHeader />
 
-      <main className="ps-container space-y-6 pb-12">
+      <main className=" space-y-6 pb-12">
 
         {/* =====================================================
             PROFILE HERO
         ===================================================== */}
 
-        <section className="relative overflow-hidden rounded-[26px] bg-[#0b1d38] shadow-[0_14px_40px_rgba(15,35,65,0.10)]">
+        <section className="relative overflow-hidden rounded-2xl bg-[#0b1b33] shadow-[0_14px_40px_rgba(15,35,65,0.10)]">
 
           {/* subtle grid */}
 
@@ -262,7 +262,7 @@ export default function Profile() {
 
               <div className="relative shrink-0">
 
-                <div className="flex h-20 w-20 items-center justify-center rounded-[22px] bg-white/10 text-white ring-1 ring-white/15 backdrop-blur-sm sm:h-24 sm:w-24">
+                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white/10 text-white ring-1 ring-white/15 backdrop-blur-sm sm:h-24 sm:w-24">
 
                   <span className="text-2xl font-semibold tracking-tight sm:text-3xl">
                     {initials}
@@ -270,7 +270,7 @@ export default function Profile() {
 
                 </div>
 
-                <div className="absolute -bottom-1.5 -right-1.5 flex h-7 w-7 items-center justify-center rounded-full border-4 border-[#0b1d38] bg-emerald-500 text-white">
+                <div className="absolute -bottom-1.5 -right-1.5 flex h-7 w-7 items-center justify-center rounded-full border-4 border-[#0b1b33] bg-emerald-500 text-white">
                   <CheckCircle2 className="h-3.5 w-3.5" />
                 </div>
 
@@ -282,7 +282,7 @@ export default function Profile() {
 
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
 
-                  <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                  <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-ink-400">
                     Support Account
                   </span>
 
@@ -294,13 +294,13 @@ export default function Profile() {
 
                 <div className="mt-2 flex flex-wrap items-center gap-2">
 
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.07] px-2.5 py-1 text-[10px] font-medium text-slate-300">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.07] px-2.5 py-1 text-[10px] font-medium text-ink-300">
                     <BriefcaseBusiness className="h-3 w-3" />
                     {formattedRole}
                   </span>
 
                   {form.department && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.07] px-2.5 py-1 text-[10px] font-medium text-slate-300">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.07] px-2.5 py-1 text-[10px] font-medium text-ink-300">
                       <Building2 className="h-3 w-3" />
                       {form.department}
                     </span>
@@ -318,7 +318,7 @@ export default function Profile() {
 
               <div className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 backdrop-blur-sm">
 
-                <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-slate-500">
+                <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-ink-500">
                   Account Status
                 </p>
 
@@ -334,7 +334,7 @@ export default function Profile() {
 
               </div>
 
-              <div className="hidden h-[58px] w-[58px] items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-slate-400 sm:flex">
+              <div className="hidden h-[58px] w-[58px] items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-ink-400 sm:flex">
                 <CircleUserRound className="h-5 w-5" />
               </div>
 
@@ -357,7 +357,7 @@ export default function Profile() {
 
             {/* Profile summary */}
 
-            <div className="rounded-[22px] border border-slate-200/80 bg-white p-5 shadow-[0_8px_25px_rgba(15,35,65,0.04)]">
+            <div className="rounded-2xl border border-ink-300 bg-white p-5 shadow-[0_8px_25px_rgba(15,35,65,0.04)]">
 
               <div className="flex items-center gap-3">
 
@@ -366,11 +366,11 @@ export default function Profile() {
                 </div>
 
                 <div>
-                  <p className="text-xs font-semibold text-slate-800">
+                  <p className="text-xs font-semibold text-ink-900">
                     Account Overview
                   </p>
 
-                  <p className="mt-0.5 text-[10px] text-slate-400">
+                  <p className="mt-0.5 text-[10px] text-ink-400">
                     Your support account
                   </p>
                 </div>
@@ -380,32 +380,32 @@ export default function Profile() {
               <div className="mt-5 space-y-4">
 
                 <div>
-                  <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-ink-400">
                     Email
                   </p>
 
-                  <p className="mt-1 break-all text-xs font-medium text-slate-700">
+                  <p className="mt-1 break-all text-xs font-medium text-ink-700">
                     {form.email || "—"}
                   </p>
                 </div>
 
                 <div>
-                  <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-ink-400">
                     Department
                   </p>
 
-                  <p className="mt-1 text-xs font-medium text-slate-700">
+                  <p className="mt-1 text-xs font-medium text-ink-700">
                     {form.department || "—"}
                   </p>
                 </div>
 
                 <div>
-                  <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-ink-400">
                     Member Since
                   </p>
 
-                  <div className="mt-1 flex items-center gap-1.5 text-xs font-medium text-slate-700">
-                    <CalendarDays className="h-3.5 w-3.5 text-slate-400" />
+                  <div className="mt-1 flex items-center gap-1.5 text-xs font-medium text-ink-700">
+                    <CalendarDays className="h-3.5 w-3.5 text-ink-400" />
                     {memberSince}
                   </div>
                 </div>
@@ -416,7 +416,7 @@ export default function Profile() {
 
             {/* Security card */}
 
-            <div className="rounded-[22px] border border-slate-200/80 bg-white p-5 shadow-[0_8px_25px_rgba(15,35,65,0.04)]">
+            <div className="rounded-2xl border border-ink-300 bg-white p-5 shadow-[0_8px_25px_rgba(15,35,65,0.04)]">
 
               <div className="flex items-center gap-3">
 
@@ -425,11 +425,11 @@ export default function Profile() {
                 </div>
 
                 <div>
-                  <p className="text-xs font-semibold text-slate-800">
+                  <p className="text-xs font-semibold text-ink-900">
                     Account Security
                   </p>
 
-                  <p className="mt-0.5 text-[10px] text-slate-400">
+                  <p className="mt-0.5 text-[10px] text-ink-400">
                     Protected support account
                   </p>
                 </div>
@@ -454,13 +454,13 @@ export default function Profile() {
               PROFILE DETAILS
           =================================================== */}
 
-          <section className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white shadow-[0_8px_30px_rgba(15,35,65,0.045)]">
+          <section className="overflow-hidden rounded-2xl border border-ink-300 bg-white shadow-[0_8px_30px_rgba(16,32,55,0.04)]">
 
             <form onSubmit={handleSave}>
 
               {/* section header */}
 
-              <div className="border-b border-slate-100 px-6 py-5 sm:px-7">
+              <div className="border-b border-ink-100 px-6 py-5 sm:px-7">
 
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
@@ -478,7 +478,7 @@ export default function Profile() {
                           Personal Information
                         </p>
 
-                        <h2 className="text-lg font-semibold tracking-[-0.02em] text-slate-950">
+                        <h2 className="text-lg font-semibold tracking-[-0.02em] text-ink-950">
                           Profile Details
                         </h2>
 
@@ -486,7 +486,7 @@ export default function Profile() {
 
                     </div>
 
-                    <p className="mt-3 text-xs leading-5 text-slate-400">
+                    <p className="mt-3 text-xs leading-5 text-ink-400">
                       Manage the personal information associated with your support account.
                     </p>
 
@@ -500,7 +500,7 @@ export default function Profile() {
                       <button
                         type="button"
                         onClick={handleEdit}
-                        className="inline-flex h-9 items-center gap-2 rounded-xl bg-[#0b1d38] px-3.5 text-xs font-semibold text-white transition hover:bg-[#12294a]"
+                        className="inline-flex h-9 items-center gap-2 rounded-xl bg-[#0b1b33] px-3.5 text-xs font-semibold text-white transition hover:bg-[#12294a]"
                       >
                         <Pencil className="h-3.5 w-3.5" />
                         Edit Profile
@@ -510,7 +510,7 @@ export default function Profile() {
                         <button
                           type="button"
                           onClick={handleCancel}
-                          className="inline-flex h-9 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
+                          className="inline-flex h-9 items-center gap-2 rounded-xl border border-ink-300 bg-white px-3.5 text-xs font-semibold text-ink-600 transition hover:bg-ink-100"
                         >
                           <X className="h-3.5 w-3.5" />
                           Cancel
@@ -519,7 +519,7 @@ export default function Profile() {
                         <button
                           type="submit"
                           disabled={saving}
-                          className="inline-flex h-9 items-center gap-2 rounded-xl bg-[#0b1d38] px-3.5 text-xs font-semibold text-white transition hover:bg-[#12294a] disabled:cursor-not-allowed disabled:opacity-60"
+                          className="inline-flex h-9 items-center gap-2 rounded-xl bg-[#0b1b33] px-3.5 text-xs font-semibold text-white transition hover:bg-[#12294a] disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           <Save className="h-3.5 w-3.5" />
 
@@ -631,12 +631,12 @@ export default function Profile() {
 
                   <div>
 
-                    <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                    <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-ink-400">
                       <CalendarDays className="h-3 w-3" />
                       Member Since
                     </label>
 
-                    <div className="mt-2 flex h-11 items-center rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-sm font-medium text-slate-600">
+                    <div className="mt-2 flex h-11 items-center rounded-xl border border-ink-300 bg-ink-50 px-3.5 text-sm font-medium text-ink-600">
                       {memberSince}
                     </div>
 
@@ -648,7 +648,7 @@ export default function Profile() {
 
               {/* footer */}
 
-              <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-4 sm:px-7">
+              <div className="border-t border-ink-100 bg-ink-50/50 px-6 py-4 sm:px-7">
 
                 <div className="flex items-center gap-2.5">
 
@@ -658,11 +658,11 @@ export default function Profile() {
 
                   <div>
 
-                    <p className="text-[11px] font-semibold text-slate-700">
+                    <p className="text-[11px] font-semibold text-ink-700">
                       Profile information
                     </p>
 
-                    <p className="mt-0.5 text-[10px] text-slate-400">
+                    <p className="mt-0.5 text-[10px] text-ink-400">
                       Some account details are managed by your support administration.
                     </p>
 
@@ -702,7 +702,7 @@ function ProfileField({
   return (
     <div>
 
-      <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+      <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-ink-400">
         <Icon className="h-3 w-3" />
         {label}
       </label>
@@ -713,14 +713,14 @@ function ProfileField({
           onChange={(event) =>
             onChange?.(event.target.value)
           }
-          className="mt-2 h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
+          className="mt-2 h-11 w-full rounded-xl border border-ink-300 bg-white px-3.5 text-sm font-medium text-ink-900 outline-none transition placeholder:text-ink-400 focus:border-navy-500 focus:ring-2 focus:ring-navy-500/10"
         />
       ) : (
         <div
           className={`mt-2 flex min-h-11 items-center rounded-xl border px-3.5 text-sm font-medium ${
             disabled
-              ? "border-slate-200 bg-slate-50 text-slate-600"
-              : "border-slate-100 bg-slate-50/70 text-slate-800"
+              ? "border-ink-300 bg-ink-50 text-ink-600"
+              : "border-ink-100 bg-ink-50 text-ink-900"
           }`}
         >
           {value || "—"}
@@ -728,7 +728,7 @@ function ProfileField({
       )}
 
       {helper && (
-        <p className="mt-1.5 text-[10px] text-slate-400">
+        <p className="mt-1.5 text-[10px] text-ink-400">
           {helper}
         </p>
       )}
@@ -736,3 +736,11 @@ function ProfileField({
     </div>
   );
 }
+
+
+
+
+
+
+
+

@@ -1,4 +1,4 @@
-﻿import {
+import {
     BriefcaseBusiness,
     Activity,
     AlertTriangle,
@@ -189,7 +189,7 @@ function StatCard({
                         group-hover:translate-x-0.5
                     "
                 >
-                    ↗
+                    ?
                 </span>
 
             </div>

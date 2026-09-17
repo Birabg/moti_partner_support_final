@@ -7,3 +7,4 @@ export default function LoadingSkeleton({ rows = 4 }) {
     </div>
   );
 }
+

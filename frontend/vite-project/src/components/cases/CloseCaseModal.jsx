@@ -50,3 +50,4 @@ export default function CloseCaseModal({ caseData, close, refresh }) {
     </div>
   );
 }
+

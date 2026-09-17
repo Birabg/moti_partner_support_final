@@ -12,7 +12,7 @@ export default function StatusPieChart({ data = {} }) {
     datasets: [
       {
         data: values,
-        backgroundColor: ["#3b86f6", "#f59e0b", "#10b981", "#ef4444"],
+        backgroundColor: ['navy-500', 'gold-500', "success-500", "danger-500"],
       },
     ],
   };
@@ -26,3 +26,11 @@ export default function StatusPieChart({ data = {} }) {
     </div>
   );
 }
+
+
+
+
+
+
+
+
