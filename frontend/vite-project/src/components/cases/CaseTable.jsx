@@ -18,6 +18,8 @@ import {
     UsersRound,
     Inbox,
     X,
+    ArrowUpCircle,
+    ShieldCheck,
 } from "lucide-react";
 
 
@@ -589,9 +591,19 @@ export default function CaseTable({
 
     onCancel,
 
+    onEscalate,
+
+    onClose,
+
 }) {
 
+    const terminalStatuses = ["CLOSED", "RESOLVED", "CANCELLED"];
+
     const cancellableStatuses = ["OPEN", "ASSIGNED", "IN_PROGRESS", "PENDING", "ESCALATED"];
+
+    const escalateStatuses = ["IN_PROGRESS", "PENDING"];
+
+    const closeStatuses = ["RESOLVED", "CUSTOMER_CONFIRMATION"];
 
     return (
 
@@ -910,6 +922,12 @@ export default function CaseTable({
 
                                 const canCancel = cancellableStatuses.includes(item.status);
 
+                                const canEscalate = escalateStatuses.includes(item.status);
+
+                                const canClose = closeStatuses.includes(item.status);
+
+                                const isTerminal = terminalStatuses.includes(item.status);
+
                                 const priority =
                                     getPriorityConfig(
                                         item.priority
@@ -1083,73 +1101,108 @@ export default function CaseTable({
                                                     View
                                                 </ActionButton>
 
+                                                {!isTerminal && (
 
-                                                {/* ASSIGN */}
+                                                    <>
 
-                                                <ActionButton
-                                                    onClick={() =>
-                                                        onAssign?.(item)
-                                                    }
-                                                    icon={UserPlus}
-                                                >
-                                                    Assign
-                                                </ActionButton>
+                                                    {/* ASSIGN */}
 
-
-                                                {/* RESOLVE */}
-
-                                                <ActionButton
-                                                    onClick={() =>
-                                                        onResolve?.(item)
-                                                    }
-                                                    variant="success"
-                                                    icon={
-                                                        CheckCircle2
-                                                    }
-                                                >
-                                                    Resolve
-                                                </ActionButton>
-
-
-                                                {/* PRIORITY */}
-
-                                                <ActionButton
-                                                    onClick={() =>
-                                                        onPriority?.(item)
-                                                    }
-                                                    icon={
-                                                        SlidersHorizontal
-                                                    }
-                                                >
-                                                    Priority
-                                                </ActionButton>
-
-
-                                                {/* REASSIGN */}
-
-                                                <ActionButton
-                                                    onClick={() =>
-                                                        onReassign?.(item)
-                                                    }
-                                                    icon={
-                                                        UserPlus
-                                                    }
-                                                >
-                                                    Reassign
-                                                </ActionButton>
-
-                                                {/* CANCEL */}
-
-                                                {canCancel && onCancel && (
                                                     <ActionButton
                                                         onClick={() =>
-                                                            onCancel?.(item)
+                                                            onAssign?.(item)
                                                         }
-                                                        variant="danger"
-                                                        icon={X}
+                                                        icon={UserPlus}
                                                     >
-                                                        Cancel
+                                                        Assign
                                                     </ActionButton>
+
+
+                                                    {/* RESOLVE */}
+
+                                                    <ActionButton
+                                                        onClick={() =>
+                                                            onResolve?.(item)
+                                                        }
+                                                        variant="success"
+                                                        icon={
+                                                            CheckCircle2
+                                                        }
+                                                    >
+                                                        Resolve
+                                                    </ActionButton>
+
+
+                                                    {/* PRIORITY */}
+
+                                                    <ActionButton
+                                                        onClick={() =>
+                                                            onPriority?.(item)
+                                                        }
+                                                        icon={
+                                                            SlidersHorizontal
+                                                        }
+                                                    >
+                                                        Priority
+                                                    </ActionButton>
+
+
+                                                    {/* REASSIGN */}
+
+                                                    <ActionButton
+                                                        onClick={() =>
+                                                            onReassign?.(item)
+                                                        }
+                                                        icon={
+                                                            UserPlus
+                                                        }
+                                                    >
+                                                        Reassign
+                                                    </ActionButton>
+
+                                                    {/* CANCEL */}
+
+                                                    {canCancel && onCancel && (
+                                                        <ActionButton
+                                                            onClick={() =>
+                                                                onCancel?.(item)
+                                                            }
+                                                            variant="danger"
+                                                            icon={X}
+                                                        >
+                                                            Cancel
+                                                        </ActionButton>
+                                                    )}
+
+                                                    {/* ESCALATE */}
+
+                                                    {canEscalate && onEscalate && (
+                                                        <ActionButton
+                                                            onClick={() =>
+                                                                onEscalate?.(item)
+                                                            }
+                                                            variant="accent"
+                                                            icon={ArrowUpCircle}
+                                                        >
+                                                            Escalate
+                                                        </ActionButton>
+                                                    )}
+
+                                                    {/* CLOSE */}
+
+                                                    {canClose && onClose && (
+                                                        <ActionButton
+                                                            onClick={() =>
+                                                                onClose?.(item)
+                                                            }
+                                                            variant="outline"
+                                                            icon={ShieldCheck}
+                                                        >
+                                                            Close
+                                                        </ActionButton>
+                                                    )}
+
+                                                    </>
+
                                                 )}
 
                                             </div>

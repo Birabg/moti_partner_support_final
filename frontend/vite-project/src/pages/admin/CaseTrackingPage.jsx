@@ -20,6 +20,8 @@ import ChangePriorityModal from "../../components/cases/ChangePriorityModal";
 import ResolveCaseModal from "../../components/cases/ResolveCaseModal";
 import ReassignStaffModal from "../../components/cases/ReassignStaffModal";
 import CancelCaseModal from "../../components/cases/CancelCaseModal";
+import EscalateModal from "../../components/cases/EscalateModal";
+import CloseCaseModal from "../../components/cases/CloseCaseModal";
 
 import Pagination from "../../components/cases/Pagination";
 import CaseSorting from "../../components/cases/CaseSorting";
@@ -75,6 +77,10 @@ export default function CaseTrackingPage() {
     const [showReassign, setShowReassign] = useState(false);
 
     const [showCancel, setShowCancel] = useState(false);
+
+    const [showEscalate, setShowEscalate] = useState(false);
+
+    const [showClose, setShowClose] = useState(false);
 
 
     // ============================================================
@@ -800,6 +806,30 @@ export default function CaseTrackingPage() {
 
                             }}
 
+                            onEscalate={(item) => {
+
+                                setSelectedCase(
+                                    item
+                                );
+
+                                setShowEscalate(
+                                    true
+                                );
+
+                            }}
+
+                            onClose={(item) => {
+
+                                setSelectedCase(
+                                    item
+                                );
+
+                                setShowClose(
+                                    true
+                                );
+
+                            }}
+
                         />
 
                     )}
@@ -992,6 +1022,58 @@ export default function CaseTrackingPage() {
 
                     close={() =>
                         setShowCancel(false)
+                    }
+                />
+
+            )}
+
+            {/* =====================================================
+                ESCALATE
+            ===================================================== */}
+
+            {showEscalate && (
+
+                <EscalateModal
+                    caseData={
+                        selectedCase
+                    }
+
+                    refresh={async () => {
+
+                        await loadCases();
+
+                        notifyCaseDashboardRefresh();
+
+                    }}
+
+                    close={() =>
+                        setShowEscalate(false)
+                    }
+                />
+
+            )}
+
+            {/* =====================================================
+                CLOSE
+            ===================================================== */}
+
+            {showClose && (
+
+                <CloseCaseModal
+                    caseData={
+                        selectedCase
+                    }
+
+                    refresh={async () => {
+
+                        await loadCases();
+
+                        notifyCaseDashboardRefresh();
+
+                    }}
+
+                    close={() =>
+                        setShowClose(false)
                     }
                 />
 
