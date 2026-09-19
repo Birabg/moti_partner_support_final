@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { FaBell, FaCheckCircle, FaRegBell } from "react-icons/fa";
+import { FaCheckCircle, FaRegBell } from "react-icons/fa";
+import { Bell } from "lucide-react";
 
 import { CustomerApi } from "../../api/customerApi";
 import { markNotificationRead } from "../../api/customerCaseApi";
+import CustomerPageHero from "../../components/customer/CustomerPageHero";
 
 export default function CustomerNotifications() {
     const [loading, setLoading] = useState(true);
@@ -50,13 +52,38 @@ export default function CustomerNotifications() {
     return (
         <div className="customer-dashboard">
             <div className="customer-form">
-                <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
-                    <FaBell size={32} color="#1a345b" />
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Notifications</h1>
-                        <p className="text-sm text-slate-500 mt-1">Review updates related to your support cases.</p>
-                    </div>
-                </div>
+                <CustomerPageHero
+                    eyebrow="Customer Portal"
+                    title="Notifications"
+                    description="Review updates related to your support cases."
+                    icon={Bell}
+                    right={
+
+                        <span className="
+                            inline-flex
+                            h-9
+                            items-center
+                            gap-1.5
+                            rounded-xl
+                            border
+                            border-white/10
+                            bg-white/[0.08]
+                            px-3
+                            text-xs
+                            font-semibold
+                            text-white/70
+                        ">
+
+                            {notifications.length}
+
+                            {" "}
+
+                            {notifications.length === 1 ? "Alert" : "Alerts"}
+
+                        </span>
+
+                    }
+                />
 
                 {notifications.length === 0 ? (
                     <div className="customer-empty-state">

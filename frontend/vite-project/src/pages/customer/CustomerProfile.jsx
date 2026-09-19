@@ -168,6 +168,7 @@ export default function CustomerProfile() {
         return (
             <div className="space-y-6">
                 <PageHeader
+                    eyebrow="Customer"
                     title="My Profile"
                     subtitle="Loading your account information..."
                 />
@@ -199,6 +200,7 @@ export default function CustomerProfile() {
             {/* PAGE HEADER */}
 
             <PageHeader
+                eyebrow="Customer"
                 title="My Profile"
                 subtitle="Manage your personal account details."
             />

@@ -1,19 +1,20 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import {
     FaPlus,
     FaHistory,
     FaArrowRight,
-    FaHeadset,
+    FaBell,
     FaLifeRing,
-    FaChevronRight,
 } from "react-icons/fa";
+
+import { Headset } from "lucide-react";
 
 import { useAuth } from "../../context/useAuth";
 import customerCaseApi from "../../api/customerCaseApi";
 
-import CustomerHeader from "../../components/customer/CustomerHeader";
+import CustomerPageHero from "../../components/customer/CustomerPageHero";
 import RecentCases from "../../components/customer/RecentCases";
 import CaseDetailsDrawer from "../../components/cases/CaseDetailsDrawer";
 import CaseStats from "../../components/cases/CaseStats";
@@ -204,350 +205,49 @@ export default function CustomerDashboard() {
 
 
             {/* =====================================
-                TOP HEADER
-            ====================================== */}
-
-            <section className="mb-6">
-
-                <div className="
-                    bg-white
-                    border
-                    border-slate-200
-                    rounded-2xl
-                    shadow-sm
-                    overflow-hidden
-                ">
-
-                    <div className="
-                        p-5
-                        sm:p-6
-                    ">
-
-                        <div className="
-                            flex
-                            flex-col
-                            lg:flex-row
-                            lg:items-center
-                            lg:justify-between
-                            gap-5
-                        ">
-
-
-                            {/* CUSTOMER INFO */}
-
-                            <div className="
-                                min-w-0
-                                flex-1
-                            ">
-
-                                <CustomerHeader
-                                    customer={customer}
-                                    displayName={displayName}
-                                    notifications={notifications}
-                                    refreshNotifications={
-                                        loadDashboard
-                                    }
-                                />
-
-                            </div>
-
-
-                            {/* ACTIONS */}
-
-                            <div className="
-                                flex
-                                flex-col
-                                sm:flex-row
-                                gap-3
-                                shrink-0
-                            ">
-
-                                <Link
-                                    to="/customer/create-case"
-                                    className="
-                                        inline-flex
-                                        items-center
-                                        justify-center
-                                        gap-2
-                                        rounded-xl
-                                        bg-slate-900
-                                        px-5
-                                        py-3
-                                        text-sm
-                                        font-bold
-                                        text-white
-                                        shadow-sm
-                                        hover:bg-slate-800
-                                        hover:shadow-md
-                                        active:scale-[0.98]
-                                        transition-all
-                                    "
-                                >
-
-                                    <FaPlus className="text-xs" />
-
-                                    New Request
-
-                                </Link>
-
-
-                                <Link
-                                    to="/customer/my-cases"
-                                    className="
-                                        inline-flex
-                                        items-center
-                                        justify-center
-                                        gap-2
-                                        rounded-xl
-                                        border
-                                        border-slate-200
-                                        bg-white
-                                        px-5
-                                        py-3
-                                        text-sm
-                                        font-semibold
-                                        text-slate-700
-                                        hover:bg-slate-50
-                                        hover:border-slate-300
-                                        active:scale-[0.98]
-                                        transition-all
-                                    "
-                                >
-
-                                    <FaHistory className="text-xs" />
-
-                                    View My Cases
-
-                                </Link>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            {/* =====================================
-                WELCOME HERO
+                CUSTOMER HERO
             ====================================== */}
 
             <section className="mb-7">
 
-                <div className="
-                    relative
-                    overflow-hidden
-                    rounded-2xl
-                    bg-slate-900
-                    shadow-sm
-                ">
+                <CustomerPageHero
+                    eyebrow="Customer Portal"
+                    title={`Hello, ${displayName} 👋`}
+                    description="Manage your support requests, track your cases, and stay updated with the latest activity from our support team."
+                    icon={Headset}
+                    right={
 
+                        <div className="flex flex-wrap items-center gap-3">
 
-                    {/* Background decoration */}
-
-                    <div className="
-                        absolute
-                        -right-20
-                        -top-28
-                        w-72
-                        h-72
-                        rounded-full
-                        border
-                        border-white/5
-                    " />
-
-                    <div className="
-                        absolute
-                        right-12
-                        -bottom-28
-                        w-52
-                        h-52
-                        rounded-full
-                        bg-white/[0.03]
-                    " />
-
-                    <div className="
-                        absolute
-                        left-1/2
-                        -top-20
-                        w-40
-                        h-40
-                        rounded-full
-                        bg-white/[0.02]
-                    " />
-
-
-                    <div className="
-                        relative
-                        px-6
-                        py-7
-                        sm:px-8
-                        sm:py-8
-                        lg:py-9
-                    ">
-
-                        <div className="
-                            flex
-                            flex-col
-                            sm:flex-row
-                            sm:items-center
-                            sm:justify-between
-                            gap-7
-                        ">
-
-
-                            {/* HERO TEXT */}
-
-                            <div className="max-w-2xl">
-
-                                <div className="
+                            <Link
+                                to="/customer/notifications"
+                                className="
                                     inline-flex
                                     items-center
                                     gap-2
                                     rounded-full
                                     border
                                     border-white/10
-                                    bg-white/5
-                                    px-3
-                                    py-1.5
-                                    mb-4
-                                ">
-
-                                    <span className="
-                                        w-1.5
-                                        h-1.5
-                                        rounded-full
-                                        bg-emerald-400
-                                    " />
-
-                                    <span className="
-                                        text-xs
-                                        font-semibold
-                                        text-slate-300
-                                    ">
-
-                                        Support Portal
-
-                                    </span>
-
-                                </div>
-
-
-                                <p className="
-                                    text-sm
-                                    font-medium
-                                    text-slate-400
-                                    mb-1
-                                ">
-
-                                    Welcome back,
-
-                                </p>
-
-
-                                <h1 className="
-                                    text-2xl
-                                    sm:text-3xl
-                                    lg:text-[32px]
-                                    font-bold
-                                    text-white
-                                    tracking-tight
-                                ">
-
-                                    Hello, {displayName} 👋
-
-                                </h1>
-
-
-                                <p className="
-                                    mt-3
-                                    text-sm
-                                    leading-6
-                                    text-slate-400
-                                    max-w-xl
-                                ">
-
-                                    Manage your support requests, track
-                                    your cases, and stay updated with
-                                    the latest activity from our support team.
-
-                                </p>
-
-                            </div>
-
-
-                            {/* HERO ICON */}
-
-                            <div className="
-                                hidden
-                                sm:flex
-                                shrink-0
-                                w-20
-                                h-20
-                                rounded-2xl
-                                bg-white/5
-                                border
-                                border-white/10
-                                items-center
-                                justify-center
-                            ">
-
-                                <FaHeadset className="
-                                    text-3xl
-                                    text-white
-                                " />
-
-                            </div>
-
-                        </div>
-
-
-                        {/* HERO QUICK ACTION */}
-
-                        <div className="
-                            relative
-                            mt-7
-                            pt-5
-                            border-t
-                            border-white/10
-                            flex
-                            flex-col
-                            sm:flex-row
-                            sm:items-center
-                            sm:justify-between
-                            gap-4
-                        ">
-
-                            <div>
-
-                                <p className="
-                                    text-xs
+                                    bg-white/[0.06]
+                                    px-4
+                                    py-2.5
+                                    text-[11px]
                                     font-semibold
-                                    uppercase
-                                    tracking-wider
-                                    text-slate-500
-                                ">
+                                    text-white/70
+                                    transition
+                                    hover:bg-white/[0.1]
+                                "
+                            >
 
-                                    Need assistance?
+                                <FaBell className="text-xs" />
 
-                                </p>
+                                {notifications.length}
 
-                                <p className="
-                                    text-sm
-                                    text-slate-300
-                                    mt-1
-                                ">
+                                {" "}
 
-                                    Create a support request and we'll
-                                    help you resolve it.
+                                Notification{notifications.length === 1 ? "" : "s"}
 
-                                </p>
-
-                            </div>
-
+                            </Link>
 
                             <Link
                                 to="/customer/create-case"
@@ -558,30 +258,56 @@ export default function CustomerDashboard() {
                                     gap-2
                                     rounded-xl
                                     bg-white
-                                    px-4
-                                    py-2.5
+                                    px-5
+                                    py-3
                                     text-sm
                                     font-bold
                                     text-slate-900
-                                    hover:bg-slate-100
+                                    shadow-sm
                                     transition
-                                    shrink-0
+                                    hover:bg-slate-100
+                                    active:scale-[0.98]
                                 "
                             >
 
                                 <FaPlus className="text-xs" />
 
-                                Create Case
+                                New Request
 
-                                <FaChevronRight className="text-[10px]" />
+                            </Link>
+
+                            <Link
+                                to="/customer/my-cases"
+                                className="
+                                    inline-flex
+                                    items-center
+                                    justify-center
+                                    gap-2
+                                    rounded-xl
+                                    border
+                                    border-white/10
+                                    bg-white/[0.08]
+                                    px-5
+                                    py-3
+                                    text-sm
+                                    font-semibold
+                                    text-white
+                                    transition
+                                    hover:bg-white/[0.14]
+                                    active:scale-[0.98]
+                                "
+                            >
+
+                                <FaHistory className="text-xs" />
+
+                                View My Cases
 
                             </Link>
 
                         </div>
 
-                    </div>
-
-                </div>
+                    }
+                />
 
             </section>
 

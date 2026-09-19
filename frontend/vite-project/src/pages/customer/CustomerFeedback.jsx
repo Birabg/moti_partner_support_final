@@ -10,7 +10,9 @@ import {
     FaRegClock,
 } from "react-icons/fa";
 
-import { PageHeader } from "../../components/ui/page-header";
+import { MessageSquareText } from "lucide-react";
+
+import CustomerPageHero from "../../components/customer/CustomerPageHero";
 import {
     Card,
     CardContent,
@@ -235,9 +237,11 @@ export default function CustomerFeedback() {
                 PAGE HEADER
             ========================================================== */}
 
-            <PageHeader
+            <CustomerPageHero
+                eyebrow="Customer Portal"
                 title="Customer Feedback"
-                subtitle="Tell us about your experience with our support team."
+                description="Tell us about your experience with our support team."
+                icon={MessageSquareText}
             />
 
 

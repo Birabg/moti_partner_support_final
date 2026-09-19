@@ -14,6 +14,10 @@ import {
 
 import StatusBadge from "../../components/customer/StatusBadge";
 
+import { Ticket } from "lucide-react";
+
+import CustomerPageHero from "../../components/customer/CustomerPageHero";
+
 // import PriorityBadge from "../../components/customer/PriorityBadge"; // [COMMENTED OUT] priority hidden from customer
 
 import CaseTimeline from "../../components/customer/CaseTimeline";
@@ -159,54 +163,21 @@ export default function CaseDetails() {
 
         <div className="space-y-8">
 
-            <div className="bg-white rounded-lg border border-navy-100 shadow-sm p-6">
+            <div className="space-y-4">
 
-                <div className="flex justify-between">
-
-                    <div>
-
-                        <p className="text-xs font-semibold uppercase tracking-wide text-navy-600">Case</p>
-                        <h1 className="text-2xl font-bold tracking-tight text-slate-900 mt-1">
-
-                            {
-
-                                data.caseNumber
-
-                            }
-
-                        </h1>
-
-                        <p className="mt-3 text-slate-500">
-
-                            {
-
-                                data.subject
-
-                            }
-
-                        </p>
-
-                    </div>
-
-                    <div className="space-y-3">
-
+                <CustomerPageHero
+                    eyebrow="Case"
+                    title={data.caseNumber}
+                    description={data.subject}
+                    icon={Ticket}
+                    right={
                         <StatusBadge
-
                             status={data.status}
-
                         />
+                    }
+                />
 
-                        {/* [COMMENTED OUT] priority hidden from customer
-                        <PriorityBadge
-
-                            priority={data.priority}
-
-                        />
-                        */}
-
-                    </div>
-
-                </div>
+                <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
 
                 <hr className="my-6"/>
 
@@ -396,6 +367,8 @@ export default function CaseDetails() {
                     )
 
                 }
+
+            </div>
 
             </div>
 

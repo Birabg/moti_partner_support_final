@@ -1,17 +1,19 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import {
     FaPlus,
-    FaFolderOpen,
     FaArrowRight,
     FaSyncAlt,
     FaTicketAlt,
 } from "react-icons/fa";
 
+import { FolderOpen } from "lucide-react";
+
 import { useAuth } from "../../context/useAuth";
 import customerCaseApi from "../../api/customerCaseApi";
 
+import CustomerPageHero from "../../components/customer/CustomerPageHero";
 import CaseCard from "../../components/customer/CaseCard";
 import CaseDetailsDrawer from "../../components/cases/CaseDetailsDrawer";
 
@@ -263,144 +265,44 @@ export default function MyCases() {
             ">
 
 
-                {/* =====================================
-                    PAGE HEADER
-                ====================================== */}
-
                 <section className="mb-7">
 
-                    <div className="
-                        bg-white
-                        border
-                        border-slate-200
-                        rounded-2xl
-                        shadow-sm
-                        overflow-hidden
-                    ">
+                    <CustomerPageHero
+                        eyebrow="Customer Portal"
+                        title="My Support Cases"
+                        description="View and track all your support requests."
+                        icon={FolderOpen}
+                        right={
 
-                        <div className="
-                            px-6
-                            py-6
-                            sm:px-7
-                            sm:py-7
-                        ">
-
-                            <div className="
-                                flex
-                                flex-col
-                                lg:flex-row
-                                lg:items-center
-                                lg:justify-between
-                                gap-6
-                            ">
-
-
-                                {/* TITLE */}
-
-                                <div className="
-                                    flex
+                            <Link
+                                to="/customer/create-case"
+                                className="
+                                    inline-flex
                                     items-center
-                                    gap-4
-                                ">
+                                    justify-center
+                                    gap-2
+                                    rounded-xl
+                                    bg-white
+                                    px-5
+                                    py-3
+                                    text-sm
+                                    font-bold
+                                    text-slate-900
+                                    shadow-sm
+                                    transition
+                                    hover:bg-slate-100
+                                    active:scale-[0.98]
+                                "
+                            >
 
-                                    <div className="
-                                        flex
-                                        h-12
-                                        w-12
-                                        shrink-0
-                                        items-center
-                                        justify-center
-                                        rounded-xl
-                                        bg-slate-900
-                                        text-white
-                                        shadow-sm
-                                    ">
+                                <FaPlus className="text-xs" />
 
-                                        <FaFolderOpen
-                                            className="text-base"
-                                        />
+                                New Request
 
-                                    </div>
+                            </Link>
 
-
-                                    <div>
-
-                                        <p className="
-                                            text-[11px]
-                                            font-bold
-                                            uppercase
-                                            tracking-[0.12em]
-                                            text-slate-400
-                                        ">
-
-                                            Customer Portal
-
-                                        </p>
-
-
-                                        <h1 className="
-                                            mt-1
-                                            text-2xl
-                                            font-bold
-                                            tracking-tight
-                                            text-slate-900
-                                        ">
-
-                                            My Support Cases
-
-                                        </h1>
-
-
-                                        <p className="
-                                            mt-1.5
-                                            text-sm
-                                            text-slate-500
-                                        ">
-
-                                            View and track all your support requests
-
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-
-                                {/* ACTION */}
-
-                                <Link
-                                    to="/customer/create-case"
-                                    className="
-                                        inline-flex
-                                        items-center
-                                        justify-center
-                                        gap-2
-                                        rounded-xl
-                                        bg-slate-900
-                                        px-5
-                                        py-3
-                                        text-sm
-                                        font-bold
-                                        text-white
-                                        shadow-sm
-                                        hover:bg-slate-800
-                                        hover:shadow-md
-                                        active:scale-[0.98]
-                                        transition-all
-                                    "
-                                >
-
-                                    <FaPlus className="text-xs" />
-
-                                    New Request
-
-                                </Link>
-
-                            </div>
-
-                        </div>
-
-                    </div>
+                        }
+                    />
 
                 </section>
 

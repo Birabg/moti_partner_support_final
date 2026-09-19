@@ -1,4 +1,4 @@
-import {
+﻿import {
   useEffect,
   useState
 } from "react";
@@ -22,9 +22,12 @@ import {
 import {
   FaArrowLeft,
   FaPaperclip,
-  FaTicketAlt,
   FaInfoCircle
 } from "react-icons/fa";
+
+import { Ticket } from "lucide-react";
+
+import CustomerPageHero from "../../components/customer/CustomerPageHero";
 
 
 export default function CreateCase() {
@@ -211,81 +214,36 @@ export default function CreateCase() {
 
       {/* Header */}
 
-      <div className="bg-white border-b border-slate-200">
+      <div className="max-w-6xl mx-auto px-6 py-6">
 
-        <div className="max-w-6xl mx-auto px-6 py-5">
+        <button
+          type="button"
+          onClick={() => navigate("/customer/my-cases")}
+          className="
+            flex
+            items-center
+            gap-2
+            text-sm
+            font-medium
+            text-slate-500
+            hover:text-slate-900
+            transition
+            mb-5
+          "
+        >
 
-          <button
-            type="button"
-            onClick={() => navigate("/customer/my-cases")}
-            className="
-              flex
-              items-center
-              gap-2
-              text-sm
-              font-medium
-              text-slate-500
-              hover:text-slate-900
-              transition
-              mb-4
-            "
-          >
+          <FaArrowLeft size={13} />
 
-            <FaArrowLeft size={13} />
+          Back to My Cases
 
-            Back to My Cases
+        </button>
 
-          </button>
-
-
-          <div className="flex items-center gap-4">
-
-            <div
-              className="
-                w-12
-                h-12
-                rounded-xl
-                bg-blue-50
-                text-blue-600
-                flex
-                items-center
-                justify-center
-              "
-            >
-
-              <FaTicketAlt size={20} />
-
-            </div>
-
-
-            <div>
-
-              <h1 className="
-                text-2xl
-                font-bold
-                text-slate-900
-                tracking-tight
-              ">
-
-                Create Support Case
-
-              </h1>
-
-              <p className="
-                text-sm
-                text-slate-500
-                mt-1
-              ">
-
-                Tell us what you need help with and our support team will assist you.
-
-              </p>
-
-            </div>
-
-          </div>
-
-        </div>
+        <CustomerPageHero
+          eyebrow="Customer Portal"
+          title="Create Support Case"
+          description="Tell us what you need help with and our support team will assist you."
+          icon={Ticket}
+        />
 
       </div>
 
@@ -391,9 +349,9 @@ export default function CreateCase() {
                         outline-none
                         transition
                         focus:bg-white
-                        focus:border-blue-500
+                        focus:border-slate-400
                         focus:ring-4
-                        focus:ring-blue-500/10
+                        focus:ring-slate-400/10
                       "
                     />
 
@@ -438,9 +396,9 @@ export default function CreateCase() {
                         outline-none
                         transition
                         focus:bg-white
-                        focus:border-blue-500
+                        focus:border-slate-400
                         focus:ring-4
-                        focus:ring-blue-500/10
+                        focus:ring-slate-400/10
                       "
                     />
 
@@ -518,9 +476,9 @@ export default function CreateCase() {
                           text-slate-700
                           outline-none
                           focus:bg-white
-                          focus:border-blue-500
+                          focus:border-slate-400
                           focus:ring-4
-                          focus:ring-blue-500/10
+                          focus:ring-slate-400/10
                         "
                       >
 
@@ -587,9 +545,9 @@ export default function CreateCase() {
                           disabled:opacity-50
                           disabled:cursor-not-allowed
                           focus:bg-white
-                          focus:border-blue-500
+                          focus:border-slate-400
                           focus:ring-4
-                          focus:ring-blue-500/10
+                          focus:ring-slate-400/10
                         "
                       >
 
@@ -653,9 +611,9 @@ export default function CreateCase() {
                           text-slate-700
                           outline-none
                           focus:bg-white
-                          focus:border-blue-500
+                          focus:border-slate-400
                           focus:ring-4
-                          focus:ring-blue-500/10
+                          focus:ring-slate-400/10
                         "
                       >
 
@@ -827,9 +785,9 @@ export default function CreateCase() {
                       outline-none
                       transition
                       focus:bg-white
-                      focus:border-blue-500
+                      focus:border-slate-400
                       focus:ring-4
-                      focus:ring-blue-500/10
+                      focus:ring-slate-400/10
                     "
                   />
 
@@ -1127,7 +1085,7 @@ export default function CreateCase() {
 
             <div className="
               rounded-2xl
-              bg-slate-900
+              bg-[#0b1b33]
               p-6
               text-white
             ">
@@ -1146,12 +1104,12 @@ export default function CreateCase() {
                 mt-4
                 space-y-3
                 text-sm
-                text-slate-300
+                text-white/70
               ">
 
                 <li className="flex gap-2">
 
-                  <span className="text-blue-400">•</span>
+                  <span className="text-[#91b3df]">•</span>
 
                   Branch name
 
@@ -1159,7 +1117,7 @@ export default function CreateCase() {
 
                 <li className="flex gap-2">
 
-                  <span className="text-blue-400">•</span>
+                  <span className="text-[#91b3df]">•</span>
 
                   Case subject
 
@@ -1167,7 +1125,7 @@ export default function CreateCase() {
 
                 <li className="flex gap-2">
 
-                  <span className="text-blue-400">•</span>
+                  <span className="text-[#91b3df]">•</span>
 
                   Product category
 
@@ -1175,7 +1133,7 @@ export default function CreateCase() {
 
                 <li className="flex gap-2">
 
-                  <span className="text-blue-400">•</span>
+                  <span className="text-[#91b3df]">•</span>
 
                   Subcategory and service
 
@@ -1183,7 +1141,7 @@ export default function CreateCase() {
 
                 <li className="flex gap-2">
 
-                  <span className="text-blue-400">•</span>
+                  <span className="text-[#91b3df]">•</span>
 
                   Problem description
 
