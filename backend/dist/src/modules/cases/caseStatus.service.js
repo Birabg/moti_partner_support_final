@@ -153,7 +153,7 @@ async function updateStatus(caseId, newStatus, actor, opts) {
     }
     // Send general status update emails for notable status changes
     try {
-        if (updated.customer?.email && [client_1.CaseStatus.ASSIGNED, client_1.CaseStatus.IN_PROGRESS, client_1.CaseStatus.PENDING, client_1.CaseStatus.ESCALATED, client_1.CaseStatus.RESOLVED, client_1.CaseStatus.CLOSED].some(s => s === newStatus)) {
+        if (updated.customer?.email && [client_1.CaseStatus.ASSIGNED, client_1.CaseStatus.IN_PROGRESS, client_1.CaseStatus.PENDING, client_1.CaseStatus.ESCALATED, client_1.CaseStatus.RESOLVED, client_1.CaseStatus.CLOSED, client_1.CaseStatus.CANCELLED].some(s => s === newStatus)) {
             await (0, email_1.sendStatusUpdateEmail)({
                 customerEmail: updated.customer.email,
                 customerName: `${updated.customer.firstName} ${updated.customer.lastName || ''}`.trim(),

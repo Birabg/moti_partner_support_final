@@ -101,3 +101,38 @@
     isolation: isolate;
   }
 }
+
+/* ============================================================
+   STICKY TABLE HEADERS (system-wide)
+   Any table wrapped in a horizontal scroll container gets a
+   capped height so long tables scroll internally while the
+   header row stays fixed at the top of the container.
+   ============================================================ */
+.overflow-x-auto:has(table) {
+  max-height: calc(100vh - 190px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.overflow-x-auto:has(table) thead,
+.overflow-x-auto:has(table) thead th {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.overflow-x-auto:has(table) thead {
+  background-color: var(--color-background);
+}
+
+.overflow-x-auto:has(table)::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.overflow-x-auto:has(table)::-webkit-scrollbar-thumb {
+  background: var(--color-ink-300);
+  border-radius: 999px;
+}
+.overflow-x-auto:has(table)::-webkit-scrollbar-track {
+  background: transparent;
+}

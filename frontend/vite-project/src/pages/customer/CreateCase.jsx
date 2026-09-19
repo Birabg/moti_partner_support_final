@@ -41,7 +41,7 @@ export default function CreateCase() {
   const [form, setForm] = useState({
     branchName: "",
     subject: "",
-    priority: "MEDIUM",
+    // priority: "MEDIUM",  // [COMMENTED OUT] customer no longer selects priority
     description: "",
     productCategoryId: "",
     productSubcategoryId: "",
@@ -171,10 +171,10 @@ export default function CreateCase() {
         "serviceTypeId",
         form.serviceTypeId
       );
-      data.append(
-        "priority",
-        form.priority || "MEDIUM"
-      );
+      // data.append(           // [COMMENTED OUT] priority is assigned by the system/manager
+      //   "priority",
+      //   form.priority || "MEDIUM"
+      // );
 
       if (file) {
         data.append("attachments", file);
@@ -688,8 +688,12 @@ export default function CreateCase() {
                 </div>
 
 
-                {/* Priority */}
-
+                {/* =============================================
+                    PRIORITY SECTION — COMMENTED OUT
+                    (customer no longer picks priority; the
+                     system/manager assigns it instead)
+                =============================================== */}
+                {/*
                 <div>
 
                   <label className="
@@ -779,6 +783,7 @@ export default function CreateCase() {
                   </div>
 
                 </div>
+                */}
 
 
                 {/* Description */}
@@ -1086,6 +1091,7 @@ export default function CreateCase() {
                 </div>
 
 
+                {/* [COMMENTED OUT] priority tip removed
                 <div>
 
                   <p className="
@@ -1110,6 +1116,7 @@ export default function CreateCase() {
                   </p>
 
                 </div>
+                */}
 
               </div>
 

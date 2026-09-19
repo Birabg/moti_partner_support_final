@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import {
     SlidersHorizontal,
     Layers3,
@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 
 // Product Components
+import AdminPageHero from "../../components/admin/AdminPageHero";
 import CategoryTable from "../../components/productservice/CategoryTable";
 import SubcategoryTable from "../../components/productservice/SubcategoryTable";
 import CustomFieldTable from "../../components/productservice/CustomFieldTable";
@@ -53,57 +54,27 @@ export default function ProductService() {
             {/* =====================================================
                 PAGE HEADER
             ===================================================== */}
-            <div className="flex items-start justify-between gap-6">
-
-                <div>
-                    {/* Breadcrumb */}
-                    <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em]">
-                        <span className="text-slate-400">
-                            Administration
-                        </span>
-
-                        <span className="text-slate-300">
-                            /
-                        </span>
-
-                        <span className="text-slate-500">
-                            Product & Service
-                        </span>
-                    </div>
-
-                    {/* Title */}
-                    <h1 className="text-[30px] font-semibold tracking-[-0.035em] text-slate-900">
-                        Product & Service Management
-                    </h1>
-
-                    {/* Caption */}
-                    <p className="mt-2 max-w-2xl text-[14px] leading-6 text-slate-500">
-                        Manage product categories, subcategories,
-                        custom fields, and service types from one
-                        centralized workspace.
+                        <AdminPageHero
+              eyebrow="Administration"
+              title="Product & Service Management"
+              description="Manage product categories, subcategories, custom fields, and service types from one centralized workspace."
+              icon={ActiveIcon}
+              right={
+                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 backdrop-blur-md">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.08] text-[#91b3df]">
+                    <ActiveIcon className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-white/40">
+                      Current Section
                     </p>
+                    <p className="mt-0.5 text-sm font-semibold text-white">
+                      {activeTabData.name}
+                    </p>
+                  </div>
                 </div>
-
-                {/* Current section */}
-                <div className="hidden shrink-0 sm:block">
-                    <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-[0_4px_18px_-12px_rgba(15,23,42,0.25)]">
-
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
-                            <ActiveIcon className="h-4 w-4" />
-                        </div>
-
-                        <div>
-                            <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                                Current Section
-                            </p>
-
-                            <p className="mt-0.5 text-sm font-semibold text-slate-800">
-                                {activeTabData.name}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+              }
+            />
 
             {/* =====================================================
                 SECTION NAVIGATION

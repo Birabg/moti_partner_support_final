@@ -14,13 +14,6 @@ import {
 import { managerApi } from "../../api/managerApi";
 import { useAuth } from "../../context/useAuth";
 
-import ManagerHeader from "../../components/manager/ManagerHeader";
-
-import {
-    Card,
-    CardContent,
-} from "../../components/ui/card";
-
 import Button from "../../components/ui/button";
 
 
@@ -361,59 +354,190 @@ export default function ManagerProfile() {
 
     return (
 
-        <div className="space-y-6">
+        <div className="min-h-full bg-slate-50/70">
 
-            {/* =========================================================
-                HEADER
-            ========================================================= */}
+            <main className="ps-container space-y-7 pb-12">
 
-            <ManagerHeader
-                user={user}
-                orgPath={
-                    form.department ||
-                    "Profile"
-                }
-                managerRole={roleLabel}
-            />
+                {/* =========================================================
+                    PROFILE HERO
+                ========================================================= */}
 
+                <section
+                    className="
+                        relative
+                        overflow-hidden
+                        rounded-[26px]
+                        bg-[#0b1d38]
+                        shadow-[0_16px_40px_rgba(15,35,65,0.10)]
+                    "
+                >
 
-            {/* =========================================================
-                PROFILE HERO
-            ========================================================= */}
+                    <div
+                        className="
+                            absolute
+                            inset-0
+                            opacity-[0.07]
+                        "
+                        style={{
+                            backgroundImage:
+                                "linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px)",
+                            backgroundSize:
+                                "32px 32px",
+                        }}
+                    />
 
-            <Card className="overflow-hidden border-slate-200 shadow-sm">
+                    <div
+                        className="
+                            absolute
+                            -right-24
+                            -top-24
+                            h-72
+                            w-72
+                            rounded-full
+                            bg-blue-400/10
+                            blur-3xl
+                        "
+                    />
 
-                <div className="h-24 bg-slate-900" />
+                    <div
+                        className="
+                            absolute
+                            -bottom-32
+                            left-1/3
+                            h-64
+                            w-64
+                            rounded-full
+                            bg-indigo-400/10
+                            blur-3xl
+                        "
+                    />
 
-                <CardContent className="relative px-5 pb-6 sm:px-6">
+                    <div
+                        className="
+                            relative
+                            flex
+                            flex-col
+                            gap-6
+                            px-6
+                            py-7
+                            sm:px-8
+                            sm:py-8
+                            lg:flex-row
+                            lg:items-center
+                            lg:justify-between
+                        "
+                    >
 
-                    <div className="-mt-10 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                        <div className="flex items-center gap-5">
 
-                        <div className="flex items-end gap-4">
-
-                            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border-4 border-white bg-slate-100 text-slate-400 shadow-sm">
-
-                                <FaUserCircle className="h-12 w-12" />
-
+                            <div
+                                className="
+                                    flex
+                                    h-16
+                                    w-16
+                                    shrink-0
+                                    items-center
+                                    justify-center
+                                    rounded-2xl
+                                    border
+                                    border-white/10
+                                    bg-white/[0.08]
+                                    text-white
+                                "
+                            >
+                                <FaUserCircle className="h-9 w-9" />
                             </div>
 
+                            <div className="min-w-0">
 
-                            <div className="pb-1">
+                                <div
+                                    className="
+                                        mb-3
+                                        flex
+                                        items-center
+                                        gap-2
+                                    "
+                                >
 
-                                <h1 className="text-xl font-bold tracking-tight text-slate-900">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+
+                                    <span
+                                        className="
+                                            text-[9px]
+                                            font-bold
+                                            uppercase
+                                            tracking-[0.2em]
+                                            text-slate-400
+                                        "
+                                    >
+                                        Manager Workspace
+                                    </span>
+
+                                </div>
+
+                                <h1
+                                    className="
+                                        truncate
+                                        text-2xl
+                                        font-semibold
+                                        tracking-[-0.035em]
+                                        text-white
+                                        sm:text-3xl
+                                    "
+                                >
                                     {loading
                                         ? "Loading..."
                                         : fullName}
                                 </h1>
 
-                                <div className="mt-1 flex flex-wrap items-center gap-2">
+                                <div
+                                    className="
+                                        mt-3
+                                        flex
+                                        flex-wrap
+                                        items-center
+                                        gap-2
+                                    "
+                                >
 
-                                    <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-600">
+                                    <span
+                                        className="
+                                            inline-flex
+                                            items-center
+                                            gap-1.5
+                                            rounded-full
+                                            border
+                                            border-white/10
+                                            bg-white/[0.07]
+                                            px-2.5
+                                            py-1
+                                            text-[10px]
+                                            font-medium
+                                            text-slate-300
+                                        "
+                                    >
+                                        <FaBriefcase className="h-3 w-3" />
                                         {roleLabel}
                                     </span>
 
                                     {form.department && (
-                                        <span className="text-xs text-slate-400">
+                                        <span
+                                            className="
+                                                inline-flex
+                                                items-center
+                                                gap-1.5
+                                                rounded-full
+                                                border
+                                                border-white/10
+                                                bg-white/[0.07]
+                                                px-2.5
+                                                py-1
+                                                text-[10px]
+                                                font-medium
+                                                text-slate-300
+                                            "
+                                        >
+                                            <FaBuilding className="h-3 w-3" />
                                             {form.department}
                                         </span>
                                     )}
@@ -423,9 +547,6 @@ export default function ManagerProfile() {
                             </div>
 
                         </div>
-
-
-                        {/* Actions */}
 
                         <div className="flex items-center gap-2">
 
@@ -479,9 +600,7 @@ export default function ManagerProfile() {
 
                     </div>
 
-                </CardContent>
-
-            </Card>
+                </section>
 
 
             {/* =========================================================
@@ -495,22 +614,78 @@ export default function ManagerProfile() {
                     PERSONAL INFORMATION
                 ----------------------------------------------------- */}
 
-                <Card className="border-slate-200 shadow-sm lg:col-span-2">
+                <section
+                    className="
+                        rounded-[24px]
+                        border
+                        border-slate-200/80
+                        bg-white
+                        shadow-[0_8px_30px_rgba(15,35,65,0.045)]
+                        lg:col-span-2
+                    "
+                >
 
-                    <CardContent className="p-5 sm:p-6">
+                    <div
+                        className="
+                            flex
+                            items-center
+                            gap-3
+                            border-b
+                            border-slate-100
+                            px-6
+                            py-5
+                        "
+                    >
 
-                        <div className="mb-5">
+                        <div
+                            className="
+                                flex
+                                h-9
+                                w-9
+                                items-center
+                                justify-center
+                                rounded-xl
+                                bg-blue-50
+                                text-blue-600
+                            "
+                        >
+                            <FaUserCircle size={15} />
+                        </div>
 
-                            <h2 className="text-base font-bold text-slate-900">
+                        <div>
+
+                            <p
+                                className="
+                                    text-[9px]
+                                    font-bold
+                                    uppercase
+                                    tracking-[0.18em]
+                                    text-blue-600
+                                "
+                            >
+                                Personal
+                            </p>
+
+                            <h2
+                                className="
+                                    text-lg
+                                    font-semibold
+                                    tracking-[-0.02em]
+                                    text-slate-950
+                                "
+                            >
                                 Personal Information
                             </h2>
 
-                            <p className="mt-1 text-sm text-slate-500">
-                                Your basic account and contact information.
-                            </p>
-
                         </div>
 
+                    </div>
+
+                    <div className="p-5 sm:p-6">
+
+                        <p className="mb-5 text-sm text-slate-500">
+                            Your basic account and contact information.
+                        </p>
 
                         <div className="grid gap-3 sm:grid-cols-2">
 
@@ -552,31 +727,86 @@ export default function ManagerProfile() {
 
                         </div>
 
-                    </CardContent>
+                    </div>
 
-                </Card>
+                </section>
 
 
                 {/* -----------------------------------------------------
                     ACCOUNT INFORMATION
                 ----------------------------------------------------- */}
 
-                <Card className="border-slate-200 shadow-sm">
+                <section
+                    className="
+                        rounded-[24px]
+                        border
+                        border-slate-200/80
+                        bg-white
+                        shadow-[0_8px_30px_rgba(15,35,65,0.045)]
+                    "
+                >
 
-                    <CardContent className="p-5 sm:p-6">
+                    <div
+                        className="
+                            flex
+                            items-center
+                            gap-3
+                            border-b
+                            border-slate-100
+                            px-6
+                            py-5
+                        "
+                    >
 
-                        <div className="mb-5">
+                        <div
+                            className="
+                                flex
+                                h-9
+                                w-9
+                                items-center
+                                justify-center
+                                rounded-xl
+                                bg-indigo-50
+                                text-indigo-600
+                            "
+                        >
+                            <FaIdBadge size={15} />
+                        </div>
 
-                            <h2 className="text-base font-bold text-slate-900">
+                        <div>
+
+                            <p
+                                className="
+                                    text-[9px]
+                                    font-bold
+                                    uppercase
+                                    tracking-[0.18em]
+                                    text-indigo-600
+                                "
+                            >
+                                Account
+                            </p>
+
+                            <h2
+                                className="
+                                    text-lg
+                                    font-semibold
+                                    tracking-[-0.02em]
+                                    text-slate-950
+                                "
+                            >
                                 Account Information
                             </h2>
 
-                            <p className="mt-1 text-sm text-slate-500">
-                                Your current management assignment.
-                            </p>
-
                         </div>
 
+                    </div>
+
+                    <div className="p-5 sm:p-6">
+
+                        <p className="mb-5 text-sm text-slate-500">
+                            Your current management assignment.
+                        </p>
 
                         <div className="space-y-3">
 
@@ -622,9 +852,9 @@ export default function ManagerProfile() {
 
                         </div>
 
-                    </CardContent>
+                    </div>
 
-                </Card>
+                </section>
 
             </div>
 
@@ -633,9 +863,17 @@ export default function ManagerProfile() {
                 ACCOUNT STATUS
             ========================================================= */}
 
-            <Card className="border-slate-200 shadow-sm">
+            <section
+                className="
+                    rounded-[24px]
+                    border
+                    border-slate-200/80
+                    bg-white
+                    shadow-[0_8px_30px_rgba(15,35,65,0.045)]
+                "
+            >
 
-                <CardContent className="p-5 sm:p-6">
+                <div className="p-5 sm:p-6">
 
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
@@ -673,12 +911,13 @@ export default function ManagerProfile() {
 
                     </div>
 
-                </CardContent>
+                </div>
 
-            </Card>
+            </section>
+
+        </main>
 
         </div>
-
     );
 
 }

@@ -70,6 +70,13 @@ export default function RecentCasesTable({
                     dot: "bg-slate-400",
                 };
 
+            case "CANCELLED":
+                return {
+                    label: "Cancelled",
+                    className: "bg-[#f8eff1] text-[#9a6b75] border-[#f1dde2]",
+                    dot: "bg-[#9a6b75]",
+                };
+
             default:
                 return {
                     label: status || "Unknown",

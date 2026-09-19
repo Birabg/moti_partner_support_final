@@ -9,6 +9,7 @@ import {
 
 import DashboardCards from "../../components/admin/DashboardCards";
 import CasesAnalytics from "../../components/admin/CasesAnalytics";
+import RecentCases from "../../components/admin/RecentCases";
 
 export default function AdminDashboard() {
     const { user } = useAuth();
@@ -109,6 +110,11 @@ export default function AdminDashboard() {
                 ANALYTICS
             ===================================================== */}
             <CasesAnalytics />
+
+            {/* =====================================================
+                RECENT CASES
+            ===================================================== */}
+            <RecentCases />
 
             {/* =====================================================
                 FOOTER SIGNAL

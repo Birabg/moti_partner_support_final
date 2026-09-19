@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import {
     Building2,
-    ChevronRight,
     LayoutGrid,
     Search,
 } from "lucide-react";
 
 import { OrganizationApi } from "../../api/organizationApi";
+
+import AdminPageHero from "../../components/admin/AdminPageHero";
 
 import OrganizationStatistics from "../../components/organization/OrganizationStatistics";
 import OrganizationForm from "../../components/organization/OrganizationForm";
@@ -95,16 +96,12 @@ export default function OrganizationPage() {
     if (loading) {
         return (
             <div className="space-y-7">
-                <div>
-                    <div className="mb-3 flex items-center gap-2">
-                        <div className="h-2.5 w-20 animate-pulse rounded bg-slate-200" />
-                        <div className="h-2.5 w-2 rounded-full bg-slate-200" />
-                        <div className="h-2.5 w-24 animate-pulse rounded bg-slate-200" />
+                <div className="relative overflow-hidden rounded-[24px] border border-[#dce4ee] bg-[#0b1b33] px-6 py-8 sm:px-8">
+                    <div className="space-y-4">
+                        <div className="h-2.5 w-24 rounded bg-white/10" />
+                        <div className="h-9 w-80 max-w-full rounded bg-white/15" />
+                        <div className="h-4 w-[420px] max-w-full rounded bg-white/10" />
                     </div>
-
-                    <div className="h-9 w-72 animate-pulse rounded-lg bg-slate-200" />
-
-                    <div className="mt-3 h-4 w-[420px] max-w-full animate-pulse rounded bg-slate-100" />
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -136,49 +133,17 @@ export default function OrganizationPage() {
             {/* =====================================================
                 PAGE HEADER
             ===================================================== */}
-            <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-
-                <div>
-                    {/* Breadcrumb */}
-                    <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em]">
-                        <span className="text-slate-400">
-                            Administration
-                        </span>
-
-                        <ChevronRight className="h-3 w-3 text-slate-300" />
-
-                        <span className="text-slate-500">
-                            Organizations
-                        </span>
-                    </div>
-
-                    {/* Title */}
-                    <div className="flex items-center gap-3">
-                        <div className="hidden h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white sm:flex">
-                            <Building2 className="h-5 w-5" />
-                        </div>
-
-                        <div>
-                            <h1 className="text-[30px] font-semibold tracking-[-0.035em] text-slate-900">
-                                Organization Management
-                            </h1>
-                        </div>
-                    </div>
-
-                    <p className="mt-2 max-w-2xl text-[14px] leading-6 text-slate-500">
-                        Create, manage, and monitor customer organizations
-                        from one centralized workspace.
-                    </p>
+                        <AdminPageHero
+              eyebrow="Administration"
+              title="Organization Management"
+              description="Create, manage, and monitor customer organizations from one centralized workspace."
+              icon={Building2}
+              right={
+                <div className="w-full sm:w-[350px]">
+                  <OrganizationSearch search={search} setSearch={setSearch} />
                 </div>
-
-                {/* Search */}
-                <div className="w-full xl:w-[350px]">
-                    <OrganizationSearch
-                        search={search}
-                        setSearch={setSearch}
-                    />
-                </div>
-            </div>
+              }
+            />
 
             {/* =====================================================
                 STATISTICS

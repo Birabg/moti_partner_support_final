@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import {
     Star,
     MessageSquareText,
@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 
 import { FeedbackApi } from "../../api/feedbackApi";
+
+import AdminPageHero from "../../components/admin/AdminPageHero";
 
 export default function FeedbackPage() {
     const [feedbacks, setFeedbacks] = useState([]);
@@ -79,40 +81,27 @@ export default function FeedbackPage() {
                 PAGE HEADER
             ===================================================== */}
 
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-
-                <div>
-                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                        Customer Experience
-                    </p>
-
-                    <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-                        Customer Feedback
-                    </h1>
-
-                    <p className="mt-1.5 text-sm text-slate-500">
-                        Review customer satisfaction scores,
-                        ratings and comments.
-                    </p>
-                </div>
-
+                        <AdminPageHero
+              eyebrow="Customer Experience"
+              title="Customer Feedback"
+              description="Review customer satisfaction scores, ratings and comments."
+              icon={MessageSquareText}
+              right={
                 <button
-                    type="button"
-                    onClick={loadFeedback}
-                    disabled={loading}
-                    className="inline-flex h-10 w-fit items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 disabled:opacity-50"
+                  type="button"
+                  onClick={loadFeedback}
+                  disabled={loading}
+                  className="inline-flex h-10 w-fit items-center gap-2 rounded-xl border border-white/10 bg-white/[0.08] px-4 text-xs font-semibold text-white shadow-sm backdrop-blur-md transition hover:bg-white/[0.14] disabled:opacity-50"
                 >
-                    <TrendingUp
-                        className={`h-3.5 w-3.5 ${
-                            loading
-                                ? "animate-pulse"
-                                : ""
-                        }`}
-                    />
-
-                    Refresh Feedback
+                  <TrendingUp
+                    className={`h-3.5 w-3.5 ${
+                      loading ? "animate-pulse" : ""
+                    }`}
+                  />
+                  Refresh Feedback
                 </button>
-            </div>
+              }
+            />
 
             {/* =====================================================
                 STATISTICS
@@ -327,7 +316,7 @@ function FeedbackCard({ item }) {
               month: "short",
               day: "numeric",
           })
-        : "—";
+        : "â€”";
 
     return (
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_20px_-12px_rgba(15,23,42,0.18)] transition-shadow hover:shadow-[0_12px_30px_-15px_rgba(15,23,42,0.22)]">
@@ -358,7 +347,7 @@ function FeedbackCard({ item }) {
                                 </span>
 
                                 <span className="text-slate-200">
-                                    •
+                                    â€¢
                                 </span>
 
                                 <span>

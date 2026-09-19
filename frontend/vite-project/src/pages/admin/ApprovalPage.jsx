@@ -1,4 +1,4 @@
-// src/pages/admin/ApprovalPage.jsx
+﻿// src/pages/admin/ApprovalPage.jsx
 
 import { useEffect, useState } from "react";
 
@@ -18,6 +18,7 @@ import { useAuth } from "../../context/useAuth";
 import { PermissionApi } from "../../api/permissionApi";
 import { UserApi } from "../../api/userApi";
 
+import AdminPageHero from "../../components/admin/AdminPageHero";
 import ApprovalStatistics from "../../components/approval/ApprovalStatistics";
 import PendingCustomerTable from "../../components/approval/PendingCustomerTable";
 import PendingStaffTable from "../../components/approval/PendingStaffTable";
@@ -413,179 +414,13 @@ export default function ApprovalPage() {
           HEADER
       ===================================================== */}
 
-      <section
-        className="
-          relative
-          overflow-hidden
-          rounded-[26px]
-          border
-          border-slate-200
-          bg-white
-          shadow-[0_18px_50px_-30px_rgba(15,23,42,0.25)]
-        "
-      >
-
-        {/* Background grid */}
-
-        <div
-          className="
-            pointer-events-none
-            absolute
-            inset-0
-            opacity-60
-          "
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(15,23,42,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(15,23,42,0.035) 1px, transparent 1px)",
-            backgroundSize: "32px 32px",
-          }}
-        />
-
-        {/* Background glow */}
-
-        <div
-          className="
-            pointer-events-none
-            absolute
-            -right-24
-            -top-32
-            h-80
-            w-80
-            rounded-full
-            bg-blue-100/70
-            blur-3xl
-          "
-        />
-
-        <div
-          className="
-            pointer-events-none
-            absolute
-            right-48
-            -bottom-40
-            h-72
-            w-72
-            rounded-full
-            bg-indigo-50/80
-            blur-3xl
-          "
-        />
-
-        <div
-          className="
-            relative
-            flex
-            flex-col
-            gap-7
-            px-6
-            py-7
-            md:px-8
-            md:py-8
-            xl:flex-row
-            xl:items-center
-            xl:justify-between
-          "
-        >
-
-          {/* LEFT */}
-
-          <div className="flex items-start gap-4">
-
-            <div
-              className="
-                flex
-                h-12
-                w-12
-                shrink-0
-                items-center
-                justify-center
-                rounded-2xl
-                border
-                border-blue-100
-                bg-blue-50
-              "
-            >
-              <ShieldCheck className="h-6 w-6 text-blue-600" />
-            </div>
-
-            <div>
-
-              <div
-                className="
-                  mb-2
-                  flex
-                  items-center
-                  gap-2
-                "
-              >
-                <span
-                  className="
-                    text-[10px]
-                    font-bold
-                    uppercase
-                    tracking-[0.18em]
-                    text-blue-600
-                  "
-                >
-                  Administration
-                </span>
-
-                <span className="h-1 w-1 rounded-full bg-slate-300" />
-
-                <span
-                  className="
-                    text-[10px]
-                    font-medium
-                    text-slate-400
-                  "
-                >
-                  User Approval
-                </span>
-              </div>
-
-              <h1
-                className="
-                  text-2xl
-                  font-semibold
-                  tracking-tight
-                  text-slate-900
-                  md:text-3xl
-                "
-              >
-                Approval Center
-              </h1>
-
-              <p
-                className="
-                  mt-2
-                  max-w-2xl
-                  text-sm
-                  leading-6
-                  text-slate-500
-                "
-              >
-                Review registrations, approve new users,
-                manage permissions, and maintain the
-                organization's active user directory.
-              </p>
-
-            </div>
-
-          </div>
-
-          {/* RIGHT */}
-
-          <div
-            className="
-              flex
-              flex-wrap
-              items-center
-              gap-3
-            "
-          >
-
-            {/* Status */}
-
+            <AdminPageHero
+        eyebrow="Administration"
+        title="Approval Center"
+        description="Review registrations, approve new users, manage permissions, and maintain the organization's active user directory."
+        icon={ShieldCheck}
+        right={
+          <>
             <div
               className="
                 hidden
@@ -593,28 +428,20 @@ export default function ApprovalPage() {
                 gap-2
                 rounded-xl
                 border
-                border-emerald-100
-                bg-emerald-50
+                border-white/10
+                bg-white/[0.06]
                 px-3.5
                 py-2.5
+                backdrop-blur-md
                 sm:flex
               "
             >
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
-
-              <span
-                className="
-                  text-xs
-                  font-semibold
-                  text-emerald-700
-                "
-              >
+              <span className="h-2 w-2 rounded-full bg-emerald-400" />
+              <span className="text-xs font-semibold text-white/65">
                 System operational
               </span>
             </div>
 
-            {/* Pending indicator */}
-
             <div
               className="
                 hidden
@@ -622,27 +449,19 @@ export default function ApprovalPage() {
                 gap-2
                 rounded-xl
                 border
-                border-amber-100
-                bg-amber-50
+                border-white/10
+                bg-white/[0.06]
                 px-3.5
                 py-2.5
+                backdrop-blur-md
                 md:flex
               "
             >
-              <Clock3 className="h-3.5 w-3.5 text-amber-600" />
-
-              <span
-                className="
-                  text-xs
-                  font-semibold
-                  text-amber-700
-                "
-              >
+              <Clock3 className="h-3.5 w-3.5 text-amber-300" />
+              <span className="text-xs font-semibold text-white/65">
                 {totalPending} awaiting review
               </span>
             </div>
-
-            {/* Refresh */}
 
             <button
               type="button"
@@ -654,19 +473,17 @@ export default function ApprovalPage() {
                 gap-2
                 rounded-xl
                 border
-                border-slate-200
-                bg-white
+                border-white/10
+                bg-white/[0.08]
                 px-4
                 py-2.5
                 text-sm
                 font-semibold
-                text-slate-700
-                shadow-sm
+                text-white
+                backdrop-blur-md
                 transition-all
                 duration-200
-                hover:border-slate-300
-                hover:bg-slate-50
-                hover:text-slate-900
+                hover:bg-white/[0.14]
                 disabled:cursor-not-allowed
                 disabled:opacity-60
               "
@@ -676,16 +493,13 @@ export default function ApprovalPage() {
                   refreshing ? "animate-spin" : ""
                 }`}
               />
-
               <span className="hidden sm:inline">
                 {refreshing ? "Refreshing..." : "Refresh"}
               </span>
             </button>
-
-          </div>
-
-        </div>
-      </section>
+          </>
+        }
+      />
 
       {/* =====================================================
           STATISTICS

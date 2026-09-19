@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
 import {
+    AlertTriangle,
+    ArrowUpRight,
     Building2,
-    Users,
-    RefreshCw,
     Network,
+    RefreshCw,
+    ShieldCheck,
+    Users,
 } from "lucide-react";
 
 import { managerApi } from "../../api/managerApi";
 import { useAuth } from "../../context/useAuth";
 
-import ManagerHeader from "../../components/manager/ManagerHeader";
 import OrganizationTree from "../../components/manager/OrganizationTree";
-
-import { Card, CardContent } from "../../components/ui/card";
 
 
 export default function ManagerOrganization() {
@@ -115,125 +115,119 @@ export default function ManagerOrganization() {
 
 
     return (
-        <div className="min-h-full bg-slate-50/60 pb-10">
+        <div className="min-h-full bg-slate-50/70">
 
-            <div className="space-y-6">
+            <main className="ps-container space-y-7 pb-12">
 
 
                 {/* =================================================
                     PAGE HEADER
                 ================================================= */}
 
-                <header
+                <section
                     className="
                         relative
                         overflow-hidden
-                        rounded-3xl
-                        border
-                        border-slate-200
-                        bg-white
-                        px-6
-                        py-6
-                        shadow-[0_1px_2px_rgba(15,23,42,0.03)]
-                        sm:px-7
-                        lg:px-8
+                        rounded-[26px]
+                        bg-[#0b1d38]
+                        shadow-[0_16px_40px_rgba(15,35,65,0.10)]
                     "
                 >
 
                     <div
                         className="
-                            pointer-events-none
                             absolute
-                            -right-20
+                            inset-0
+                            opacity-[0.07]
+                        "
+                        style={{
+                            backgroundImage:
+                                "linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px)",
+                            backgroundSize:
+                                "32px 32px",
+                        }}
+                    />
+
+                    <div
+                        className="
+                            absolute
+                            -right-24
                             -top-24
-                            h-64
-                            w-64
+                            h-72
+                            w-72
                             rounded-full
-                            bg-blue-50
+                            bg-blue-400/10
                             blur-3xl
                         "
                     />
 
                     <div
                         className="
-                            pointer-events-none
                             absolute
-                            bottom-0
-                            right-1/4
-                            h-24
-                            w-24
+                            -bottom-32
+                            left-1/3
+                            h-64
+                            w-64
                             rounded-full
-                            bg-slate-100
-                            blur-2xl
+                            bg-indigo-400/10
+                            blur-3xl
                         "
                     />
-
 
                     <div
                         className="
                             relative
                             flex
                             flex-col
-                            gap-6
-                            xl:flex-row
-                            xl:items-center
-                            xl:justify-between
+                            gap-7
+                            px-6
+                            py-7
+                            sm:px-8
+                            sm:py-8
+                            lg:flex-row
+                            lg:items-center
+                            lg:justify-between
                         "
                     >
-
-                        {/* LEFT */}
 
                         <div>
 
                             <div
                                 className="
                                     mb-3
-                                    inline-flex
+                                    flex
                                     items-center
                                     gap-2
-                                    rounded-full
-                                    border
-                                    border-blue-100
-                                    bg-blue-50
-                                    px-3
-                                    py-1.5
                                 "
                             >
 
-                                <Network
-                                    size={13}
-                                    className="text-blue-600"
-                                    strokeWidth={2.5}
-                                />
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
 
                                 <span
                                     className="
-                                        text-[10px]
+                                        text-[9px]
                                         font-bold
                                         uppercase
-                                        tracking-[0.16em]
-                                        text-blue-700
+                                        tracking-[0.2em]
+                                        text-slate-400
                                     "
                                 >
-                                    Organization
+                                    Organization Workspace
                                 </span>
 
                             </div>
 
-
                             <h1
                                 className="
                                     text-2xl
-                                    font-bold
-                                    tracking-[-0.025em]
-                                    text-slate-950
+                                    font-semibold
+                                    tracking-[-0.035em]
+                                    text-white
                                     sm:text-3xl
-                                    lg:text-[34px]
                                 "
                             >
                                 Organization Structure
                             </h1>
-
 
                             <p
                                 className="
@@ -241,7 +235,7 @@ export default function ManagerOrganization() {
                                     max-w-2xl
                                     text-sm
                                     leading-6
-                                    text-slate-500
+                                    text-slate-400
                                 "
                             >
                                 View your management scope and
@@ -249,138 +243,132 @@ export default function ManagerOrganization() {
                                 centralized workspace.
                             </p>
 
-                        </div>
-
-
-                        {/* RIGHT */}
-
-                        <div
-                            className="
-                                relative
-                                flex
-                                items-center
-                                gap-3
-                            "
-                        >
-
                             <div
                                 className="
-                                    hidden
+                                    mt-4
+                                    flex
+                                    flex-wrap
                                     items-center
-                                    gap-3
-                                    rounded-2xl
-                                    border
-                                    border-slate-200
-                                    bg-slate-50
-                                    px-4
-                                    py-3
-                                    sm:flex
+                                    gap-2
                                 "
                             >
 
-                                <div
+                                <span
                                     className="
-                                        flex
-                                        h-9
-                                        w-9
+                                        inline-flex
                                         items-center
-                                        justify-center
-                                        rounded-xl
-                                        bg-white
-                                        text-blue-600
-                                        shadow-sm
-                                        ring-1
-                                        ring-slate-200
+                                        gap-1.5
+                                        rounded-full
+                                        border
+                                        border-white/10
+                                        bg-white/[0.07]
+                                        px-2.5
+                                        py-1
+                                        text-[10px]
+                                        font-medium
+                                        text-slate-300
                                     "
                                 >
-                                    <Building2 size={17} />
-                                </div>
 
+                                    <Building2 className="h-3 w-3" />
 
-                                <div>
+                                    {scopeName}
 
-                                    <p
-                                        className="
-                                            text-[10px]
-                                            font-bold
-                                            uppercase
-                                            tracking-wider
-                                            text-slate-400
-                                        "
-                                    >
-                                        Current Scope
-                                    </p>
+                                </span>
 
+                                <span
+                                    className="
+                                        inline-flex
+                                        items-center
+                                        gap-1.5
+                                        rounded-full
+                                        border
+                                        border-white/10
+                                        bg-white/[0.07]
+                                        px-2.5
+                                        py-1
+                                        text-[10px]
+                                        font-medium
+                                        text-slate-300
+                                    "
+                                >
 
-                                    <p
-                                        className="
-                                            mt-0.5
-                                            max-w-[180px]
-                                            truncate
-                                            text-sm
-                                            font-bold
-                                            text-slate-900
-                                        "
-                                    >
-                                        {scopeName}
-                                    </p>
+                                    <Users className="h-3 w-3" />
 
-                                </div>
+                                    {staffCount} staff
+
+                                </span>
+
+                                <span
+                                    className="
+                                        inline-flex
+                                        items-center
+                                        gap-1.5
+                                        rounded-full
+                                        border
+                                        border-white/10
+                                        bg-white/[0.07]
+                                        px-2.5
+                                        py-1
+                                        text-[10px]
+                                        font-medium
+                                        text-slate-300
+                                    "
+                                >
+
+                                    <ShieldCheck className="h-3 w-3" />
+
+                                    Manager Access
+
+                                </span>
 
                             </div>
 
+                        </div>
 
-                            <button
-                                type="button"
-                                onClick={handleRefresh}
-                                disabled={
+                        <button
+                            type="button"
+                            onClick={handleRefresh}
+                            disabled={
+                                loading ||
+                                refreshing
+                            }
+                            className="
+                                inline-flex
+                                h-10
+                                shrink-0
+                                items-center
+                                justify-center
+                                gap-2
+                                rounded-xl
+                                bg-white
+                                px-4
+                                text-xs
+                                font-semibold
+                                text-[#0b1d38]
+                                transition
+                                hover:bg-slate-100
+                                disabled:cursor-not-allowed
+                                disabled:opacity-60
+                            "
+                        >
+
+                            <RefreshCw
+                                className={
                                     loading ||
                                     refreshing
+                                        ? "h-3.5 w-3.5 animate-spin"
+                                        : "h-3.5 w-3.5"
                                 }
-                                className="
-                                    inline-flex
-                                    h-11
-                                    items-center
-                                    gap-2
-                                    rounded-xl
-                                    border
-                                    border-slate-200
-                                    bg-white
-                                    px-4
-                                    text-sm
-                                    font-semibold
-                                    text-slate-700
-                                    shadow-sm
-                                    transition
-                                    hover:border-blue-200
-                                    hover:bg-blue-50
-                                    hover:text-blue-700
-                                    disabled:cursor-not-allowed
-                                    disabled:opacity-60
-                                "
-                            >
+                            />
 
-                                <RefreshCw
-                                    size={15}
-                                    className={
-                                        loading ||
-                                        refreshing
-                                            ? "animate-spin"
-                                            : ""
-                                    }
-                                />
+                            Refresh
 
-                                <span className="hidden sm:inline">
-                                    Refresh
-                                </span>
-
-                            </button>
-
-                        </div>
+                        </button>
 
                     </div>
 
-                </header>
+                </section>
 
 
                 {/* =================================================
@@ -390,17 +378,46 @@ export default function ManagerOrganization() {
                 {error && (
                     <div
                         className="
+                            flex
+                            items-start
+                            gap-3
                             rounded-2xl
                             border
                             border-red-200
                             bg-red-50
                             px-5
                             py-4
-                            text-sm
-                            text-red-700
                         "
                     >
-                        {error}
+
+                        <div
+                            className="
+                                flex
+                                h-8
+                                w-8
+                                shrink-0
+                                items-center
+                                justify-center
+                                rounded-lg
+                                bg-red-100
+                                text-red-600
+                            "
+                        >
+                            <AlertTriangle className="h-4 w-4" />
+                        </div>
+
+                        <div>
+
+                            <p className="text-xs font-semibold text-red-800">
+                                Organization unavailable
+                            </p>
+
+                            <p className="mt-1 text-xs text-red-600">
+                                {error}
+                            </p>
+
+                        </div>
+
                     </div>
                 )}
 
@@ -411,58 +428,33 @@ export default function ManagerOrganization() {
 
                 <section>
 
-                    <div
-                        className="
-                            mb-3
-                            flex
-                            items-end
-                            justify-between
-                        "
-                    >
+                    <div className="mb-4">
 
-                        <div>
-
-                            <p
-                                className="
-                                    text-xs
-                                    font-bold
-                                    uppercase
-                                    tracking-[0.12em]
-                                    text-slate-400
-                                "
-                            >
-                                Overview
-                            </p>
-
-
-                            <h2
-                                className="
-                                    mt-1
-                                    text-base
-                                    font-bold
-                                    text-slate-900
-                                "
-                            >
-                                Management scope
-                            </h2>
-
-                        </div>
-
-
-                        <span
+                        <p
                             className="
-                                hidden
-                                text-xs
-                                font-medium
-                                text-slate-400
-                                sm:block
+                                text-[9px]
+                                font-bold
+                                uppercase
+                                tracking-[0.2em]
+                                text-blue-600
                             "
                         >
-                            Current organization
-                        </span>
+                            Overview
+                        </p>
+
+                        <h2
+                            className="
+                                mt-1
+                                text-xl
+                                font-semibold
+                                tracking-[-0.025em]
+                                text-slate-950
+                            "
+                        >
+                            Management scope
+                        </h2>
 
                     </div>
-
 
                     <div
                         className="
@@ -476,88 +468,27 @@ export default function ManagerOrganization() {
 
                         <div
                             className="
-                                rounded-2xl
+                                group
+                                rounded-[22px]
                                 border
-                                border-slate-200
+                                border-slate-200/80
                                 bg-white
                                 p-5
-                                shadow-[0_1px_3px_rgba(15,23,42,0.04)]
+                                shadow-[0_8px_25px_rgba(15,35,65,0.045)]
+                                transition
+                                duration-200
+                                hover:-translate-y-0.5
+                                hover:shadow-[0_12px_30px_rgba(16,32,55,0.07)]
                             "
                         >
 
-                            <div
-                                className="
-                                    flex
-                                    items-start
-                                    justify-between
-                                    gap-4
-                                "
-                            >
-
-                                <div>
-
-                                    <p
-                                        className="
-                                            text-[10px]
-                                            font-bold
-                                            uppercase
-                                            tracking-[0.14em]
-                                            text-slate-400
-                                        "
-                                    >
-                                        Current Scope
-                                    </p>
-
-
-                                    {loading ? (
-
-                                        <div
-                                            className="
-                                                mt-3
-                                                h-7
-                                                w-32
-                                                animate-pulse
-                                                rounded-md
-                                                bg-slate-100
-                                            "
-                                        />
-
-                                    ) : (
-
-                                        <p
-                                            className="
-                                                mt-2
-                                                text-xl
-                                                font-bold
-                                                tracking-[-0.025em]
-                                                text-slate-900
-                                            "
-                                        >
-                                            {scopeName}
-                                        </p>
-
-                                    )}
-
-
-                                    <p
-                                        className="
-                                            mt-1
-                                            text-xs
-                                            text-slate-400
-                                        "
-                                    >
-                                        Your assigned management scope
-                                    </p>
-
-                                </div>
-
+                            <div className="flex items-start justify-between">
 
                                 <div
                                     className="
                                         flex
                                         h-10
                                         w-10
-                                        shrink-0
                                         items-center
                                         justify-center
                                         rounded-xl
@@ -565,100 +496,77 @@ export default function ManagerOrganization() {
                                         text-blue-600
                                     "
                                 >
-                                    <Building2 size={17} />
+                                    <Building2 className="h-[18px] w-[18px]" />
                                 </div>
+
+                                <ArrowUpRight className="h-3.5 w-3.5 text-slate-200 transition group-hover:text-slate-400" />
+
+                            </div>
+
+                            <div className="mt-6">
+
+                                <p className="text-xs font-medium text-slate-500">
+                                    Current Scope
+                                </p>
+
+                                <div className="mt-1.5">
+
+                                    {loading ? (
+
+                                        <div className="h-9 w-32 animate-pulse rounded-md bg-slate-100" />
+
+                                    ) : (
+
+                                        <span
+                                            className="
+                                                block
+                                                truncate
+                                                text-2xl
+                                                font-semibold
+                                                tracking-[-0.04em]
+                                                text-slate-950
+                                            "
+                                        >
+                                            {scopeName}
+                                        </span>
+
+                                    )}
+
+                                </div>
+
+                                <p className="mt-2 text-[10px] text-slate-400">
+                                    Your assigned management scope
+                                </p>
 
                             </div>
 
                         </div>
 
-
                         {/* Staff Card */}
 
                         <div
                             className="
-                                rounded-2xl
+                                group
+                                rounded-[22px]
                                 border
-                                border-slate-200
+                                border-slate-200/80
                                 bg-white
                                 p-5
-                                shadow-[0_1px_3px_rgba(15,23,42,0.04)]
+                                shadow-[0_8px_25px_rgba(15,35,65,0.045)]
+                                transition
+                                duration-200
+                                hover:-translate-y-0.5
+                                hover:shadow-[0_12px_30px_rgba(16,32,55,0.07)]
                             "
                         >
 
-                            <div
-                                className="
-                                    flex
-                                    items-start
-                                    justify-between
-                                    gap-4
-                                "
-                            >
-
-                                <div>
-
-                                    <p
-                                        className="
-                                            text-[10px]
-                                            font-bold
-                                            uppercase
-                                            tracking-[0.14em]
-                                            text-slate-400
-                                        "
-                                    >
-                                        Staff Members
-                                    </p>
-
-
-                                    {loading ? (
-
-                                        <div
-                                            className="
-                                                mt-3
-                                                h-7
-                                                w-20
-                                                animate-pulse
-                                                rounded-md
-                                                bg-slate-100
-                                            "
-                                        />
-
-                                    ) : (
-
-                                        <p
-                                            className="
-                                                mt-2
-                                                text-xl
-                                                font-bold
-                                                tracking-[-0.025em]
-                                                text-slate-900
-                                            "
-                                        >
-                                            {staffCount.toLocaleString()}
-                                        </p>
-
-                                    )}
-
-
-                                    <p
-                                        className="
-                                            mt-1
-                                            text-xs
-                                            text-slate-400
-                                        "
-                                    >
-                                        Staff visible within your scope
-                                    </p>
-
-                                </div>
-
+                            <div className="flex items-start justify-between">
 
                                 <div
                                     className="
                                         flex
                                         h-10
                                         w-10
-                                        shrink-0
                                         items-center
                                         justify-center
                                         rounded-xl
@@ -666,8 +574,38 @@ export default function ManagerOrganization() {
                                         text-emerald-600
                                     "
                                 >
-                                    <Users size={17} />
+                                    <Users className="h-[18px] w-[18px]" />
                                 </div>
+
+                                <ArrowUpRight className="h-3.5 w-3.5 text-slate-200 transition group-hover:text-slate-400" />
+
+                            </div>
+
+                            <div className="mt-6">
+
+                                <p className="text-xs font-medium text-slate-500">
+                                    Staff Members
+                                </p>
+
+                                <div className="mt-1.5">
+
+                                    {loading ? (
+
+                                        <div className="h-9 w-20 animate-pulse rounded-md bg-slate-100" />
+
+                                    ) : (
+
+                                        <span className="text-3xl font-semibold tracking-[-0.04em] text-slate-950">
+                                            {staffCount.toLocaleString()}
+                                        </span>
+
+                                    )}
+
+                                </div>
+
+                                <p className="mt-2 text-[10px] text-slate-400">
+                                    Staff visible within your scope
+                                </p>
 
                             </div>
 
@@ -682,38 +620,64 @@ export default function ManagerOrganization() {
                     ORGANIZATION TREE
                 ================================================= */}
 
-                <section>
+                <section
+                    className="
+                        overflow-hidden
+                        rounded-[24px]
+                        border
+                        border-slate-200/80
+                        bg-white
+                        shadow-[0_8px_30px_rgba(15,35,65,0.045)]
+                    "
+                >
 
                     <div
                         className="
-                            mb-3
                             flex
-                            items-end
-                            justify-between
+                            items-center
+                            gap-3
+                            border-b
+                            border-slate-100
+                            px-6
+                            py-5
                         "
                     >
+
+                        <div
+                            className="
+                                flex
+                                h-9
+                                w-9
+                                items-center
+                                justify-center
+                                rounded-xl
+                                bg-blue-50
+                                text-blue-600
+                            "
+                        >
+                            <Network className="h-4 w-4" />
+                        </div>
 
                         <div>
 
                             <p
                                 className="
-                                    text-xs
+                                    text-[9px]
                                     font-bold
                                     uppercase
-                                    tracking-[0.12em]
-                                    text-slate-400
+                                    tracking-[0.18em]
+                                    text-blue-600
                                 "
                             >
                                 Structure
                             </p>
 
-
                             <h2
                                 className="
-                                    mt-1
-                                    text-base
-                                    font-bold
-                                    text-slate-900
+                                    text-lg
+                                    font-semibold
+                                    tracking-[-0.02em]
+                                    text-slate-950
                                 "
                             >
                                 Organization hierarchy
@@ -721,180 +685,86 @@ export default function ManagerOrganization() {
 
                         </div>
 
+                    </div>
 
-                        <span
-                            className="
-                                hidden
-                                text-xs
-                                font-medium
-                                text-slate-400
-                                sm:block
-                            "
-                        >
-                            Current reporting structure
-                        </span>
+                    <div className="p-4 sm:p-5">
+
+                        {loading ? (
+
+                            <div className="space-y-4">
+
+                                {Array.from({
+                                    length: 4,
+                                }).map((_, index) => (
+
+                                    <div
+                                        key={index}
+                                        className="
+                                            flex
+                                            items-center
+                                            gap-4
+                                            rounded-xl
+                                            border
+                                            border-slate-100
+                                            bg-slate-50
+                                            p-4
+                                        "
+                                    >
+
+                                        <div
+                                            className="
+                                                h-9
+                                                w-9
+                                                animate-pulse
+                                                rounded-xl
+                                                bg-slate-200
+                                            "
+                                        />
+
+                                        <div className="flex-1">
+
+                                            <div
+                                                className="
+                                                    h-4
+                                                    w-40
+                                                    animate-pulse
+                                                    rounded-md
+                                                    bg-slate-200
+                                                "
+                                            />
+
+                                            <div
+                                                className="
+                                                    mt-2
+                                                    h-3
+                                                    w-64
+                                                    animate-pulse
+                                                    rounded-md
+                                                    bg-slate-100
+                                                "
+                                            />
+
+                                        </div>
+
+                                    </div>
+
+                                ))}
+
+                            </div>
+
+                        ) : (
+
+                            <OrganizationTree
+                                snapshot={snapshot}
+                            />
+
+                        )}
 
                     </div>
 
-
-                    <Card
-                        className="
-                            overflow-hidden
-                            rounded-2xl
-                            border-slate-200
-                            shadow-[0_1px_3px_rgba(15,23,42,0.04)]
-                        "
-                    >
-
-                        <CardContent className="p-0">
-
-                            <div
-                                className="
-                                    border-b
-                                    border-slate-100
-                                    px-5
-                                    py-4
-                                    sm:px-6
-                                "
-                            >
-
-                                <div
-                                    className="
-                                        flex
-                                        items-center
-                                        gap-3
-                                    "
-                                >
-
-                                    <div
-                                        className="
-                                            flex
-                                            h-9
-                                            w-9
-                                            items-center
-                                            justify-center
-                                            rounded-xl
-                                            bg-slate-100
-                                            text-slate-600
-                                        "
-                                    >
-                                        <Network size={16} />
-                                    </div>
-
-
-                                    <div>
-
-                                        <h3
-                                            className="
-                                                text-sm
-                                                font-bold
-                                                text-slate-900
-                                            "
-                                        >
-                                            Organization Tree
-                                        </h3>
-
-
-                                        <p
-                                            className="
-                                                mt-0.5
-                                                text-xs
-                                                text-slate-400
-                                            "
-                                        >
-                                            Department, division and
-                                            section hierarchy
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-
-                            <div className="p-5 sm:p-6">
-
-                                {loading ? (
-
-                                    <div className="space-y-4">
-
-                                        {Array.from({
-                                            length: 4,
-                                        }).map((_, index) => (
-
-                                            <div
-                                                key={index}
-                                                className="
-                                                    flex
-                                                    items-center
-                                                    gap-4
-                                                    rounded-xl
-                                                    border
-                                                    border-slate-100
-                                                    bg-slate-50
-                                                    p-4
-                                                "
-                                            >
-
-                                                <div
-                                                    className="
-                                                        h-9
-                                                        w-9
-                                                        animate-pulse
-                                                        rounded-xl
-                                                        bg-slate-200
-                                                    "
-                                                />
-
-                                                <div className="flex-1">
-
-                                                    <div
-                                                        className="
-                                                            h-4
-                                                            w-40
-                                                            animate-pulse
-                                                            rounded-md
-                                                            bg-slate-200
-                                                        "
-                                                    />
-
-                                                    <div
-                                                        className="
-                                                            mt-2
-                                                            h-3
-                                                            w-64
-                                                            animate-pulse
-                                                            rounded-md
-                                                            bg-slate-100
-                                                        "
-                                                    />
-
-                                                </div>
-
-                                            </div>
-
-                                        ))}
-
-                                    </div>
-
-                                ) : (
-
-                                    <OrganizationTree
-                                        snapshot={snapshot}
-                                    />
-
-                                )}
-
-                            </div>
-
-                        </CardContent>
-
-                    </Card>
-
                 </section>
 
-            </div>
+            </main>
 
         </div>
     );

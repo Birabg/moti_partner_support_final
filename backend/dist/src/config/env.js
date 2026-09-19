@@ -6,7 +6,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ENV = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 const path_1 = __importDefault(require("path"));
-dotenv_1.default.config({ path: path_1.default.resolve(__dirname, "../../.env") });
+const fs_1 = __importDefault(require("fs"));
+const envCandidates = [
+    path_1.default.resolve(process.cwd(), ".env"),
+    path_1.default.resolve(__dirname, "../../.env"),
+    path_1.default.resolve(__dirname, "../../../.env"),
+];
+const envPath = envCandidates.find((p) => fs_1.default.existsSync(p));
+if (envPath) {
+    dotenv_1.default.config({ path: envPath });
+}
 exports.ENV = {
     PORT: process.env.PORT || 5000,
     DATABASE_URL: process.env.DATABASE_URL || "",

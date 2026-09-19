@@ -14,7 +14,7 @@ import {
 
 import StatusBadge from "../../components/customer/StatusBadge";
 
-import PriorityBadge from "../../components/customer/PriorityBadge";
+// import PriorityBadge from "../../components/customer/PriorityBadge"; // [COMMENTED OUT] priority hidden from customer
 
 import CaseTimeline from "../../components/customer/CaseTimeline";
 
@@ -196,11 +196,13 @@ export default function CaseDetails() {
 
                         />
 
+                        {/* [COMMENTED OUT] priority hidden from customer
                         <PriorityBadge
 
                             priority={data.priority}
 
                         />
+                        */}
 
                     </div>
 

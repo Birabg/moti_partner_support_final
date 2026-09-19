@@ -1,5 +1,7 @@
 import { useAuth } from "../../context/useAuth";
 
+import AdminPageHero from "../../components/admin/AdminPageHero";
+
 import AccountSettings from
 "../../components/settings/AccountSettings";
 
@@ -23,28 +25,11 @@ export default function SettingsPage() {
 
         <div className="space-y-8">
 
-            <div>
-
-                <h1
-                className="
-                text-5xl
-                font-bold
-                "
-                >
-                    Settings
-                </h1>
-
-                <p
-                className="
-                text-slate-500
-                mt-2
-                "
-                >
-                    Manage your account and
-                    system preferences.
-                </p>
-
-            </div>
+            <AdminPageHero
+                eyebrow="Administration"
+                title="Settings"
+                description="Manage your account and system preferences."
+            />
 
             <div
             className="

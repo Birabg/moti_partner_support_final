@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendAccountApprovalEmail = exports.sendSharedSupportInboxAlert = exports.sendCustomerAssignmentEmail = exports.sendCaseAssignmentEmail = exports.sendCaseCreationCustomerEmail = exports.sendPasswordResetEmail = exports.triggerAutoCloseEmail = exports.triggerResolutionReminderEmail = exports.triggerResolutionEmail = exports.sendStatusUpdateEmail = exports.sendVerificationEmail = exports.getTransporter = void 0;
+exports.sendAccountApprovalEmail = exports.sendSharedSupportInboxAlert = exports.sendCustomerAssignmentEmail = exports.sendCaseAssignmentEmail = exports.sendCaseCreationCustomerEmail = exports.sendPasswordResetEmail = exports.triggerAutoCloseEmail = exports.triggerResolutionReminderEmail = exports.triggerResolutionEmail = exports.sendStatusUpdateEmail = exports.sendVerificationEmail = exports.dispatchEmail = exports.getTransporter = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const env_1 = require("../config/env");
 const getTransporter = () => {
@@ -21,6 +21,43 @@ const getTransporter = () => {
     });
 };
 exports.getTransporter = getTransporter;
+/**
+ * Shared dispatcher for every email in the system.
+ * - Logs a clear success line (recipient, messageId, SMTP response) on delivery.
+ * - Logs the exact failure reason if SMTP is misconfigured or the relay rejects.
+ * - Throws on failure so callers that await directly are not left silent.
+ */
+const dispatchEmail = async ({ to, subject, html, kind, bcc, }) => {
+    if (!env_1.ENV.SMTP_HOST || !env_1.ENV.SMTP_USER || !env_1.ENV.SMTP_PASS) {
+        const reason = `SMTP not configured (HOST=${env_1.ENV.SMTP_HOST || "unset"}, USER=${env_1.ENV.SMTP_USER ? "set" : "unset"}, PASS=${env_1.ENV.SMTP_PASS ? "set" : "unset"})`;
+        console.error(`[Email:${kind}] ABORTED -> ${to} | ${reason}`);
+        throw new Error(reason);
+    }
+    const transporter = (0, exports.getTransporter)();
+    const info = await transporter.sendMail({
+        from: env_1.ENV.SMTP_FROM || `"MOTI Support System" <${env_1.ENV.SMTP_USER}>`,
+        to,
+        subject,
+        html,
+        ...(bcc && bcc.length ? { bcc } : {}),
+    });
+    const summary = {
+        kind,
+        to,
+        subject,
+        messageId: info.messageId || "n/a",
+        accepted: info.accepted?.length ?? 0,
+        rejected: info.rejected?.length ?? 0,
+        pending: info.pending?.length ?? 0,
+        response: info.response || "n/a",
+    };
+    console.log(`[Email:${kind}] SENT -> ${to} | ${JSON.stringify(summary)}`);
+    if (info.rejected && info.rejected.length > 0) {
+        console.error(`[Email:${kind}] REJECTED -> ${to} | recipients: ${JSON.stringify(info.rejected)} | response: ${info.response}`);
+    }
+    return info;
+};
+exports.dispatchEmail = dispatchEmail;
 const sendVerificationEmail = async (toEmail, recipientName, rawTokenOrBaseUrl, userTypeOrToken, maybeUserType) => {
     let rawToken = "";
     let userType = "CUSTOMER";
@@ -69,29 +106,16 @@ const sendVerificationEmail = async (toEmail, recipientName, rawTokenOrBaseUrl, 
     </div>
   `;
     try {
-        const transporter = (0, exports.getTransporter)();
-        await transporter.verify();
-        const info = await transporter.sendMail({
-            from: env_1.ENV.SMTP_FROM,
+        await (0, exports.dispatchEmail)({
             to: toEmail,
             subject: "Verify Your MOTI Support Portal Account",
             html: htmlContent,
+            kind: "verification",
         });
-        // console.log("SMTP relay response:", {
-        //   messageId: info.messageId,
-        //   accepted: info.accepted,
-        //   rejected: info.rejected,
-        //   response: info.response,
-        //   envelope: info.envelope,
-        // });
-        if (info.rejected && info.rejected.length > 0) {
-            console.error("SMTP relay rejected these recipients:", info.rejected);
-            return false;
-        }
         return true;
     }
     catch (error) {
-        console.error("Nodemailer dispatch failure caught:", error);
+        console.error("[Email:verification] dispatch failure caught:", error);
         return false;
     }
 };
@@ -130,12 +154,11 @@ const sendStatusUpdateEmail = async (input) => {
     </div>
   `;
     try {
-        const transporter = (0, exports.getTransporter)();
-        await transporter.sendMail({
-            from: env_1.ENV.SMTP_FROM || '"MOTI Support System"',
+        await (0, exports.dispatchEmail)({
             to: customerEmail,
             subject: `[Update] Case #${caseNumber} Status Changed to ${newStatus}`,
             html: htmlContent,
+            kind: `status-${newStatus}`,
         });
     }
     catch (error) {
@@ -182,12 +205,11 @@ const triggerResolutionEmail = async (caseReport) => {
       </p>
     </div>
   `;
-    const transporter = (0, exports.getTransporter)();
-    await transporter.sendMail({
-        from: env_1.ENV.SMTP_FROM || '"MOTI Support System"',
+    await (0, exports.dispatchEmail)({
         to: customerEmail,
         subject: emailSubject,
         html: emailHtml,
+        kind: "resolved",
     });
 };
 exports.triggerResolutionEmail = triggerResolutionEmail;
@@ -212,12 +234,11 @@ const triggerResolutionReminderEmail = async (caseReport) => {
       <p style="font-size: 12px; color: #718096; line-height: 1.5;">If you do not respond, the system will automatically close the case after the remaining confirmation window.</p>
     </div>
   `;
-    const transporter = (0, exports.getTransporter)();
-    await transporter.sendMail({
-        from: env_1.ENV.SMTP_FROM || '"MOTI Support System"',
+    await (0, exports.dispatchEmail)({
         to: customerEmail,
         subject: `Reminder: Confirm resolution for case #${caseReport.caseNumber}`,
         html,
+        kind: "resolution-reminder",
     });
 };
 exports.triggerResolutionReminderEmail = triggerResolutionReminderEmail;
@@ -243,12 +264,11 @@ const triggerAutoCloseEmail = async (caseReport) => {
       <p style="font-size: 12px; color: #a0aec0; text-align: center;">Thank you for choosing our services.</p>
     </div>
   `;
-    const transporter = (0, exports.getTransporter)();
-    await transporter.sendMail({
-        from: env_1.ENV.SMTP_FROM || '"MOTI Support System"',
+    await (0, exports.dispatchEmail)({
         to: customerEmail,
         subject: emailSubject,
         html: emailHtml,
+        kind: "auto-close",
     });
 };
 exports.triggerAutoCloseEmail = triggerAutoCloseEmail;
@@ -282,22 +302,16 @@ const sendPasswordResetEmail = async (toEmail, fullName, rawToken, userType) => 
     </div>
   `;
     try {
-        const transporter = (0, exports.getTransporter)();
-        await transporter.verify();
-        const info = await transporter.sendMail({
-            from: env_1.ENV.SMTP_FROM,
+        await (0, exports.dispatchEmail)({
             to: toEmail,
             subject: "Reset Your MOTI Support Portal Password",
             html: htmlContent,
+            kind: "password-reset",
         });
-        if (info.rejected && info.rejected.length > 0) {
-            console.error("SMTP relay rejected these recipients:", info.rejected);
-            return false;
-        }
         return true;
     }
     catch (error) {
-        console.error("Nodemailer reset password email dispatch failure:", error);
+        console.error("[Email:password-reset] dispatch failure caught:", error);
         return false;
     }
 };
@@ -310,9 +324,6 @@ const sendCaseCreationCustomerEmail = async (input) => {
     const bodyGreeting = isCreatedByStaff
         ? `<p style="font-size: 14px;">Our support team created a request for you.</p>`
         : `<p style="font-size: 14px;">Thanks for contacting us! We received your message and assigned it ticket number <b>#${caseNumber}</b>.</p>`;
-    // const reasonBlock = isCreatedByStaff && creationReason
-    //   ? `<p style="font-size: 14px;"><b>Reason Logged:</b> ${creationReason}</p>`
-    //   : "";
     const htmlContent = `
     <div style="font-family: sans-serif; color: #334155; line-height: 1.6; max-width: 600px; margin: 0 auto; padding: 20px;">
       <p style="font-size: 16px;">Hello ${customerName},</p>
@@ -327,17 +338,16 @@ const sendCaseCreationCustomerEmail = async (input) => {
     </div>
   `;
     try {
-        const transporter = (0, exports.getTransporter)();
-        await transporter.sendMail({
-            from: env_1.ENV.SMTP_FROM,
+        await (0, exports.dispatchEmail)({
             to: customerEmail,
             subject,
             html: htmlContent,
+            kind: "case-created",
         });
         return true;
     }
     catch (error) {
-        console.error("[Email Worker] Failed to send customer case creation receipt:", error);
+        console.error("[Email:case-created] Failed to send customer case creation receipt:", error);
         return false;
     }
 };
@@ -366,12 +376,11 @@ const sendCaseAssignmentEmail = async (input) => {
     </div>
   `;
     try {
-        const transporter = (0, exports.getTransporter)();
-        await transporter.sendMail({
-            from: env_1.ENV.SMTP_FROM || '"MOTI Support System"',
+        await (0, exports.dispatchEmail)({
             to: agentEmail,
             subject: `[New Assignment] Case #${caseNumber}`,
             html: htmlContent,
+            kind: "agent-assigned",
         });
         return true;
     }
@@ -399,12 +408,11 @@ const sendCustomerAssignmentEmail = async (input) => {
     </div>
   `;
     try {
-        const transporter = (0, exports.getTransporter)();
-        await transporter.sendMail({
-            from: env_1.ENV.SMTP_FROM || '"MOTI Support System"',
+        await (0, exports.dispatchEmail)({
             to: customerEmail,
             subject: `[Update] Case #${caseNumber} Assigned to Support Agent`,
             html: htmlContent,
+            kind: "customer-assigned",
         });
         return true;
     }
@@ -436,24 +444,22 @@ const sendSharedSupportInboxAlert = async (input) => {
     </div>
   `;
     try {
-        const transporter = (0, exports.getTransporter)();
-        await transporter.sendMail({
-            from: env_1.ENV.SMTP_FROM,
-            to: env_1.ENV.SHARED_SUPPORT_INBOX,
+        await (0, exports.dispatchEmail)({
+            to: env_1.ENV.SHARED_SUPPORT_INBOX || "",
             subject: `[New Case #${caseNumber}] ${subjectLine}`,
             html: htmlContent,
+            kind: "shared-inbox",
         });
         return true;
     }
     catch (error) {
-        console.error("[Email Worker] Failed to send shared support inbox alert:", error);
+        console.error("[Email:shared-inbox] Failed to send shared support inbox alert:", error);
         return false;
     }
 };
 exports.sendSharedSupportInboxAlert = sendSharedSupportInboxAlert;
 const sendAccountApprovalEmail = async (to, fullName, frontendUrl, userType) => {
     try {
-        const transporter = (0, exports.getTransporter)();
         const loginUrl = `${frontendUrl}/login`;
         const html = `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto;">
@@ -472,13 +478,13 @@ const sendAccountApprovalEmail = async (to, fullName, frontendUrl, userType) => 
         </p>
       </div>
     `;
-        const info = await transporter.sendMail({
-            from: `"${env_1.ENV.SMTP_FROM || "System Admin"}" <${env_1.ENV.SMTP_USER}>`,
+        await (0, exports.dispatchEmail)({
             to,
             subject: "Your Account Has Been Approved!",
             html,
+            kind: "account-approved",
         });
-        return !!info.messageId;
+        return true;
     }
     catch (error) {
         console.error(`[SMTP ERROR] Failed to send approval email to ${to}:`, error);

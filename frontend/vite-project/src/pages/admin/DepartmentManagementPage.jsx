@@ -1,4 +1,4 @@
-// src/pages/admin/DepartmentManagementPage.jsx
+﻿// src/pages/admin/DepartmentManagementPage.jsx
 
 import { useEffect, useMemo, useState } from "react";
 
@@ -14,6 +14,8 @@ import {
 import { DepartmentApi } from "../../api/departmentApi";
 import { DivisionApi } from "../../api/divisionApi";
 import { SectionApi } from "../../api/sectionApi";
+
+import AdminPageHero from "../../components/admin/AdminPageHero";
 
 import DepartmentTabs from "../../components/department/DepartmentTabs";
 
@@ -295,157 +297,13 @@ export default function DepartmentManagementPage() {
           PREMIUM LIGHT HEADER
       ====================================================== */}
 
-      <section
-        className="
-          relative
-          overflow-hidden
-          rounded-[28px]
-          border border-blue-100
-          bg-gradient-to-br
-          from-white
-          via-blue-50/70
-          to-slate-50
-          px-7 py-8
-          md:px-9 md:py-9
-          shadow-[0_18px_55px_-28px_rgba(37,99,235,0.28)]
-        "
-      >
-
-        {/* Decorative glow */}
-        <div
-          className="
-            absolute
-            -right-20
-            -top-32
-            h-80
-            w-80
-            rounded-full
-            bg-blue-200/30
-            blur-3xl
-          "
-        />
-
-        <div
-          className="
-            absolute
-            right-48
-            -bottom-40
-            h-72
-            w-72
-            rounded-full
-            bg-indigo-100/40
-            blur-3xl
-          "
-        />
-
-        {/* Decorative grid */}
-        <div
-          className="
-            absolute
-            inset-0
-            opacity-[0.35]
-            pointer-events-none
-            bg-[linear-gradient(rgba(59,130,246,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.055)_1px,transparent_1px)]
-            bg-[size:28px_28px]
-          "
-        />
-
-        {/* Content */}
-        <div
-          className="
-            relative
-            z-10
-            flex
-            flex-col
-            xl:flex-row
-            xl:items-center
-            xl:justify-between
-            gap-8
-          "
-        >
-
-          {/* Left */}
-          <div className="flex items-start gap-4">
-
-            <div
-              className="
-                shrink-0
-                w-12 h-12
-                rounded-2xl
-                bg-white
-                border border-blue-100
-                flex items-center justify-center
-                shadow-sm
-              "
-            >
-              <Building2 className="w-6 h-6 text-blue-600" />
-            </div>
-
-            <div>
-
-              <div className="flex items-center gap-2 mb-2.5">
-
-                <span
-                  className="
-                    text-[10px]
-                    font-bold
-                    uppercase
-                    tracking-[0.18em]
-                    text-blue-600
-                  "
-                >
-                  Administration
-                </span>
-
-                <span className="w-1 h-1 rounded-full bg-slate-300" />
-
-                <span
-                  className="
-                    text-[10px]
-                    font-medium
-                    text-slate-400
-                  "
-                >
-                  Organization Structure
-                </span>
-
-              </div>
-
-              <h1
-                className="
-                  text-2xl
-                  md:text-3xl
-                  lg:text-[34px]
-                  font-semibold
-                  tracking-[-0.03em]
-                  text-slate-900
-                "
-              >
-                Department Management
-              </h1>
-
-              <p
-                className="
-                  max-w-2xl
-                  text-sm
-                  md:text-[15px]
-                  leading-6
-                  text-slate-500
-                  mt-2
-                "
-              >
-                Manage your organizational hierarchy across departments,
-                divisions and operational sections from one centralized
-                workspace.
-              </p>
-
-            </div>
-
-          </div>
-
-          {/* Right actions */}
-          <div className="relative flex items-center gap-3">
-
+            <AdminPageHero
+        eyebrow="Administration"
+        title="Department Management"
+        description="Manage your organizational hierarchy across departments, divisions and operational sections from one centralized workspace."
+        icon={Building2}
+        right={
+          <>
             <div
               className="
                 hidden
@@ -455,14 +313,14 @@ export default function DepartmentManagementPage() {
                 px-4
                 py-2.5
                 rounded-xl
-                bg-white/80
-                border border-slate-200
-                text-slate-600
-                shadow-sm
+                border
+                border-white/10
+                bg-white/[0.06]
+                text-white/70
+                backdrop-blur-md
               "
             >
-              <ShieldCheck className="w-4 h-4 text-blue-500" />
-
+              <ShieldCheck className="w-4 h-4 text-[#8eafd8]" />
               <span className="text-xs font-semibold">
                 Structure Management
               </span>
@@ -500,16 +358,13 @@ export default function DepartmentManagementPage() {
                   refreshing ? "animate-spin" : ""
                 }`}
               />
-
               <span>
                 {refreshing ? "Refreshing..." : "Refresh"}
               </span>
             </button>
-
-          </div>
-
-        </div>
-      </section>
+          </>
+        }
+      />
 
       {/* ======================================================
           TABS

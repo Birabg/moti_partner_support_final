@@ -111,6 +111,7 @@ export default function ReportsPage() {
         "Awaiting Customer",
         "Resolved",
         "Closed",
+        "Cancelled",
     ];
 
     const statusLabel = (raw) => {
@@ -152,6 +153,13 @@ export default function ReportsPage() {
 
         if (s === "CLOSED") {
             return "Closed";
+        }
+
+        if (
+            s === "CANCELLED" ||
+            s === "CANCELED"
+        ) {
+            return "Cancelled";
         }
 
         return (
@@ -207,24 +215,34 @@ export default function ReportsPage() {
             return;
         }
 
-        const month = date.toLocaleString(
-            "default",
-            {
-                month: "short",
-            }
-        );
+        const monthIndex = date.getMonth();
 
-        if (!monthly[month]) {
-            monthly[month] = 0;
+        if (monthly[monthIndex] === undefined) {
+            monthly[monthIndex] = 0;
         }
 
-        monthly[month]++;
+        monthly[monthIndex]++;
     });
 
-    const monthlyData = Object.keys(monthly).map(
-        (month) => ({
-            month,
-            cases: monthly[month],
+    const monthLabels = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+    ];
+
+    const monthlyData = monthLabels.map(
+        (label, index) => ({
+            month: label,
+            cases: monthly[index] || 0,
         })
     );
 

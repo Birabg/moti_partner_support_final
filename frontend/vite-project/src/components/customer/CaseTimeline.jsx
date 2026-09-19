@@ -12,12 +12,14 @@ const STATUS_LABELS = {
   CANCELLED: "Cancelled",
 };
 
+/* [COMMENTED OUT] priority hidden from customer
 const PRIORITY_LABELS = {
   LOW: "Low",
   MEDIUM: "Medium",
   HIGH: "High",
   URGENT: "Urgent",
 };
+*/
 
 const normalizeText = (value) => {
   if (value === null || value === undefined || value === "") return "";
@@ -31,12 +33,14 @@ const formatStatus = (value) => {
   return STATUS_LABELS[key] || normalized.replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
+/* [COMMENTED OUT] priority hidden from customer
 const formatPriority = (value) => {
   const normalized = normalizeText(value);
   if (!normalized) return "Unknown";
   const key = normalized.toUpperCase();
   return PRIORITY_LABELS[key] || normalized.replace(/\b\w/g, (char) => char.toUpperCase());
 };
+*/
 
 const getDisplayName = (actor) => {
   if (!actor) return "System";
@@ -97,17 +101,21 @@ const isInitialOpenEvent = (fromStatus, toStatus) => {
 };
 
 const hasMeaningfulEvent = (item) => {
-  const fromStatus = normalizeText(item?.fromStatus ?? item?.oldStatus ?? item?.previousStatus);
+const fromStatus = normalizeText(item?.fromStatus ?? item?.oldStatus ?? item?.previousStatus);
   const toStatus = normalizeText(item?.toStatus ?? item?.newStatus ?? item?.status);
+  /* [COMMENTED OUT] priority hidden from customer
   const oldPriority = normalizeText(item?.oldPriority ?? item?.previousPriority);
   const newPriority = normalizeText(item?.newPriority ?? item?.currentPriority);
+  */
   const oldAgentId = item?.oldAgentId ?? item?.previousAgentId ?? null;
   const newAgentId = item?.newAgentId ?? item?.assignedAgentId ?? item?.agentId ?? null;
 
   return Boolean(
     isInitialOpenEvent(fromStatus, toStatus) ||
       (fromStatus && toStatus && fromStatus !== toStatus) ||
+      /* [COMMENTED OUT] priority hidden from customer
       (oldPriority && newPriority && oldPriority !== newPriority) ||
+      */
       (oldAgentId && newAgentId && oldAgentId !== newAgentId) ||
       (item?.note && item.note.trim())
   );
@@ -169,23 +177,27 @@ export default function CaseTimeline({ history = [], caseDetails = null }) {
             continue;
           }
 
-          const prevFrom = normalizeText(prev?.fromStatus ?? prev?.oldStatus ?? prev?.previousStatus);
+const prevFrom = normalizeText(prev?.fromStatus ?? prev?.oldStatus ?? prev?.previousStatus);
           const prevTo = normalizeText(prev?.toStatus ?? prev?.newStatus ?? prev?.status);
+          /* [COMMENTED OUT] priority hidden from customer
           const prevOldPr = normalizeText(prev?.oldPriority ?? prev?.previousPriority);
           const prevNewPr = normalizeText(prev?.newPriority ?? prev?.currentPriority);
+          */
           const prevOldAgent = prev?.oldAgentId ?? prev?.previousAgentId ?? null;
           const prevNewAgent = prev?.newAgentId ?? prev?.assignedAgentId ?? prev?.agentId ?? null;
           const prevNote = prev?.note && prev.note.trim();
 
           const curFrom = normalizeText(item?.fromStatus ?? item?.oldStatus ?? item?.previousStatus);
           const curTo = normalizeText(item?.toStatus ?? item?.newStatus ?? item?.status);
+          /* [COMMENTED OUT] priority hidden from customer
           const curOldPr = normalizeText(item?.oldPriority ?? item?.previousPriority);
           const curNewPr = normalizeText(item?.newPriority ?? item?.currentPriority);
+          */
           const curOldAgent = item?.oldAgentId ?? item?.previousAgentId ?? null;
           const curNewAgent = item?.newAgentId ?? item?.assignedAgentId ?? item?.agentId ?? null;
           const curNote = item?.note && item.note.trim();
 
-          const identical = prevFrom === curFrom && prevTo === curTo && prevOldPr === curOldPr && prevNewPr === curNewPr && prevOldAgent === curOldAgent && prevNewAgent === curNewAgent && !prevNote && !curNote;
+          const identical = prevFrom === curFrom && prevTo === curTo && /* prevOldPr === curOldPr && prevNewPr === curNewPr && */ prevOldAgent === curOldAgent && prevNewAgent === curNewAgent && !prevNote && !curNote;
 
           if (!identical) deduped.push(item);
         }
@@ -204,22 +216,26 @@ export default function CaseTimeline({ history = [], caseDetails = null }) {
 
       <div className="space-y-8">
         {timeline.map((item, index) => {
-          const fromStatus = normalizeText(item?.fromStatus ?? item?.oldStatus ?? item?.previousStatus);
+const fromStatus = normalizeText(item?.fromStatus ?? item?.oldStatus ?? item?.previousStatus);
           const toStatus = normalizeText(item?.toStatus ?? item?.newStatus ?? item?.status);
+          /* [COMMENTED OUT] priority hidden from customer
           const oldPriority = normalizeText(item?.oldPriority ?? item?.previousPriority);
           const newPriority = normalizeText(item?.newPriority ?? item?.currentPriority);
+          */
           const oldAgentId = item?.oldAgentId ?? item?.previousAgentId ?? null;
           const newAgentId = item?.newAgentId ?? item?.assignedAgentId ?? item?.agentId ?? null;
           const hasStatusChange = Boolean(fromStatus && toStatus && fromStatus !== toStatus);
           const isOpenCreation = isInitialOpenEvent(fromStatus, toStatus);
+          /* [COMMENTED OUT] priority hidden from customer
           const hasPriorityChange = Boolean(oldPriority && newPriority && oldPriority !== newPriority);
+          */
           const hasAssignmentChange = Boolean(oldAgentId && newAgentId && oldAgentId !== newAgentId);
           const changedByName = getDisplayName(item?.changedBy ?? item?.actor ?? null);
           const timelineDate = getTimelineDate(item);
           const assignedName = findAssignedName(item);
 
           return (
-            <div key={item.id || `${fromStatus}-${toStatus}-${oldPriority}-${newPriority}-${newAgentId}`} className="flex gap-4">
+            <div key={item.id || `${fromStatus}-${toStatus}-${newAgentId}`} className="flex gap-4">
               <div className="flex flex-col items-center">
                 <div className="w-4 h-4 rounded-full bg-navy-600" />
                 {index !== timeline.length - 1 && <div className="flex-1 w-[2px] bg-gray-300 mt-2" />}
@@ -245,11 +261,13 @@ export default function CaseTimeline({ history = [], caseDetails = null }) {
                   <h4 className="font-semibold text-navy-900 mt-3">{formatStatus(item.status)}</h4>
                 )}
 
+{/* [COMMENTED OUT] priority updated notice hidden from customer
                 {hasPriorityChange && (
                   <p className="text-sm text-orange-600 mt-2">
                     Priority updated: {formatPriority(oldPriority)} → {formatPriority(newPriority)}
                   </p>
                 )}
+                */}
 
                 {hasAssignmentChange && (
                   <div className="mt-2 text-slate-700">

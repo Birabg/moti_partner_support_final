@@ -21,6 +21,7 @@ const statusStyles = {
 };
 
 
+/* [COMMENTED OUT] priority hidden from customer
 const priorityStyles = {
     LOW: {
         text: "text-slate-600",
@@ -47,6 +48,7 @@ const priorityStyles = {
         dot: "bg-red-500",
     },
 };
+*/
 
 
 const formatStatus = (status) => {
@@ -67,7 +69,7 @@ export default function CaseCard({
         caseNumber,
         subject,
         status,
-        priority,
+        // priority,  // [COMMENTED OUT] priority hidden from customer
         createdAt,
         assignedSupport,
         productCategory,
@@ -83,6 +85,7 @@ export default function CaseCard({
         "bg-slate-100 text-slate-600 border-slate-200";
 
 
+    /* [COMMENTED OUT] priority hidden from customer
     const priorityData =
         priorityStyles[
             String(priority || "").toUpperCase()
@@ -90,6 +93,7 @@ export default function CaseCard({
             text: "text-slate-500",
             dot: "bg-slate-400",
         };
+    */
 
 
     const assignedName = assignedSupport
@@ -334,8 +338,7 @@ export default function CaseCard({
                 </div>
 
 
-                {/* Priority */}
-
+                {/* [COMMENTED OUT] priority section hidden from customer
                 <div>
 
                     <p className="
@@ -387,6 +390,7 @@ export default function CaseCard({
                     </div>
 
                 </div>
+                */}
 
 
                 {/* Created */}

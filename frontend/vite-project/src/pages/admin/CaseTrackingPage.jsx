@@ -31,7 +31,7 @@ import {
     FileText,
 } from "lucide-react";
 
-import { PageHeader } from "../../components/ui/page-header";
+import AdminPageHero from "../../components/admin/AdminPageHero";
 
 
 // ============================================================
@@ -344,9 +344,11 @@ export default function CaseTrackingPage() {
                 PAGE HEADER
             ===================================================== */}
 
-            <PageHeader
+            <AdminPageHero
+                eyebrow="Case Management"
                 title="All support cases"
-                subtitle="Case Management"
+                description="Track, filter and review every support case across the organization."
+                icon={FileText}
             />
 
 

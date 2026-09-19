@@ -32,6 +32,8 @@ export default function MonthlyTrendChart({ data = [] }) {
         0
     );
 
+    const hasMonthlyData = totalCases > 0;
+
     return (
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_24px_-12px_rgba(15,23,42,0.15)]">
             {/* HEADER */}
@@ -146,7 +148,7 @@ export default function MonthlyTrendChart({ data = [] }) {
                     </ResponsiveContainer>
                 </div>
 
-                {data.length === 0 && (
+                {!hasMonthlyData && (
                     <div className="mt-2 rounded-xl bg-slate-50 px-4 py-3 text-center">
                         <p className="text-xs text-slate-400">
                             No monthly case statistics available yet.

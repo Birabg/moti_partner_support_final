@@ -338,7 +338,7 @@ function CaseNumberCell({ row }) {
 function OpenButton({ id }) {
   return (
     <Link
-      to={`/support/cases/${id}`}
+      to={`/support/case/${id}`}
       className="
         inline-flex
         items-center

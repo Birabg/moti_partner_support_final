@@ -19,6 +19,12 @@ app.use((0, cors_1.default)({ origin: true, credentials: true }));
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use("/uploads", express_1.default.static(uploadsDir));
+app.use((req, res, next) => {
+    res.set("Cache-Control", "no-store");
+    res.set("Pragma", "no-cache");
+    res.set("Expires", "0");
+    next();
+});
 app.use("/api/profile", profile_route_1.ProfileRouter);
 app.use("/api", route_index_1.ApiRouter);
 app.use((err, req, res, next) => {

@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
-import { ClipboardList } from "lucide-react";
+import {
+    Building2,
+    ClipboardList,
+    ShieldCheck,
+} from "lucide-react";
 import { managerApi } from "../../api/managerApi";
 import { getCategories, getSubcategories, getServiceTypes } from "../../api/productServiceApi";
 import { useAuth } from "../../context/useAuth";
-import DashboardCard from "../../components/manager/DashboardCard";
-import ManagerHeader from "../../components/manager/ManagerHeader";
 import CaseTable from "../../components/cases/CaseTable";
 import CaseDetailsDrawer from "../../components/cases/CaseDetailsDrawer";
 import AssignStaffModal from "../../components/cases/AssignStaffModal";
 import ReassignStaffModal from "../../components/cases/ReassignStaffModal";
 import ChangePriorityModal from "../../components/cases/ChangePriorityModal";
 import ResolveCaseModal from "../../components/cases/ResolveCaseModal";
-import { Card, CardContent } from "../../components/ui/card";
 import { createCase } from "../../api/customerCaseApi";
 
 const MAX_ATTACHMENTS = 5;
@@ -402,23 +403,76 @@ export default function ManagerCases() {
   const scopeName = snapshot?.department?.name || snapshot?.division?.name || snapshot?.section?.name || "Case Oversight";
 
   return (
-    <div className="space-y-6">
-      <ManagerHeader user={user} orgPath={scopeName} managerRole={user?.managerType || "Manager"} />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-        <DashboardCard title="Cases" value={snapshot?.caseMetrics?.totalAssignedCases || cases.length || 0} caption="Cases in current scope" icon={ClipboardList} accent="amber" loading={loading} />
-      </div>
-      <Card>
-        <CardContent className="pt-6">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-md font-semibold text-slate-900">Managed Cases</h2>
+    <div className="min-h-full bg-slate-50/70">
+      <main className="ps-container space-y-7 pb-12">
+
+        <section className="relative overflow-hidden rounded-[26px] bg-[#0b1d38] shadow-[0_16px_40px_rgba(15,35,65,0.10)]">
+          <div
+            className="absolute inset-0 opacity-[0.07]"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px)",
+              backgroundSize: "32px 32px",
+            }}
+          />
+          <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-blue-400/10 blur-3xl" />
+          <div className="absolute -bottom-32 left-1/3 h-64 w-64 rounded-full bg-indigo-400/10 blur-3xl" />
+          <div className="relative flex flex-col gap-7 px-6 py-7 sm:px-8 sm:py-8 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="mb-3 flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                  Case Workspace
+                </span>
+              </div>
+              <h1 className="text-2xl font-semibold tracking-[-0.035em] text-white sm:text-3xl">
+                Case Oversight
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+                Track, assign and manage support cases within your management scope.
+              </p>
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.07] px-2.5 py-1 text-[10px] font-medium text-slate-300">
+                  <Building2 className="h-3 w-3" />
+                  {scopeName}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.07] px-2.5 py-1 text-[10px] font-medium text-slate-300">
+                  <ShieldCheck className="h-3 w-3" />
+                  Manager Access
+                </span>
+              </div>
+            </div>
             <button
               type="button"
               onClick={() => setOpenCaseModal(true)}
-              className="rounded-lg bg-navy-900 px-4 py-2 text-sm font-medium text-white hover:bg-navy-800"
+              className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-4 text-xs font-semibold text-[#0b1d38] transition hover:bg-slate-100"
             >
               Open Case
+              <ClipboardList className="h-3.5 w-3.5" />
             </button>
           </div>
+        </section>
+
+        <section className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white shadow-[0_8px_30px_rgba(15,35,65,0.045)]">
+          <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                <ClipboardList className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-blue-600">
+                  Case Management
+                </p>
+                <h2 className="text-lg font-semibold tracking-[-0.02em] text-slate-950">
+                  Managed Cases
+                </h2>
+              </div>
+            </div>
+            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold text-slate-500">
+              {snapshot?.caseMetrics?.totalAssignedCases || cases.length || 0} total
+            </span>
+          </div>
+          <div className="p-4 sm:p-5">
           <CaseTable
             cases={cases}
             permissions={user?.permissions || []}
@@ -443,8 +497,8 @@ export default function ManagerCases() {
               setReassignOpen(true);
             }}
           />
-        </CardContent>
-      </Card>
+          </div>
+        </section>
 
       <ManagerOpenCaseModal
         open={openCaseModal}
@@ -490,6 +544,7 @@ export default function ManagerCases() {
           refresh={load}
         />
       )}
+      </main>
     </div>
   );
 }

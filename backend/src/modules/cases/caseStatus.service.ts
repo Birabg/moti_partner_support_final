@@ -180,7 +180,7 @@ export async function updateStatus(
 
   // Send general status update emails for notable status changes
   try {
-    if (updated.customer?.email && [CaseStatus.ASSIGNED, CaseStatus.IN_PROGRESS, CaseStatus.PENDING, CaseStatus.ESCALATED, CaseStatus.RESOLVED, CaseStatus.CLOSED].some(s => s === newStatus)) {
+    if (updated.customer?.email && [CaseStatus.ASSIGNED, CaseStatus.IN_PROGRESS, CaseStatus.PENDING, CaseStatus.ESCALATED, CaseStatus.RESOLVED, CaseStatus.CLOSED, CaseStatus.CANCELLED].some(s => s === newStatus)) {
       await sendStatusUpdateEmail({
         customerEmail: updated.customer.email,
         customerName: `${updated.customer.firstName} ${updated.customer.lastName || ''}`.trim(),

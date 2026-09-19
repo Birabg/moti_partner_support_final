@@ -12,7 +12,7 @@ const triggerStatusNotification = async (caseDetails: any, newStatus: string) =>
   if (!caseDetails?.customer?.email) return;
   await sendStatusUpdateEmail({
     customerEmail: caseDetails.customer.email,
-    customerName: caseDetails.customer.fullName,
+    customerName: `${caseDetails.customer.firstName || ''} ${caseDetails.customer.lastName || ''}`.trim() || "Valued Customer",
     caseNumber: caseDetails.caseNumber,
     subjectLine: caseDetails.subject,
     newStatus: newStatus,

@@ -1242,6 +1242,7 @@ export default function CaseDetailsDrawer({
 
                                 {/* Priority */}
 
+                                {!isCustomer && (
                                 <div className="bg-white p-5">
 
                                     <div className="flex items-center gap-2">
@@ -1263,6 +1264,7 @@ export default function CaseDetailsDrawer({
                                     </div>
 
                                 </div>
+                                )}
 
 
                                 {/* Created */}

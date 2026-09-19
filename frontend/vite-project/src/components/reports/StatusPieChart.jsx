@@ -14,6 +14,7 @@ const COLORS = [
     "#10b981",
     "#a78bfa",
     "#64748b",
+    "#9a6b75",
 ];
 
 const STATUS_ORDER = [
@@ -24,6 +25,7 @@ const STATUS_ORDER = [
     "Resolved",
     "Awaiting Customer",
     "Closed",
+    "Cancelled",
 ];
 
 export default function StatusPieChart({ data = [] }) {

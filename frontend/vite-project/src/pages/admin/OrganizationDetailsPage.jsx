@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
     ArrowLeft,
-    ArrowUpRight,
     Building2,
     CalendarDays,
     CheckCircle2,
@@ -15,6 +14,8 @@ import {
 } from "lucide-react";
 
 import { OrganizationApi } from "../../api/organizationApi";
+
+import AdminPageHero from "../../components/admin/AdminPageHero";
 
 export default function OrganizationDetails() {
     const { id } = useParams();
@@ -193,7 +194,7 @@ export default function OrganizationDetails() {
               month: "short",
               day: "numeric",
           })
-        : "—";
+        : "â€”";
 
     return (
         <div className="space-y-7">
@@ -250,139 +251,82 @@ export default function OrganizationDetails() {
                 ORGANIZATION HERO
             ===================================================== */}
 
-            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_20px_-12px_rgba(15,23,42,0.18)]">
-
-                <div className="p-6 lg:p-7">
-
-                    <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-
-                        {/* Identity */}
-
-                        <div className="flex min-w-0 items-start gap-4">
-
-                            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-sm">
-                                <Building2 className="h-7 w-7" />
-                            </div>
-
-                            <div className="min-w-0">
-
-                                <div className="flex flex-wrap items-center gap-3">
-
-                                    <h1 className="break-words text-[28px] font-semibold tracking-[-0.03em] text-slate-900">
-                                        {organization.name}
-                                    </h1>
-
-                                    <span
-                                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] ${
-                                            isActive
-                                                ? "bg-emerald-50 text-emerald-600"
-                                                : "bg-red-50 text-red-600"
-                                        }`}
-                                    >
-                                        <span
-                                            className={`h-1.5 w-1.5 rounded-full ${
-                                                isActive
-                                                    ? "bg-emerald-500"
-                                                    : "bg-red-500"
-                                            }`}
-                                        />
-
-                                        {isActive
-                                            ? "Active"
-                                            : "Inactive"}
-                                    </span>
-                                </div>
-
-                                <p className="mt-2 text-sm text-slate-400">
-                                    Customer organization
-                                    registered in the MOTI
-                                    Partner Support Portal.
-                                </p>
-
-                                <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-500">
-
-                                    {organization.emailDomain && (
-                                        <div className="flex items-center gap-2">
-                                            <Globe2 className="h-3.5 w-3.5 text-slate-400" />
-
-                                            <span>
-                                                {organization.emailDomain}
-                                            </span>
-                                        </div>
-                                    )}
-
-                                    <div className="flex items-center gap-2">
-                                        <CalendarDays className="h-3.5 w-3.5 text-slate-400" />
-
-                                        <span>
-                                            Created{" "}
-                                            {createdDate}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Actions */}
-
-                        <div className="flex shrink-0 flex-wrap gap-2">
-
-                            <button
-                                type="button"
-                                onClick={loadOrganization}
-                                disabled={actionLoading}
-                                className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 disabled:opacity-50"
-                            >
-                                <RefreshCw
-                                    className={`h-3.5 w-3.5 ${
-                                        loading
-                                            ? "animate-spin"
-                                            : ""
-                                    }`}
-                                />
-
-                                Refresh
-                            </button>
-
-                            {isActive ? (
-                                <button
-                                    type="button"
-                                    onClick={handleDeactivate}
-                                    disabled={actionLoading}
-                                    className="inline-flex h-10 items-center gap-2 rounded-xl bg-red-50 px-4 text-xs font-semibold text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                    <Power className="h-3.5 w-3.5" />
-
-                                    {actionLoading
-                                        ? "Updating..."
-                                        : "Deactivate"}
-                                </button>
-                            ) : (
-                                <button
-                                    type="button"
-                                    onClick={handleReactivate}
-                                    disabled={actionLoading}
-                                    className="inline-flex h-10 items-center gap-2 rounded-xl bg-emerald-50 px-4 text-xs font-semibold text-emerald-600 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                    <Power className="h-3.5 w-3.5" />
-
-                                    {actionLoading
-                                        ? "Updating..."
-                                        : "Reactivate"}
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                <div
-                    className={`h-[2px] ${
-                        isActive
-                            ? "bg-emerald-100"
-                            : "bg-red-100"
+                        <AdminPageHero
+              eyebrow="Organizations"
+              title={organization.name}
+              description="Customer organization registered in the MOTI Partner Support Portal."
+              icon={Building2}
+              right={
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] ${
+                      isActive
+                        ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
+                        : "border-red-400/20 bg-red-400/10 text-red-300"
                     }`}
-                />
-            </section>
+                  >
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        isActive ? "bg-emerald-400" : "bg-red-400"
+                      }`}
+                    />
+                    {isActive ? "Active" : "Inactive"}
+                  </span>
+
+                  {organization.emailDomain && (
+                    <span className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] px-3 text-xs text-white/70">
+                      <Globe2 className="h-3.5 w-3.5 text-[#8eafd8]" />
+                      {organization.emailDomain}
+                    </span>
+                  )}
+
+                  <span className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] px-3 text-xs text-white/70">
+                    <CalendarDays className="h-3.5 w-3.5 text-[#8eafd8]" />
+                    Created {createdDate}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={loadOrganization}
+                    disabled={actionLoading}
+                    className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.08] px-3 text-xs font-semibold text-white transition hover:bg-white/[0.14] disabled:opacity-50"
+                  >
+                    <RefreshCw
+                      className={`h-3.5 w-3.5 ${
+                        loading ? "animate-spin" : ""
+                      }`}
+                    />
+                    Refresh
+                  </button>
+
+                  {isActive ? (
+                    <button
+                      type="button"
+                      onClick={handleDeactivate}
+                      disabled={actionLoading}
+                      className="inline-flex h-9 items-center gap-2 rounded-xl bg-red-500/15 px-3 text-xs font-semibold text-red-300 transition hover:bg-red-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <Power className="h-3.5 w-3.5" />
+                      {actionLoading
+                        ? "Updating..."
+                        : "Deactivate"}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleReactivate}
+                      disabled={actionLoading}
+                      className="inline-flex h-9 items-center gap-2 rounded-xl bg-emerald-400/15 px-3 text-xs font-semibold text-emerald-300 transition hover:bg-emerald-400/25 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <Power className="h-3.5 w-3.5" />
+                      {actionLoading
+                        ? "Updating..."
+                        : "Reactivate"}
+                    </button>
+                  )}
+                </div>
+              }
+            />
 
             {/* =====================================================
                 STATISTICS
