@@ -1,15 +1,65 @@
+import { Link } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import {
     ArrowUpRight,
+    BarChart3,
+    Boxes,
     Building2,
     ClipboardList,
+    MessageSquare,
     ShieldCheck,
-    Users,
+    TicketCheck,
+    UserCheck,
 } from "lucide-react";
 
 import DashboardCards from "../../components/admin/DashboardCards";
 import CasesAnalytics from "../../components/admin/CasesAnalytics";
 import RecentCases from "../../components/admin/RecentCases";
+
+const QUICK_ACTIONS = [
+    {
+        to: "/admin/cases",
+        label: "All Cases",
+        description: "Track and manage cases",
+        icon: TicketCheck,
+        tone: "bg-[#edf4fd] text-[#527eb9]",
+    },
+    {
+        to: "/admin/approval",
+        label: "User Approvals",
+        description: "Review pending users",
+        icon: UserCheck,
+        tone: "bg-[#fff7e8] text-[#c58a27]",
+    },
+    {
+        to: "/organizations",
+        label: "Organizations",
+        description: "Manage customer accounts",
+        icon: Building2,
+        tone: "bg-[#edf7f3] text-[#3b8d73]",
+    },
+    {
+        to: "/reports",
+        label: "Reports",
+        description: "Performance analytics",
+        icon: BarChart3,
+        tone: "bg-[#eef1fb] text-[#4d5fa5]",
+    },
+    {
+        to: "/feedback",
+        label: "Feedback",
+        description: "Customer satisfaction",
+        icon: MessageSquare,
+        tone: "bg-[#fdf0f0] text-[#c65b5b]",
+    },
+    {
+        to: "/admin/product-service",
+        label: "Products & Services",
+        description: "Categories and service types",
+        icon: Boxes,
+        tone: "bg-[#fbf2eb] text-[#b87842]",
+    },
+];
 
 export default function AdminDashboard() {
     const { user } = useAuth();
@@ -107,9 +157,79 @@ export default function AdminDashboard() {
             </div>
 
             {/* =====================================================
+                QUICK ACCESS
+            ===================================================== */}
+            <div>
+                <div className="mb-4">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#567fbd]">
+                        Shortcuts
+                    </p>
+
+                    <h2 className="mt-1 text-lg font-bold tracking-[-0.02em] text-[#101a28]">
+                        Quick access
+                    </h2>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    {QUICK_ACTIONS.map((action) => {
+                        const Icon = action.icon;
+
+                        return (
+                            <Link
+                                key={action.to}
+                                to={action.to}
+                                aria-label={`Open ${action.label}`}
+                                className="group flex items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_1px_3px_rgba(15,23,42,0.03),0_8px_24px_rgba(15,23,42,0.02)] transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_12px_30px_rgba(15,23,42,0.06)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#527eb9] focus-visible:ring-offset-2"
+                            >
+                                <span
+                                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${action.tone}`}
+                                >
+                                    <Icon size={18} strokeWidth={2} />
+                                </span>
+
+                                <span className="min-w-0 flex-1">
+                                    <span className="block truncate text-sm font-semibold text-[#101a28]">
+                                        {action.label}
+                                    </span>
+
+                                    <span className="mt-0.5 block truncate text-[11px] text-slate-400">
+                                        {action.description}
+                                    </span>
+                                </span>
+
+                                <ArrowUpRight
+                                    size={16}
+                                    className="shrink-0 text-slate-300 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[#527eb9]"
+                                />
+                            </Link>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* =====================================================
                 ANALYTICS
             ===================================================== */}
-            <CasesAnalytics />
+            <div>
+                <div className="mb-4 flex items-end justify-between">
+                    <div>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#567fbd]">
+                            Insights
+                        </p>
+
+                        <h2 className="mt-1 text-lg font-bold tracking-[-0.02em] text-[#101a28]">
+                            Case workload
+                        </h2>
+                    </div>
+
+                    <div className="hidden items-center gap-1.5 text-[10px] font-medium text-slate-400 sm:flex">
+                        <ClipboardList size={12} />
+                        Distribution by status
+                    </div>
+                </div>
+
+                <CasesAnalytics />
+            </div>
 
             {/* =====================================================
                 RECENT CASES

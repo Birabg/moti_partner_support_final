@@ -355,7 +355,8 @@ function CustomerAvatar({
 // ============================================================
 
 function CaseNumber({
-    value
+    value,
+    title,
 }) {
 
     return (
@@ -384,7 +385,10 @@ function CaseNumber({
 
 
             <span
+                title={title || ""}
                 className="
+                    max-w-[180px]
+                    truncate
                     whitespace-nowrap
                     font-mono
                     text-sm
@@ -981,6 +985,9 @@ export default function CaseTable({
                                             <CaseNumber
                                                 value={
                                                     item.caseNumber
+                                                }
+                                                title={
+                                                    item.subject || ""
                                                 }
                                             />
 

@@ -34,8 +34,10 @@ export default function SettingsPage() {
             <div
             className="
             grid
-            md:grid-cols-2
+            grid-cols-1
             gap-6
+            md:grid-cols-2
+            xl:grid-cols-3
             "
             >
                 <AccountSettings

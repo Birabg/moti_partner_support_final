@@ -409,6 +409,16 @@ element={<CaseTrackingPage />}
 
 <Route
 
+path="/admin/cases/:id"
+
+element={<CaseTrackingPage />}
+
+/>
+
+
+
+<Route
+
 path="/admin/department-management"
 
 element={<DepartmentManagementPage />}

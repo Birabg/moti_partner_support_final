@@ -383,10 +383,11 @@ export default function CaseTable({
 
                                             </div>
 
-                                            <p
-                                                className="
-                                                    mt-1
-                                                    truncate
+<p
+                                                    title={subject}
+                                                    className="
+                                                        mt-1
+                                                        truncate
                                                     text-xs
                                                     leading-5
                                                     text-slate-400

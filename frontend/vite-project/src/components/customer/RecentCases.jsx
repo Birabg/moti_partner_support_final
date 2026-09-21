@@ -143,7 +143,7 @@ export default function RecentCases({
                                                 </div>
 
                                                 <div>
-                                                    <p className="font-semibold text-sm text-slate-900">
+                                                    <p className="font-semibold text-sm text-slate-900" title={item.subject || ""}>
                                                         {item.caseNumber}
                                                     </p>
 

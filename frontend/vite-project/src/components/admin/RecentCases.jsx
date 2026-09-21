@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
     ArrowRight,
@@ -6,9 +6,11 @@ import {
     Clock3,
     Inbox,
     RefreshCw,
+    User as UserIcon,
 } from "lucide-react";
 
 import { ReportsApi } from "../../api/reportsApi";
+import caseApi from "../../api/caseApi";
 
 const STATUS_CONFIG = {
     OPEN: {
@@ -17,6 +19,12 @@ const STATUS_CONFIG = {
             "bg-[#edf4fd] text-[#527eb9] border-[#dbe7f8]",
         dot: "bg-[#527eb9]",
     },
+    ASSIGNED: {
+        label: "Assigned",
+        className:
+            "bg-[#eef1fb] text-[#5a6fb8] border-[#dfe4f6]",
+        dot: "bg-[#5a6fb8]",
+    },
     IN_PROGRESS: {
         label: "In Progress",
         className:
@@ -24,6 +32,12 @@ const STATUS_CONFIG = {
         dot: "bg-[#3b8d73]",
     },
     PENDING: {
+        label: "Pending",
+        className:
+            "bg-[#fff7e8] text-[#c58a27] border-[#f7e9cd]",
+        dot: "bg-[#c58a27]",
+    },
+    PENDING_CUSTOMER: {
         label: "Pending",
         className:
             "bg-[#fff7e8] text-[#c58a27] border-[#f7e9cd]",
@@ -47,7 +61,19 @@ const STATUS_CONFIG = {
             "bg-[#fbf2eb] text-[#b87842] border-[#f6e4d6]",
         dot: "bg-[#b87842]",
     },
+    AWAITING_CUSTOMER_RESPONSE: {
+        label: "Awaiting Customer",
+        className:
+            "bg-[#fbf2eb] text-[#b87842] border-[#f6e4d6]",
+        dot: "bg-[#b87842]",
+    },
     AWAITING_CUSTOMER_FEEDBACK: {
+        label: "Awaiting Customer",
+        className:
+            "bg-[#fbf2eb] text-[#b87842] border-[#f6e4d6]",
+        dot: "bg-[#b87842]",
+    },
+    CUSTOMER_CONFIRMATION: {
         label: "Awaiting Customer",
         className:
             "bg-[#fbf2eb] text-[#b87842] border-[#f6e4d6]",
@@ -70,6 +96,18 @@ const STATUS_CONFIG = {
         className:
             "bg-[#f8eff1] text-[#9a6b75] border-[#f1dde2]",
         dot: "bg-[#9a6b75]",
+    },
+    CANCELED: {
+        label: "Cancelled",
+        className:
+            "bg-[#f8eff1] text-[#9a6b75] border-[#f1dde2]",
+        dot: "bg-[#9a6b75]",
+    },
+    REJECTED: {
+        label: "Rejected",
+        className:
+            "bg-[#fdf0f0] text-[#c65b5b] border-[#fadcdc]",
+        dot: "bg-[#c65b5b]",
     },
 };
 
@@ -117,7 +155,7 @@ function formatDate(value) {
         (now - date) / (1000 * 60 * 60 * 24)
     );
 
-    if (diffDays === 0) {
+    if (diffDays <= 0) {
         return date.toLocaleTimeString(undefined, {
             hour: "2-digit",
             minute: "2-digit",
@@ -138,13 +176,64 @@ function formatDate(value) {
     });
 }
 
+// The backend exposes two different case shapes:
+//  - admin report endpoint: { identity, lifecycle, actors, ... }
+//  - standard case API:     { id, caseNumber, subject, status, customer, ... }
+// This normalizes both into a single shape used by the UI below.
+function normalizeCase(item) {
+    if (!item) return null;
+
+    const customerName =
+        item?.actors?.creatorCustomer?.name ||
+        item?.customer?.name ||
+        [
+            item?.customer?.firstName,
+            item?.customer?.middleName,
+            item?.customer?.lastName,
+        ]
+            .filter(Boolean)
+            .join(" ") ||
+        item?.customerName ||
+        item?.creatorCustomer?.name ||
+        "Customer";
+
+    const id =
+        item?.identity?.id ||
+        item?.id ||
+        item?.caseId ||
+        "";
+
+    return {
+        id,
+        caseNumber:
+            item?.identity?.caseNumber ||
+            item?.caseNumber ||
+            "Support Request",
+        subject:
+            item?.identity?.subject ||
+            item?.subject ||
+            "Support Request",
+        customerName: customerName || "Customer",
+        status:
+            item?.lifecycle?.status ||
+            item?.status ||
+            "OPEN",
+        createdAt:
+            item?.lifecycle?.createdAt ||
+            item?.createdAt ||
+            item?.lifecycle?.updatedAt ||
+            item?.updatedAt ||
+            null,
+    };
+}
+
 export default function RecentCases() {
     const [recent, setRecent] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState("");
 
-    async function load(showRefresh = false) {
+    const load = useCallback(async (showRefresh = false) => {
         try {
             if (showRefresh) {
                 setRefreshing(true);
@@ -154,22 +243,46 @@ export default function RecentCases() {
 
             setError("");
 
-            const response =
-                await ReportsApi.getCases(1, 5);
+            let rows = [];
 
-            const rows = response?.data?.data || [];
+            try {
+                const response =
+                    await ReportsApi.getCases(1, 5);
 
-            const sorted = [...rows].sort((a, b) => {
+                rows = response?.data?.data || [];
+            } catch (reportError) {
+                // Fall back to the standard cases endpoint so the
+                // dashboard still renders if the report scope is
+                // unavailable for the current account.
+                console.warn(
+                    "Report recent cases failed, falling back:",
+                    reportError
+                );
+
+                const fallback =
+                    await caseApi.getAllCases(
+                        1,
+                        5,
+                        "createdAt",
+                        "desc"
+                    );
+
+                rows = fallback?.data?.data || [];
+            }
+
+            const normalized = Array.isArray(rows)
+                ? rows
+                      .map(normalizeCase)
+                      .filter(Boolean)
+                : [];
+
+            const sorted = [...normalized].sort((a, b) => {
                 const aTime = new Date(
-                    a?.lifecycle?.createdAt ||
-                        a?.createdAt ||
-                        0
+                    a?.createdAt || 0
                 ).getTime();
 
                 const bTime = new Date(
-                    b?.lifecycle?.createdAt ||
-                        b?.createdAt ||
-                        0
+                    b?.createdAt || 0
                 ).getTime();
 
                 const aValue =
@@ -196,7 +309,7 @@ export default function RecentCases() {
             setLoading(false);
             setRefreshing(false);
         }
-    }
+    }, []);
 
     useEffect(() => {
         load();
@@ -205,18 +318,35 @@ export default function RecentCases() {
             load(true);
         };
 
+        const handleFocus = () => {
+            load(true);
+        };
+
+        const intervalId = window.setInterval(() => {
+            load(true);
+        }, 20000);
+
         window.addEventListener(
             "cases:updated",
             handleCaseUpdated
         );
 
+        window.addEventListener("focus", handleFocus);
+
         return () => {
+            window.clearInterval(intervalId);
+
             window.removeEventListener(
                 "cases:updated",
                 handleCaseUpdated
             );
+
+            window.removeEventListener(
+                "focus",
+                handleFocus
+            );
         };
-    }, []);
+    }, [load]);
 
     return (
         <section className="overflow-hidden rounded-[22px] border border-slate-200/80 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.03),0_8px_24px_rgba(15,23,42,0.025)]">
@@ -225,15 +355,15 @@ export default function RecentCases() {
                 HEADER
             ===================================================== */}
 
-            <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-5 sm:px-6">
+            <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 px-5 py-5 sm:px-6">
 
-                <div className="flex items-center gap-3">
+                <div className="flex min-w-0 items-center gap-3">
 
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#edf4fd] text-[#527eb9]">
                         <ClipboardList size={16} />
                     </div>
 
-                    <div>
+                    <div className="min-w-0">
                         <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
                             Live queue
                         </p>
@@ -313,6 +443,15 @@ export default function RecentCases() {
                     <p className="mt-1 text-xs text-red-500">
                         {error}
                     </p>
+
+                    <button
+                        type="button"
+                        onClick={() => load(true)}
+                        className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold text-slate-600 transition hover:border-[#d9e5f4] hover:text-[#527eb9]"
+                    >
+                        <RefreshCw size={12} />
+                        Try again
+                    </button>
                 </div>
             ) : recent.length === 0 ? (
                 <div className="px-6 py-12 text-center">
@@ -332,67 +471,65 @@ export default function RecentCases() {
             ) : (
                 <ul className="divide-y divide-slate-100">
                     {recent.map((item) => {
-                        const caseNumber =
-                            item.identity?.caseNumber ||
-                            item.caseNumber ||
-                            "Support Request";
-
-                        const subject =
-                            item.identity?.subject ||
-                            item.subject ||
-                            "Support Request";
-
-                        const customer =
-                            item.actors?.creatorCustomer
-                                ?.name ||
-                            item.customer?.name ||
-                            "Customer";
-
-                        const status =
-                            item.lifecycle?.status ||
-                            item.status ||
-                            "OPEN";
-
-                        const createdAt =
-                            item.lifecycle?.createdAt ||
-                            item.createdAt;
-
                         const statusConfig =
-                            getStatusConfig(status);
+                            getStatusConfig(item.status);
 
-                        const key =
-                            item.identity?.id ||
-                            item.id ||
-                            caseNumber;
+                        const to = item.id
+                            ? `/admin/cases/${item.id}`
+                            : "/admin/cases";
 
                         return (
-                            <li key={key}>
+                            <li key={item.id || item.caseNumber}>
                                 <Link
-                                    to={`/admin/cases/${item.identity?.id || item.id || ""}`}
+                                    to={to}
                                     className="group flex items-center gap-4 px-5 py-4 transition-colors hover:bg-slate-50/70 sm:px-6"
                                 >
                                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#edf4fd] text-[11px] font-bold text-[#527eb9]">
-                                        {getInitials(customer)}
+                                        {getInitials(
+                                            item.customerName
+                                        )}
                                     </div>
 
                                     <div className="min-w-0 flex-1">
-                                        <p className="truncate text-sm font-semibold text-[#101a28] group-hover:text-[#527eb9]">
-                                            {caseNumber}
+                                        <p
+                                            className="truncate text-sm font-semibold text-[#101a28] group-hover:text-[#527eb9]"
+                                            title={item.caseNumber}
+                                        >
+                                            {item.caseNumber}
                                         </p>
 
-                                        <p className="mt-0.5 truncate text-xs text-slate-400">
-                                            {subject}
+                                        <p
+                                            className="mt-0.5 truncate text-xs text-slate-400"
+                                            title={item.subject}
+                                        >
+                                            {item.subject}
+                                        </p>
+
+                                        <p className="mt-1 flex items-center gap-2 text-[10px] text-slate-400 md:hidden">
+                                            <UserIcon size={10} />
+                                            <span className="truncate">
+                                                {item.customerName}
+                                            </span>
+                                            <span className="h-0.5 w-0.5 rounded-full bg-slate-300" />
+                                            <Clock3 size={10} />
+                                            <span className="shrink-0">
+                                                {formatDate(
+                                                    item.createdAt
+                                                )}
+                                            </span>
                                         </p>
                                     </div>
 
                                     <div className="hidden shrink-0 flex-col items-end gap-1 md:flex">
-                                        <p className="text-xs font-medium text-slate-600">
-                                            {customer}
+                                        <p className="max-w-[160px] truncate text-xs font-medium text-slate-600">
+                                            {item.customerName}
                                         </p>
 
                                         <span className="flex items-center gap-1 text-[10px] text-slate-400">
                                             <Clock3 size={10} />
-                                            {formatDate(createdAt)}
+                                            {formatDate(
+                                                item.createdAt
+                                            )}
                                         </span>
                                     </div>
 

@@ -21,7 +21,6 @@ import {
 } from "lucide-react";
 
 import { AnalyticsApi } from "../../api/analyticsApi";
-import DirectorHeader from "../../components/director/DirectorHeader";
 
 const STATUS_ORDER = [
     {
@@ -166,7 +165,7 @@ function EmptyState() {
     );
 }
 
-export default function DirectorCaseAnalytics() {
+export default function CasesAnalytics() {
     const [metrics, setMetrics] = useState({});
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -285,17 +284,7 @@ export default function DirectorCaseAnalytics() {
     }, [metrics]);
 
     return (
-        <div className="space-y-6 pb-10">
-
-            {/* =====================================================
-                PAGE HEADER
-            ===================================================== */}
-
-            <DirectorHeader
-                eyebrow="Director"
-                title="Case Analytics"
-                subtitle="Global case trends and status metrics"
-            />
+        <div className="space-y-6">
 
             {/* =====================================================
                 ERROR
@@ -347,7 +336,7 @@ export default function DirectorCaseAnalytics() {
 
                                 <div>
                                     <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
-                                        Director overview
+                                        Operational overview
                                     </p>
 
                                     <h2 className="mt-0.5 text-base font-bold tracking-[-0.02em] text-[#101a28]">
@@ -396,6 +385,7 @@ export default function DirectorCaseAnalytics() {
                                 sm:self-auto
                             "
                             title="Refresh analytics"
+                            aria-label="Refresh case analytics"
                         >
                             <RefreshCw
                                 size={14}

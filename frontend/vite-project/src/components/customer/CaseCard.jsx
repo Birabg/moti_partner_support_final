@@ -224,7 +224,9 @@ export default function CaseCard({
                             text-sm
                             font-bold
                             text-slate-900
-                        ">
+                        "
+                            title={subject || "Untitled Case"}
+                        >
 
                             {subject || "Untitled Case"}
 

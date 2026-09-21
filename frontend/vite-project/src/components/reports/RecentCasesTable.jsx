@@ -393,6 +393,7 @@ export default function RecentCasesTable({
                                                                 font-semibold
                                                                 text-slate-900
                                                             "
+                                                            title={subject}
                                                         >
                                                             {caseNumber}
                                                         </p>
@@ -405,6 +406,7 @@ export default function RecentCasesTable({
                                                                 text-xs
                                                                 text-slate-500
                                                             "
+                                                            title={subject}
                                                         >
                                                             {subject}
                                                         </p>

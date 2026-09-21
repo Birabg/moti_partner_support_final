@@ -17,10 +17,10 @@ import StatusPieChart from "../../components/reports/StatusPieChart";
 import MonthlyTrendChart from "../../components/reports/MonthlyTrendChart";
 import FeedbackSummary from "../../components/reports/FeedbackSummary";
 import RecentCasesTable from "../../components/reports/RecentCasesTable";
-import LoadingReports from "../../components/reports/LoadingReports";
 
 export default function ReportsPage() {
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
     const [metrics, setMetrics] = useState({
         total: 0,
@@ -60,6 +60,7 @@ export default function ReportsPage() {
     async function initialize() {
         try {
             setLoading(true);
+            setError("");
 
             const [
                 metricsResponse,
@@ -93,7 +94,11 @@ export default function ReportsPage() {
 
             setCases(casesResponse.data.data || []);
         } catch (error) {
-            console.log("Reports loading error:", error);
+            console.error("Reports loading error:", error);
+            setError(
+                error?.response?.data?.message ||
+                "Unable to load reports. Please try again."
+            );
         } finally {
             setLoading(false);
         }
@@ -278,7 +283,61 @@ export default function ReportsPage() {
     ========================================================= */
 
     if (loading) {
-        return <LoadingReports />;
+        return (
+            <div className="space-y-8 pb-10">
+                <DashboardHeader loading={loading} />
+
+                <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div className="flex items-center gap-3">
+                        <div className="h-9 w-9 animate-pulse rounded-xl bg-slate-100" />
+                        <div className="space-y-2">
+                            <div className="h-3.5 w-32 animate-pulse rounded bg-slate-100" />
+                            <div className="h-2.5 w-48 animate-pulse rounded bg-slate-50" />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    {[1, 2, 3, 4].map((item) => (
+                        <div
+                            key={item}
+                            className="relative animate-pulse overflow-hidden rounded-2xl border border-slate-200 bg-white p-5"
+                        >
+                            <div className="flex items-start justify-between">
+                                <div className="h-11 w-11 rounded-xl bg-slate-100" />
+                                <div className="h-2.5 w-14 rounded bg-slate-100" />
+                            </div>
+                            <div className="mt-5 h-2.5 w-20 rounded bg-slate-100" />
+                            <div className="mt-2 h-7 w-16 rounded bg-slate-100" />
+                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-slate-100" />
+                        </div>
+                    ))}
+                </div>
+
+                <div className="grid gap-6 xl:grid-cols-5">
+                    <div className="min-w-0 animate-pulse rounded-2xl border border-slate-200 bg-white p-6 xl:col-span-2">
+                        <div className="h-4 w-28 rounded bg-slate-100" />
+                        <div className="mt-6 h-[220px] rounded-xl bg-slate-50" />
+                    </div>
+                    <div className="min-w-0 animate-pulse rounded-2xl border border-slate-200 bg-white p-6 xl:col-span-3">
+                        <div className="h-4 w-32 rounded bg-slate-100" />
+                        <div className="mt-6 h-[220px] rounded-xl bg-slate-50" />
+                    </div>
+                </div>
+
+                <div className="animate-pulse rounded-2xl border border-slate-200 bg-white p-6">
+                    <div className="h-4 w-40 rounded bg-slate-100" />
+                    <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                        {[1, 2, 3].map((item) => (
+                            <div
+                                key={item}
+                                className="h-24 rounded-xl bg-slate-50"
+                            />
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -288,7 +347,27 @@ export default function ReportsPage() {
                 HEADER
             ================================================= */}
 
-            <DashboardHeader />
+            <DashboardHeader onRefresh={initialize} loading={loading} />
+
+            {/* =================================================
+                ERROR
+            ================================================= */}
+
+            {error && (
+                <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4">
+                    <div className="flex items-start gap-3">
+                        <div className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-red-500" />
+                        <div>
+                            <p className="text-sm font-semibold text-red-700">
+                                Unable to load reports
+                            </p>
+                            <p className="mt-1 text-xs text-red-600">
+                                {error}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* =================================================
                 EXPORT TOOLBAR

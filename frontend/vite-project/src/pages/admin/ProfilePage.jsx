@@ -12,10 +12,12 @@ import {
     FaCheckCircle,
 } from "react-icons/fa";
 
+import { User } from "lucide-react";
+
 import { ProfileApi } from "../../api/profileApi";
 import { useAuth } from "../../context/useAuth";
 
-import { PageHeader } from "../../components/ui/page-header";
+import AdminPageHero from "../../components/admin/AdminPageHero";
 import { Card, CardContent } from "../../components/ui/card";
 import Button from "../../components/ui/button";
 
@@ -26,6 +28,8 @@ export default function ProfilePage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+
+    const [feedback, setFeedback] = useState("");
 
     const [form, setForm] = useState({
         firstName: "",
@@ -47,6 +51,7 @@ export default function ProfilePage() {
     async function loadProfile() {
         try {
             setLoading(true);
+            setFeedback("");
 
             const response = await ProfileApi.me();
             const payload = response?.data?.data || {};
@@ -62,9 +67,7 @@ export default function ProfilePage() {
                     user?.firstName ||
                     "",
 
-                middleName:
-                    payload.middleName ||
-                    "",
+                middleName: payload.middleName || "",
 
                 lastName:
                     payload.lastName ||
@@ -74,10 +77,7 @@ export default function ProfilePage() {
                     user?.lastName ||
                     "",
 
-                email:
-                    payload.email ||
-                    user?.email ||
-                    "",
+                email: payload.email || user?.email || "",
 
                 phoneNumber:
                     payload.phoneNumber ||
@@ -93,12 +93,11 @@ export default function ProfilePage() {
 
                 department:
                     payload.department ||
-                    payload.structuralAssignment?.departmentName ||
+                    payload.structuralAssignment
+                        ?.departmentName ||
                     "",
 
-                createdAt:
-                    payload.createdAt ||
-                    "",
+                createdAt: payload.createdAt || "",
             };
 
             setProfile(payload);
@@ -125,6 +124,7 @@ export default function ProfilePage() {
 
     function handleEdit() {
         setIsEditing(true);
+        setFeedback("");
     }
 
     function handleCancel() {
@@ -140,6 +140,7 @@ export default function ProfilePage() {
 
         try {
             setSaving(true);
+            setFeedback("");
 
             await ProfileApi.updateProfile({
                 firstName: form.firstName,
@@ -152,15 +153,15 @@ export default function ProfilePage() {
 
             setSavedForm(form);
             setIsEditing(false);
-
-            alert("Profile updated successfully.");
+            setFeedback("Profile updated successfully.");
         } catch (error) {
             console.error(
                 "Failed to save profile:",
                 error
             );
-
-            alert("Failed to save profile.");
+            setFeedback(
+                "Failed to save profile. Please try again."
+            );
         } finally {
             setSaving(false);
         }
@@ -179,66 +180,98 @@ export default function ProfilePage() {
         ? form.role
               .replaceAll("_", " ")
               .toLowerCase()
-              .replace(/\b\w/g, (char) =>
-                  char.toUpperCase()
+              .replace(
+                  /\b\w/g,
+                  (char) => char.toUpperCase()
               )
         : "Administrator";
 
     const memberSince = form.createdAt
-        ? new Date(
-              form.createdAt
-          ).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-          })
+        ? new Date(form.createdAt).toLocaleDateString(
+              "en-US",
+              {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+              }
+          )
         : "Not available";
+
+    /* =========================================================
+       LOADING
+    ========================================================= */
 
     if (loading) {
         return (
-            <div className="space-y-6">
-
-                <PageHeader
-                    eyebrow="Admin"
+            <div className="space-y-7">
+                <AdminPageHero
+                    eyebrow="Administration"
                     title="Profile"
-                    subtitle="Manage your administrator account and personal information."
+                    description="Manage your administrator account and personal information."
+                    icon={User}
                 />
 
-                <Card>
-                    <CardContent className="py-20 text-center">
+                <div className="space-y-5">
+                    <div className="animate-pulse overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                        <div className="bg-slate-100 px-6 py-8 sm:px-8">
+                            <div className="flex items-center gap-5">
+                                <div className="h-20 w-20 shrink-0 rounded-3xl bg-slate-200" />
 
-                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100">
-                            <FaUserCircle className="text-4xl text-slate-400" />
+                                <div className="space-y-3">
+                                    <div className="h-3 w-24 rounded bg-slate-200" />
+                                    <div className="h-7 w-56 rounded bg-slate-200" />
+                                    <div className="h-3 w-48 rounded bg-slate-200" />
+                                </div>
+                            </div>
                         </div>
 
-                        <h2 className="mt-5 text-xl font-bold text-slate-900">
-                            Loading Profile
-                        </h2>
+                        <div className="grid divide-y divide-slate-100 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+                            {[1, 2, 3].map((item) => (
+                                <div
+                                    key={item}
+                                    className="px-6 py-5"
+                                >
+                                    <div className="h-2.5 w-20 rounded bg-slate-100" />
+                                    <div className="mt-2 h-4 w-28 rounded bg-slate-100" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
 
-                        <p className="mt-2 text-sm text-slate-500">
-                            Please wait while we retrieve your account information.
-                        </p>
+                    <div className="animate-pulse rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+                        <div className="h-3 w-28 rounded bg-slate-100" />
+                        <div className="mt-2 h-6 w-40 rounded bg-slate-100" />
 
-                    </CardContent>
-                </Card>
-
+                        <div className="mt-8 grid gap-6 lg:grid-cols-2">
+                            {[1, 2, 3, 4, 5, 6].map((item) => (
+                                <div key={item}>
+                                    <div className="h-2.5 w-24 rounded bg-slate-100" />
+                                    <div className="mt-2 h-10 w-full rounded-xl bg-slate-50" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }
 
+    /* =========================================================
+       ERROR
+    ========================================================= */
+
     if (!profile) {
         return (
-            <div className="space-y-6">
-
-                <PageHeader
-                    eyebrow="Admin"
+            <div className="space-y-7">
+                <AdminPageHero
+                    eyebrow="Administration"
                     title="Profile"
-                    subtitle="Manage your administrator account and personal information."
+                    description="Manage your administrator account and personal information."
+                    icon={User}
                 />
 
                 <Card>
                     <CardContent className="py-20 text-center">
-
                         <FaUserCircle className="mx-auto text-6xl text-slate-300" />
 
                         <h2 className="mt-5 text-xl font-bold text-slate-900">
@@ -246,8 +279,8 @@ export default function ProfilePage() {
                         </h2>
 
                         <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">
-                            We could not retrieve your profile information.
-                            Please try again.
+                            We could not retrieve your profile
+                            information. Please try again.
                         </p>
 
                         <div className="mt-6">
@@ -258,115 +291,134 @@ export default function ProfilePage() {
                                 Try Again
                             </Button>
                         </div>
-
                     </CardContent>
                 </Card>
-
             </div>
         );
     }
 
+    /* =========================================================
+       SUCCESS
+    ========================================================= */
+
     return (
-        <div className="space-y-6">
+        <div className="space-y-7">
 
             {/* =====================================================
                 PAGE HEADER
             ====================================================== */}
 
-            <PageHeader
-                eyebrow="Admin"
+            <AdminPageHero
+                eyebrow="Administration"
                 title="Profile"
-                subtitle="Manage your administrator account and personal information."
+                description="Manage your administrator account and personal information."
+                icon={User}
             />
 
             {/* =====================================================
-                PROFILE HERO
+                INLINE FEEDBACK
+            ====================================================== */}
+
+            {feedback && (
+                <div
+                    className={`flex items-start gap-3 rounded-2xl border px-5 py-4 text-sm ${
+                        feedback.includes("successfully")
+                            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                            : "border-red-200 bg-red-50 text-red-700"
+                    }`}
+                >
+                    <FaCheckCircle className="mt-0.5 shrink-0" />
+                    <div className="flex items-center justify-between gap-4">
+                        <span>{feedback}</span>
+
+                        <button
+                            type="button"
+                            onClick={() => setFeedback("")}
+                            className="shrink-0 text-xs font-semibold opacity-60 hover:opacity-100"
+                        >
+                            Dismiss
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* =====================================================
+                PROFILE CARD
             ====================================================== */}
 
             <Card className="overflow-hidden border-slate-200 shadow-sm">
 
-                <div className="relative overflow-hidden bg-slate-950">
+                <div className="relative bg-gradient-to-br from-slate-50 via-white to-slate-100 px-6 py-7 sm:px-8 lg:px-10">
 
-                    <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800" />
+                    <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
 
-                    <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/[0.04]" />
+                        <div className="flex items-center gap-5">
 
-                    <div className="absolute -bottom-32 left-1/3 h-80 w-80 rounded-full bg-white/[0.03]" />
-
-                    <div className="relative px-6 py-9 sm:px-8 lg:px-10">
-
-                        <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-
-                            <div className="flex items-center gap-5">
-
-                                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-3xl bg-white/10 ring-1 ring-white/20">
-                                    <FaUserCircle className="text-5xl text-white" />
-                                </div>
-
-                                <div>
-
-                                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-                                        Administrator Account
-                                    </p>
-
-                                    <h1 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">
-                                        {fullName}
-                                    </h1>
-
-                                    <div className="mt-2 flex items-center gap-2 text-sm text-slate-300">
-                                        <FaEnvelope className="text-xs" />
-                                        {form.email ||
-                                            "No email available"}
-                                    </div>
-
-                                </div>
-
+                            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-3xl bg-slate-900 text-white shadow-lg shadow-slate-900/20 ring-4 ring-white">
+                                <FaUserCircle className="text-4xl text-white/90" />
                             </div>
 
-                            <div className="flex flex-wrap gap-3">
+                            <div>
+                                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                                    Administrator Account
+                                </p>
 
-                                {!isEditing ? (
-                                    <Button
-                                        type="button"
-                                        variant="accent"
-                                        size="sm"
-                                        onClick={handleEdit}
-                                    >
-                                        <FaEdit />
-                                        Edit Profile
-                                    </Button>
-                                ) : (
-                                    <>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={handleCancel}
-                                        >
-                                            Cancel
-                                        </Button>
+                                <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+                                    {fullName}
+                                </h1>
 
-                                        <Button
-                                            type="submit"
-                                            form="profile-form"
-                                            variant="accent"
-                                            size="sm"
-                                            disabled={saving}
-                                        >
-                                            <FaSave />
-
-                                            {saving
-                                                ? "Saving..."
-                                                : "Save Changes"}
-                                        </Button>
-                                    </>
-                                )}
-
+                                <div className="mt-2 flex items-center gap-2 text-sm text-slate-500">
+                                    <FaEnvelope className="text-xs" />
+                                    {form.email ||
+                                        "No email available"}
+                                </div>
                             </div>
 
                         </div>
 
+                        <div className="flex flex-wrap gap-3">
+
+                            {!isEditing ? (
+                                <Button
+                                    type="button"
+                                    variant="accent"
+                                    size="sm"
+                                    onClick={handleEdit}
+                                >
+                                    <FaEdit />
+                                    Edit Profile
+                                </Button>
+                            ) : (
+                                <>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleCancel}
+                                    >
+                                        Cancel
+                                    </Button>
+
+                                    <Button
+                                        type="submit"
+                                        form="profile-form"
+                                        variant="accent"
+                                        size="sm"
+                                        disabled={saving}
+                                    >
+                                        <FaSave />
+
+                                        {saving
+                                            ? "Saving..."
+                                            : "Save Changes"}
+                                    </Button>
+                                </>
+                            )}
+
+                        </div>
+
                     </div>
+
                 </div>
 
                 {/* =================================================
@@ -419,7 +471,8 @@ export default function ProfilePage() {
                         </h2>
 
                         <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
-                            Review and manage the information associated with your administrator account.
+                            Review and manage the information associated
+                            with your administrator account.
                         </p>
 
                     </div>
@@ -475,7 +528,8 @@ export default function ProfilePage() {
                                 </div>
 
                                 <p className="mt-2 text-xs text-slate-400">
-                                    Email address is managed by the system.
+                                    Email address is managed by the
+                                    system.
                                 </p>
 
                             </div>
@@ -518,7 +572,8 @@ export default function ProfilePage() {
                                 </div>
 
                                 <p className="mt-2 text-xs text-slate-400">
-                                    System permissions are controlled by your assigned role.
+                                    System permissions are controlled by
+                                    your assigned role.
                                 </p>
 
                             </div>
@@ -554,7 +609,8 @@ export default function ProfilePage() {
                                     </p>
 
                                     <p className="mt-1 text-xs text-slate-500">
-                                        Review your information before saving.
+                                        Review your information before
+                                        saving.
                                     </p>
 
                                 </div>
@@ -613,7 +669,9 @@ export default function ProfilePage() {
                         </h2>
 
                         <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
-                            Your administrator account is protected by the portal's authentication and authorization controls.
+                            Your administrator account is protected by the
+                            portal's authentication and authorization
+                            controls.
                         </p>
 
                     </div>
@@ -633,7 +691,8 @@ export default function ProfilePage() {
                                 </h3>
 
                                 <p className="mt-1 text-sm text-slate-600">
-                                    Your account currently has access to the administrator portal.
+                                    Your account currently has access to the
+                                    administrator portal.
                                 </p>
 
                             </div>

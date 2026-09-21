@@ -3,10 +3,16 @@ import {
     useState,
 } from "react";
 
+import {
+    useNavigate,
+    useParams,
+} from "react-router-dom";
+
 import { useAuth } from "../../context/useAuth";
 
 import {
     getAllCases,
+    getCase,
 } from "../../api/caseApi";
 
 
@@ -42,6 +48,10 @@ export default function CaseTrackingPage() {
 
     const { user } = useAuth();
 
+    const { id: routeCaseId } = useParams();
+
+    const navigate = useNavigate();
+
 
     // ============================================================
     // CASE DATA
@@ -52,7 +62,7 @@ export default function CaseTrackingPage() {
     const [filteredCases, setFilteredCases] = useState([]);
 
 
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
 
     // ============================================================
@@ -204,13 +214,97 @@ export default function CaseTrackingPage() {
 
 
     // ============================================================
+    // DEEP LINK — OPEN A CASE FROM /admin/cases/:id
+    // ============================================================
+
+    useEffect(() => {
+
+        if (!routeCaseId) return;
+
+        let cancelled = false;
+
+        const openRouteCase = async () => {
+
+            try {
+
+                const response = await getCase(routeCaseId);
+
+                const caseData =
+                    response?.data?.data ||
+                    response?.data ||
+                    null;
+
+                if (!cancelled) {
+
+                    setSelectedCase(
+                        caseData || { id: routeCaseId }
+                    );
+
+                    setDetails(true);
+
+                }
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Failed to open case from URL:",
+                    error
+                );
+
+                if (!cancelled) {
+
+                    setSelectedCase({ id: routeCaseId });
+
+                    setDetails(true);
+
+                }
+
+            }
+
+        };
+
+        openRouteCase();
+
+        return () => {
+            cancelled = true;
+        };
+
+    }, [routeCaseId]);
+
+
+    // ============================================================
+    // CLOSE DETAILS (RETURN TO LIST WHEN DEEP LINKED)
+    // ============================================================
+
+    const closeDetails = () => {
+
+        setDetails(false);
+
+        if (routeCaseId) {
+
+            navigate("/admin/cases", { replace: true });
+
+        }
+
+    };
+
+
+    // ============================================================
     // FILTER
     // ============================================================
 
     const filterCases = ({
         search,
         status,
+        priority,
     }) => {
+
+        const normalize = (value) =>
+            String(value || "")
+                .toUpperCase()
+                .trim();
 
         let result = [...cases];
 
@@ -265,26 +359,53 @@ export default function CaseTrackingPage() {
             result = result.filter(
                 item => {
 
+                    const itemStatus =
+                        normalize(item.status);
+
                     if (
                         status ===
                         "AWAITING_CUSTOMER_RESPONSE"
                     ) {
 
+                        return [
+                            "AWAITING_CUSTOMER_RESPONSE",
+                            "WAITING_CUSTOMER_FEEDBACK",
+                            "AWAITING_CUSTOMER",
+                            "AWAITING_CUSTOMER_FEEDBACK",
+                            "CUSTOMER_CONFIRMATION",
+                        ].includes(itemStatus);
+
+                    }
+
+                    if (status === "CANCELLED") {
+
                         return (
-                            item.status ===
-                                "AWAITING_CUSTOMER_RESPONSE" ||
-                            item.status ===
-                                "WAITING_CUSTOMER_FEEDBACK"
+                            itemStatus === "CANCELLED" ||
+                            itemStatus === "CANCELED"
                         );
 
                     }
 
 
-                    return (
-                        item.status === status
-                    );
+                    return itemStatus === status;
 
                 }
+            );
+
+        }
+
+
+        // PRIORITY
+
+        if (
+            priority &&
+            priority !== "ALL"
+        ) {
+
+            result = result.filter(
+                item =>
+                    normalize(item.priority) ===
+                    priority
             );
 
         }
@@ -694,32 +815,48 @@ export default function CaseTrackingPage() {
 
                     {loading ? (
 
-                        <div
-                            className="
-                                flex
-                                min-h-[320px]
-                                items-center
-                                justify-center
-                                text-sm
-                                text-slate-400
-                            "
-                        >
+                        <div className="divide-y divide-slate-100">
 
-                            <div
-                                className="
-                                    flex
-                                    items-center
-                                    gap-2
-                                "
-                            >
+                            <div className="hidden items-center gap-4 bg-slate-50/60 px-5 py-3 sm:flex">
 
+                                {[160, 120, 90, 80, 70, 90].map(
+                                    (width, index) => (
+                                        <div
+                                            key={index}
+                                            className="h-2.5 animate-pulse rounded bg-slate-200"
+                                            style={{ width }}
+                                        />
+                                    )
+                                )}
+
+                            </div>
+
+                            {[1, 2, 3, 4, 5].map((row) => (
+                                <div
+                                    key={row}
+                                    className="flex items-center gap-4 px-5 py-4"
+                                >
+                                    <div className="h-9 w-9 shrink-0 animate-pulse rounded-lg bg-slate-100" />
+
+                                    <div className="min-w-0 flex-1 space-y-2">
+                                        <div className="h-3 w-2/5 animate-pulse rounded bg-slate-100" />
+                                        <div className="h-2.5 w-1/4 animate-pulse rounded bg-slate-50" />
+                                    </div>
+
+                                    <div className="hidden h-6 w-20 animate-pulse rounded-full bg-slate-100 sm:block" />
+
+                                    <div className="hidden h-6 w-16 animate-pulse rounded-full bg-slate-100 md:block" />
+
+                                    <div className="h-8 w-8 animate-pulse rounded-lg bg-slate-100" />
+                                </div>
+                            ))}
+
+                            <div className="flex min-h-[40px] items-center justify-center gap-2 text-xs text-slate-400">
                                 <RefreshCw
-                                    size={15}
+                                    size={14}
                                     className="animate-spin"
                                 />
-
                                 Loading cases...
-
                             </div>
 
                         </div>
@@ -884,9 +1021,7 @@ export default function CaseTrackingPage() {
                         selectedCase
                     }
 
-                    close={() =>
-                        setDetails(false)
-                    }
+                    close={closeDetails}
                 />
 
             )}

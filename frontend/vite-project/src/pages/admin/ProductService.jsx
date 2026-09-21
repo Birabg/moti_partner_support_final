@@ -1,4 +1,5 @@
 ﻿import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
     SlidersHorizontal,
     Layers3,
@@ -14,7 +15,12 @@ import CustomFieldTable from "../../components/productservice/CustomFieldTable";
 import ServiceTypeTable from "../../components/productservice/ServiceTypeTable";
 
 export default function ProductService() {
-    const [activeTab, setActiveTab] = useState("category");
+    const [searchParams, setSearchParams] = useSearchParams();
+    const activeTab = searchParams.get("tab") || "category";
+
+    function setActiveTab(tabId) {
+        setSearchParams({ tab: tabId }, { replace: true });
+    }
 
     const tabs = [
         {
