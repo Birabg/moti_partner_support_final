@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { Lock, ShieldCheck, X } from "lucide-react";
 import { PermissionApi } from "../../api/permissionApi";
+import Button from "../ui/Button";
 
 const normalizeCode = (code) => (typeof code === "string" ? code.trim().toUpperCase() : "");
 
@@ -20,6 +22,12 @@ const deriveManagerType = (staff) => {
     if (staff.managedSection) return "SECTION";
     return undefined;
 };
+
+const getUserName = (user) =>
+    user.fullName ||
+    `${user.firstName || ""} ${user.middleName || ""} ${user.lastName || ""}`.trim() ||
+    user.email ||
+    "User";
 
 export default function PermissionModal({
     user,
@@ -96,52 +104,113 @@ export default function PermissionModal({
         );
     };
 
+    const checkedCount = selected.length;
+
     return (
-        <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
-            <div className="bg-white p-5 rounded-xl w-[700px]">
-                <h1 className="font-bold text-2xl mb-4">Add Permissions</h1>
-
-                <div className="mb-3 text-sm text-slate-600">
-                    Default role permissions are checked and locked. Add only extra permissions below.
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 max-h-[400px] overflow-y-auto">
-                    {permissions.map((permission) => {
-                        const code = normalizeCode(permission.code);
-                        const isDefault = defaultPermissionSet.has(code);
-                        const isChecked = isDefault || selected.includes(code);
-
-                        return (
-                            <label
-                                key={permission.id}
-                                className={`flex items-center gap-2 rounded border px-2 py-2 ${isDefault ? "bg-slate-100 text-slate-500" : "bg-white"}`}
-                            >
-                                <input
-                                    type="checkbox"
-                                    checked={isChecked}
-                                    disabled={isDefault}
-                                    onChange={() => toggle(permission.code)}
-                                />
-                                <span>{permission.name}</span>
-                            </label>
-                        );
-                    })}
-                </div>
-
-                <div className="mt-5 flex gap-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0b1b33]/60 px-4 backdrop-blur-sm">
+            <div className="w-full max-w-2xl transform rounded-2xl bg-white shadow-[0_20px_60px_rgba(11,27,51,0.2)]">
+                <div className="flex items-start justify-between gap-4 border-b border-ink-100 px-6 py-5">
+                    <div className="flex items-start gap-3">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50">
+                            <ShieldCheck className="h-5 w-5 text-emerald-600" />
+                        </span>
+                        <div className="min-w-0">
+                            <h2 className="text-lg font-bold tracking-tight text-ink-900">
+                                Add Permissions
+                            </h2>
+                            <p className="mt-0.5 truncate text-sm text-ink-500">
+                                {getUserName(user)}
+                                {user.email ? ` · ${user.email}` : ""}
+                            </p>
+                        </div>
+                    </div>
                     <button
-                        className="px-4 py-2 bg-green-600 text-white rounded"
-                        onClick={() => onSave(user.id, selected)}
-                    >
-                        Save
-                    </button>
-
-                    <button
+                        type="button"
                         onClick={onClose}
-                        className="px-4 py-2 bg-gray-600 text-white rounded"
+                        aria-label="Close"
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-500 transition hover:bg-ink-100 hover:text-ink-700"
                     >
-                        Cancel
+                        <X size={18} />
                     </button>
+                </div>
+
+                <div className="px-6 py-5">
+                    <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-navy-100 bg-navy-50 px-4 py-3">
+                        <Lock className="mt-0.5 h-4 w-4 shrink-0 text-navy-500" />
+                        <p className="text-xs leading-relaxed text-navy-700">
+                            Default role permissions are already granted and locked. Select only the
+                            extra permissions to add below.
+                        </p>
+                    </div>
+
+                    {permissions.length === 0 ? (
+                        <div className="flex items-center justify-center rounded-xl border border-dashed border-ink-200 bg-ink-50 py-12 text-sm text-ink-500">
+                            No permissions available to configure.
+                        </div>
+                    ) : (
+                        <div className="scrollbar-thin grid max-h-[400px] grid-cols-1 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
+                            {permissions.map((permission) => {
+                                const code = normalizeCode(permission.code);
+                                const isDefault = defaultPermissionSet.has(code);
+                                const isChecked = isDefault || selected.includes(code);
+
+                                return (
+                                    <label
+                                        key={permission.id}
+                                        className={[
+                                            "flex cursor-pointer items-center gap-3 rounded-xl border px-3.5 py-2.5 transition-all",
+                                            isDefault
+                                                ? "cursor-not-allowed border-ink-100 bg-ink-50"
+                                                : isChecked
+                                                    ? "border-navy-300 bg-navy-50"
+                                                    : "border-ink-200 bg-white hover:border-navy-200 hover:bg-ink-50",
+                                        ].join(" ")}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={isChecked}
+                                            disabled={isDefault}
+                                            onChange={() => toggle(permission.code)}
+                                            className="h-4 w-4 shrink-0 accent-navy-600 disabled:cursor-not-allowed disabled:opacity-50"
+                                        />
+                                        <span
+                                            className={[
+                                                "min-w-0 flex-1 text-sm",
+                                                isDefault
+                                                    ? "font-semibold text-ink-500"
+                                                    : "font-medium text-ink-700",
+                                            ].join(" ")}
+                                        >
+                                            {permission.name}
+                                        </span>
+                                        {isDefault && (
+                                            <Lock className="h-3.5 w-3.5 shrink-0 text-ink-400" />
+                                        )}
+                                    </label>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex items-center justify-between gap-3 border-t border-ink-100 px-6 py-4">
+                    <p className="text-xs text-ink-500">
+                        <span className="font-semibold text-ink-700">{checkedCount}</span> extra{" "}
+                        {checkedCount === 1 ? "permission" : "permissions"} selected
+                    </p>
+                    <div className="flex gap-3">
+                        <Button variant="outline" size="sm" onClick={onClose}>
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => onSave(user.id, selected)}
+                            disabled={selected.length === 0}
+                        >
+                            Save Permissions
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
