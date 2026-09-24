@@ -19,6 +19,8 @@ export default function SubcategoryTable() {
     const [subcategories, setSubcategories] = useState([]);
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
+    const [statusFilter, setStatusFilter] = useState("ALL");
+    const [categoryFilter, setCategoryFilter] = useState("ALL");
     const [loading, setLoading] = useState(true);
     const [togglingId, setTogglingId] = useState(null);
 
@@ -55,17 +57,52 @@ export default function SubcategoryTable() {
     const filteredSubcategories = useMemo(() => {
         const query = search.trim().toLowerCase();
 
-        if (!query) return subcategories;
-
         return subcategories.filter((item) => {
-            return (
+            const matchesQuery =
+                !query ||
                 item.name?.toLowerCase().includes(query) ||
                 item.productCategory?.name
                     ?.toLowerCase()
-                    .includes(query)
-            );
+                    .includes(query);
+
+            const matchesStatus =
+                statusFilter === "ALL" ||
+                (statusFilter === "active" && item.isActive) ||
+                (statusFilter === "inactive" && !item.isActive);
+
+            const matchesCategory =
+                categoryFilter === "ALL" ||
+                (item.productCategory?.id?.toString() ===
+                    categoryFilter ||
+                    item.productCategory?.name ===
+                        categoryFilter);
+
+            return matchesQuery && matchesStatus && matchesCategory;
         });
-    }, [subcategories, search]);
+    }, [subcategories, search, statusFilter, categoryFilter]);
+
+    const hasActiveFilters =
+        Boolean(search.trim()) ||
+        statusFilter !== "ALL" ||
+        categoryFilter !== "ALL";
+
+    const categoryOptions = useMemo(() => {
+        const seen = new Map();
+
+        subcategories.forEach((item) => {
+            const cat = item.productCategory;
+
+            if (cat?.name) {
+                const key = cat.id?.toString() ?? cat.name;
+                if (!seen.has(key)) seen.set(key, cat.name);
+            }
+        });
+
+        return [...seen.entries()].map(([value, name]) => ({
+            value,
+            name,
+        }));
+    }, [subcategories]);
 
     const activeCount = subcategories.filter(
         (item) => item.isActive
@@ -192,6 +229,57 @@ export default function SubcategoryTable() {
                             />
                         </div>
 
+                        {/* Category filter */}
+                        <select
+                            value={categoryFilter}
+                            onChange={(e) =>
+                                setCategoryFilter(e.target.value)
+                            }
+                            className="h-9 max-w-[140px] rounded-lg border border-slate-200 bg-slate-50 px-2.5 text-xs font-medium text-slate-600 outline-none transition focus:border-slate-400 focus:bg-white"
+                        >
+                            <option value="ALL">
+                                All categories
+                            </option>
+
+                            {categoryOptions.map((option) => (
+                                <option
+                                    key={option.value}
+                                    value={option.value}
+                                >
+                                    {option.name}
+                                </option>
+                            ))}
+                        </select>
+
+                        {/* Status filter */}
+                        <select
+                            value={statusFilter}
+                            onChange={(e) =>
+                                setStatusFilter(e.target.value)
+                            }
+                            className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-2.5 text-xs font-medium text-slate-600 outline-none transition focus:border-slate-400 focus:bg-white"
+                        >
+                            <option value="ALL">All statuses</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+
+                        {/* Clear filters */}
+                        {hasActiveFilters && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setSearch("");
+                                    setStatusFilter("ALL");
+                                    setCategoryFilter("ALL");
+                                }}
+                                className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-500 transition hover:bg-slate-50 hover:text-slate-800"
+                                title="Clear filters"
+                            >
+                                Clear
+                            </button>
+                        )}
+
                         <button
                             type="button"
                             onClick={load}
@@ -268,18 +356,18 @@ export default function SubcategoryTable() {
                                         </div>
 
                                         <p className="mt-3 text-sm font-semibold text-slate-700">
-                                            {search
+                                            {hasActiveFilters
                                                 ? "No subcategories found"
                                                 : "No subcategories yet"}
                                         </p>
 
                                         <p className="mt-1 text-xs text-slate-400">
-                                            {search
-                                                ? "Try adjusting your search."
+                                            {hasActiveFilters
+                                                ? "Try adjusting your search or filters."
                                                 : "Create your first subcategory to get started."}
                                         </p>
 
-                                        {!search && (
+                                        {!hasActiveFilters && (
                                             <button
                                                 type="button"
                                                 onClick={() =>

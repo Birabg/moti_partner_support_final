@@ -1,4 +1,8 @@
 import {
+    FaChartBar,
+    FaTrophy,
+} from "react-icons/fa";
+import {
     ResponsiveContainer,
     BarChart,
     Bar,
@@ -34,32 +38,58 @@ export default function MonthlyTrendChart({ data = [] }) {
 
     const hasMonthlyData = totalCases > 0;
 
+    const peakMonth = chartData.reduce(
+        (peak, item) =>
+            Number(item.cases || 0) >
+            Number(peak.cases || 0)
+                ? item
+                : peak,
+        chartData[0] || { month: "—", cases: 0 }
+    );
+
     return (
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_24px_-12px_rgba(15,23,42,0.15)]">
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_24px_-16px_rgba(15,23,42,0.14)]">
             {/* HEADER */}
             <div className="flex flex-col gap-4 border-b border-slate-100 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                        Case Activity
-                    </p>
+                <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm">
+                        <FaChartBar className="text-sm" />
+                    </div>
 
-                    <h2 className="mt-1 text-lg font-semibold tracking-tight text-slate-900">
-                        Monthly Case Trend
-                    </h2>
+                    <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                            Case Activity
+                        </p>
 
-                    <p className="mt-1 text-sm text-slate-500">
-                        Support cases created over time
-                    </p>
+                        <h2 className="mt-1 text-base font-semibold tracking-tight text-slate-900">
+                            Monthly Case Trend
+                        </h2>
+
+                        <p className="mt-1 text-xs text-slate-500">
+                            Support cases created over time
+                        </p>
+                    </div>
                 </div>
 
-                <div className="rounded-xl bg-slate-50 px-4 py-2.5">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-                        Total Cases
-                    </p>
+                <div className="flex items-center gap-3">
+                    {hasMonthlyData &&
+                        Number(peakMonth.cases) > 0 && (
+                            <div className="hidden items-center gap-1.5 rounded-lg bg-slate-50 px-3 py-2 text-[10px] font-semibold text-slate-500 md:flex">
+                                <FaTrophy className="text-amber-500" />
+                                Busiest: {peakMonth.month} (
+                                {peakMonth.cases})
+                            </div>
+                        )}
 
-                    <p className="mt-0.5 text-lg font-semibold text-slate-900">
-                        {totalCases}
-                    </p>
+                    <div className="rounded-xl bg-slate-50 px-4 py-2.5">
+                        <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                            Total Cases
+                        </p>
+
+                        <p className="mt-0.5 text-lg font-semibold text-slate-900">
+                            {totalCases}
+                        </p>
+                    </div>
                 </div>
             </div>
 

@@ -21,6 +21,9 @@ export default function CustomFieldTable() {
     const [fields, setFields] = useState([]);
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
+    const [statusFilter, setStatusFilter] = useState("ALL");
+    const [typeFilter, setTypeFilter] = useState("ALL");
+    const [requirementFilter, setRequirementFilter] = useState("ALL");
     const [loading, setLoading] = useState(true);
     const [togglingId, setTogglingId] = useState(null);
 
@@ -62,18 +65,57 @@ export default function CustomFieldTable() {
     const filteredFields = useMemo(() => {
         const query = search.trim().toLowerCase();
 
-        if (!query) return fields;
-
         return fields.filter((field) => {
-            return (
+            const matchesQuery =
+                !query ||
                 field.name?.toLowerCase().includes(query) ||
                 field.fieldType?.toLowerCase().includes(query) ||
                 field.productSubcategory?.name
                     ?.toLowerCase()
-                    .includes(query)
+                    .includes(query);
+
+            const matchesStatus =
+                statusFilter === "ALL" ||
+                (statusFilter === "active" && field.isActive) ||
+                (statusFilter === "inactive" && !field.isActive);
+
+            const matchesType =
+                typeFilter === "ALL" ||
+                field.fieldType === typeFilter;
+
+            const matchesRequirement =
+                requirementFilter === "ALL" ||
+                (requirementFilter === "required" &&
+                    field.required) ||
+                (requirementFilter === "optional" &&
+                    !field.required);
+
+            return (
+                matchesQuery &&
+                matchesStatus &&
+                matchesType &&
+                matchesRequirement
             );
         });
-    }, [fields, search]);
+    }, [fields, search, statusFilter, typeFilter, requirementFilter]);
+
+    const hasActiveFilters =
+        Boolean(search.trim()) ||
+        statusFilter !== "ALL" ||
+        typeFilter !== "ALL" ||
+        requirementFilter !== "ALL";
+
+    const typeOptions = useMemo(
+        () =>
+            [
+                ...new Set(
+                    fields
+                        .map((field) => field.fieldType)
+                        .filter(Boolean)
+                ),
+            ].sort(),
+        [fields]
+    );
 
     const activeCount = fields.filter(
         (field) => field.isActive
@@ -203,6 +245,66 @@ export default function CustomFieldTable() {
                             />
                         </div>
 
+                        {/* Type filter */}
+                        <select
+                            value={typeFilter}
+                            onChange={(e) =>
+                                setTypeFilter(e.target.value)
+                            }
+                            className="h-9 max-w-[130px] rounded-lg border border-slate-200 bg-slate-50 px-2.5 text-xs font-medium text-slate-600 outline-none transition focus:border-slate-400 focus:bg-white"
+                        >
+                            <option value="ALL">All types</option>
+
+                            {typeOptions.map((type) => (
+                                <option key={type} value={type}>
+                                    {type}
+                                </option>
+                            ))}
+                        </select>
+
+                        {/* Requirement filter */}
+                        <select
+                            value={requirementFilter}
+                            onChange={(e) =>
+                                setRequirementFilter(e.target.value)
+                            }
+                            className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-2.5 text-xs font-medium text-slate-600 outline-none transition focus:border-slate-400 focus:bg-white"
+                        >
+                            <option value="ALL">All requirements</option>
+                            <option value="required">Required</option>
+                            <option value="optional">Optional</option>
+                        </select>
+
+                        {/* Status filter */}
+                        <select
+                            value={statusFilter}
+                            onChange={(e) =>
+                                setStatusFilter(e.target.value)
+                            }
+                            className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-2.5 text-xs font-medium text-slate-600 outline-none transition focus:border-slate-400 focus:bg-white"
+                        >
+                            <option value="ALL">All statuses</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+
+                        {/* Clear filters */}
+                        {hasActiveFilters && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setSearch("");
+                                    setStatusFilter("ALL");
+                                    setTypeFilter("ALL");
+                                    setRequirementFilter("ALL");
+                                }}
+                                className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-500 transition hover:bg-slate-50 hover:text-slate-800"
+                                title="Clear filters"
+                            >
+                                Clear
+                            </button>
+                        )}
+
                         <button
                             type="button"
                             onClick={load}
@@ -297,18 +399,18 @@ export default function CustomFieldTable() {
                                         </div>
 
                                         <p className="mt-3 text-sm font-semibold text-slate-700">
-                                            {search
+                                            {hasActiveFilters
                                                 ? "No custom fields found"
                                                 : "No custom fields yet"}
                                         </p>
 
                                         <p className="mt-1 text-xs text-slate-400">
-                                            {search
-                                                ? "Try adjusting your search."
+                                            {hasActiveFilters
+                                                ? "Try adjusting your search or filters."
                                                 : "Create your first custom field to get started."}
                                         </p>
 
-                                        {!search && (
+                                        {!hasActiveFilters && (
                                             <button
                                                 type="button"
                                                 onClick={() =>

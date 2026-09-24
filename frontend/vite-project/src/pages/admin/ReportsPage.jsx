@@ -7,6 +7,8 @@ import {
     FaExclamationTriangle,
     FaArrowUp,
     FaChartPie,
+    FaStar,
+    FaDatabase,
 } from "react-icons/fa";
 
 import { ReportsApi } from "../../api/reportsApi";
@@ -17,6 +19,49 @@ import StatusPieChart from "../../components/reports/StatusPieChart";
 import MonthlyTrendChart from "../../components/reports/MonthlyTrendChart";
 import FeedbackSummary from "../../components/reports/FeedbackSummary";
 import RecentCasesTable from "../../components/reports/RecentCasesTable";
+
+const STATUS_STYLES = {
+    Open: {
+        dot: "bg-blue-500",
+        chip: "bg-blue-50 text-blue-700 border-blue-100",
+        bar: "bg-blue-400",
+    },
+    "In Progress": {
+        dot: "bg-amber-500",
+        chip: "bg-amber-50 text-amber-700 border-amber-100",
+        bar: "bg-amber-400",
+    },
+    Pending: {
+        dot: "bg-purple-500",
+        chip: "bg-purple-50 text-purple-700 border-purple-100",
+        bar: "bg-purple-400",
+    },
+    Escalated: {
+        dot: "bg-red-500",
+        chip: "bg-red-50 text-red-700 border-red-100",
+        bar: "bg-red-400",
+    },
+    "Awaiting Customer": {
+        dot: "bg-indigo-500",
+        chip: "bg-indigo-50 text-indigo-700 border-indigo-100",
+        bar: "bg-indigo-400",
+    },
+    Resolved: {
+        dot: "bg-emerald-500",
+        chip: "bg-emerald-50 text-emerald-700 border-emerald-100",
+        bar: "bg-emerald-400",
+    },
+    Closed: {
+        dot: "bg-slate-400",
+        chip: "bg-slate-100 text-slate-600 border-slate-200",
+        bar: "bg-slate-300",
+    },
+    Cancelled: {
+        dot: "bg-[#c08497]",
+        chip: "bg-[#f8eff1] text-[#9a6b75] border-[#f1dde2]",
+        bar: "bg-[#d69bb0]",
+    },
+};
 
 export default function ReportsPage() {
     const [loading, setLoading] = useState(true);
@@ -202,6 +247,28 @@ export default function ReportsPage() {
         })
     );
 
+    const statusTotal = cases.length;
+
+    const systemStatus = defaultOrder.map((name) => {
+        const count = counts[name] || 0;
+
+        const percentage =
+            statusTotal > 0
+                ? Math.round((count / statusTotal) * 100)
+                : 0;
+
+        return {
+            name,
+            count,
+            percentage,
+            ...(STATUS_STYLES[name] || {
+                dot: "bg-slate-400",
+                chip: "bg-slate-100 text-slate-600 border-slate-200",
+                bar: "bg-slate-300",
+            }),
+        };
+    });
+
     /* =========================================================
        MONTHLY DATA
     ========================================================= */
@@ -278,6 +345,61 @@ export default function ReportsPage() {
               )
             : 0;
 
+    const kpis = [
+        {
+            id: "total",
+            label: "Total Cases",
+            tag: "All Time",
+            value: totalCases,
+            note: "Overall",
+            trend: "Cumulative",
+            icon: FaFolderOpen,
+            iconClass: "bg-blue-50 text-blue-600",
+            accent: "bg-blue-500",
+            trendClass: "text-blue-600",
+            trendIcon: null,
+        },
+        {
+            id: "active",
+            label: "Active Cases",
+            tag: "Live",
+            value: activeCases,
+            note: "Open + In Progress",
+            trend: "In Progress",
+            icon: FaClock,
+            iconClass: "bg-amber-50 text-amber-600",
+            accent: "bg-amber-500",
+            trendClass: "text-amber-600",
+            trendIcon: FaArrowUp,
+        },
+        {
+            id: "closed",
+            label: "Closed Cases",
+            tag: "Resolved",
+            value: closedCases,
+            note: "Resolved to date",
+            trend: `${resolutionRate}% resolution`,
+            icon: FaCheckCircle,
+            iconClass: "bg-emerald-50 text-emerald-600",
+            accent: "bg-emerald-500",
+            trendClass: "text-emerald-600",
+            trendIcon: FaArrowUp,
+        },
+        {
+            id: "escalated",
+            label: "Escalated Cases",
+            tag: "Attention",
+            value: counts["Escalated"] || 0,
+            note: "Requires attention",
+            trend: "Following up",
+            icon: FaExclamationTriangle,
+            iconClass: "bg-red-50 text-red-600",
+            accent: "bg-red-500",
+            trendClass: "text-red-600",
+            trendIcon: null,
+        },
+    ];
+
     /* =========================================================
        LOADING
     ========================================================= */
@@ -325,8 +447,9 @@ export default function ReportsPage() {
                     </div>
                 </div>
 
+                <div className="h-20 animate-pulse rounded-2xl border border-slate-200 bg-white p-6" />
+
                 <div className="animate-pulse rounded-2xl border border-slate-200 bg-white p-6">
-                    <div className="h-4 w-40 rounded bg-slate-100" />
                     <div className="mt-6 grid gap-4 sm:grid-cols-3">
                         {[1, 2, 3].map((item) => (
                             <div
@@ -370,348 +493,124 @@ export default function ReportsPage() {
             )}
 
             {/* =================================================
-                EXPORT TOOLBAR
-            ================================================= */}
-
-            <section
-                className="
-                    rounded-2xl
-                    border
-                    border-slate-200
-                    bg-white
-                    shadow-sm
-                "
-            >
-                <div
-                    className="
-                        flex
-                        flex-col
-                        gap-4
-                        px-6
-                        py-5
-                        lg:flex-row
-                        lg:items-center
-                        lg:justify-between
-                    "
-                >
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <div
-                                className="
-                                    flex
-                                    h-9
-                                    w-9
-                                    items-center
-                                    justify-center
-                                    rounded-xl
-                                    bg-slate-100
-                                    text-slate-700
-                                "
-                            >
-                                <FaChartLine />
-                            </div>
-
-                            <div>
-                                <p className="text-sm font-semibold text-slate-900">
-                                    Analytics Overview
-                                </p>
-
-                                <p className="text-xs text-slate-500">
-                                    Monitor support performance and export reports.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <ExportButtons />
-                </div>
-            </section>
-
-            {/* =================================================
                 KPI OVERVIEW
             ================================================= */}
 
             <section>
-                <div className="mb-4 flex items-end justify-between">
-                    <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                            Performance Overview
-                        </p>
-
-                        <h2 className="mt-1 text-xl font-semibold tracking-tight text-slate-900">
-                            Support at a glance
-                        </h2>
-                    </div>
-
-                    <div className="hidden items-center gap-2 text-xs text-slate-400 sm:flex">
-                        <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                        Live data
-                    </div>
-                </div>
+                <SectionHeading
+                    icon={FaChartLine}
+                    eyebrow="Performance Overview"
+                    title="Support at a glance"
+                    description="Key operational metrics across your support desk."
+                    right={
+                        <div className="hidden items-center gap-2 text-xs text-slate-400 sm:flex">
+                            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                            Live data
+                        </div>
+                    }
+                />
 
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    {kpis.map((kpi) => (
+                        <KpiCard key={kpi.id} kpi={kpi} />
+                    ))}
+                </div>
 
-                    {/* Total */}
-                    <div
-                        className="
-                            group
-                            relative
-                            overflow-hidden
-                            rounded-2xl
-                            border
-                            border-slate-200
-                            bg-white
-                            p-5
-                            shadow-sm
-                            transition
-                            duration-200
-                            hover:-translate-y-0.5
-                            hover:shadow-md
-                        "
-                    >
-                        <div className="flex items-start justify-between">
-                            <div
-                                className="
-                                    flex
-                                    h-11
-                                    w-11
-                                    items-center
-                                    justify-center
-                                    rounded-xl
-                                    bg-blue-50
-                                    text-blue-600
-                                "
-                            >
-                                <FaFolderOpen />
+                {/* =============================================
+                    SYSTEM STATUS
+                ============================================= */}
+                <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+                    <div className="flex flex-col gap-4 border-b border-slate-100 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm">
+                                <FaDatabase className="text-sm" />
                             </div>
 
-                            <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-300">
-                                Cases
-                            </span>
+                            <div>
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                                    System Status
+                                </p>
+
+                                <h3 className="mt-0.5 text-base font-semibold tracking-tight text-slate-900">
+                                    Live Case Status Breakdown
+                                </h3>
+
+                                <p className="mt-0.5 text-xs text-slate-500">
+                                    Real-time distribution across every case status.
+                                </p>
+                            </div>
                         </div>
 
-                        <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                            Total Cases
-                        </p>
-
-                        <div className="mt-1 flex items-end gap-2">
-                            <h3 className="text-3xl font-semibold tracking-tight text-slate-900">
-                                {totalCases}
-                            </h3>
-
-                            <span className="mb-1 flex items-center gap-1 text-xs font-semibold text-emerald-600">
-                                <FaArrowUp className="text-[9px]" />
-                                Overall
+                        <div className="flex items-center gap-2">
+                            <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-500">
+                                {statusTotal} total
                             </span>
                         </div>
-
-                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500" />
                     </div>
 
-                    {/* Active */}
-                    <div
-                        className="
-                            group
-                            relative
-                            overflow-hidden
-                            rounded-2xl
-                            border
-                            border-slate-200
-                            bg-white
-                            p-5
-                            shadow-sm
-                            transition
-                            duration-200
-                            hover:-translate-y-0.5
-                            hover:shadow-md
-                        "
-                    >
-                        <div className="flex items-start justify-between">
+                    <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-2 xl:grid-cols-4">
+                        {systemStatus.map((item) => (
                             <div
-                                className="
-                                    flex
-                                    h-11
-                                    w-11
-                                    items-center
-                                    justify-center
-                                    rounded-xl
-                                    bg-amber-50
-                                    text-amber-600
-                                "
+                                key={item.name}
+                                className="group relative overflow-hidden rounded-xl border border-slate-100 bg-slate-50/50 px-4 py-3 transition-colors hover:bg-slate-50"
                             >
-                                <FaClock />
+                                <div className="flex items-center gap-2">
+                                    <span
+                                        className={`h-2 w-2 shrink-0 rounded-full ${item.dot}`}
+                                    />
+
+                                    <span className="min-w-0 flex-1 truncate text-xs font-medium text-slate-600">
+                                        {item.name}
+                                    </span>
+
+                                    <span className="text-sm font-semibold text-slate-900">
+                                        {item.count}
+                                    </span>
+                                </div>
+
+                                <div className="mt-3 h-1 overflow-hidden rounded-full bg-slate-200/70">
+                                    <div
+                                        className={`h-full rounded-full ${item.bar}`}
+                                        style={{
+                                            width: `${item.percentage}%`,
+                                        }}
+                                    />
+                                </div>
+
+                                <p className="mt-2 text-right text-[10px] font-semibold text-slate-400">
+                                    {item.percentage}% of cases
+                                </p>
                             </div>
-
-                            <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-300">
-                                Active
-                            </span>
-                        </div>
-
-                        <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                            Active Cases
-                        </p>
-
-                        <div className="mt-1 flex items-end gap-2">
-                            <h3 className="text-3xl font-semibold tracking-tight text-slate-900">
-                                {activeCases}
-                            </h3>
-
-                            <span className="mb-1 text-xs text-slate-400">
-                                Open + In Progress
-                            </span>
-                        </div>
-
-                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-amber-500" />
-                    </div>
-
-                    {/* Closed */}
-                    <div
-                        className="
-                            group
-                            relative
-                            overflow-hidden
-                            rounded-2xl
-                            border
-                            border-slate-200
-                            bg-white
-                            p-5
-                            shadow-sm
-                            transition
-                            duration-200
-                            hover:-translate-y-0.5
-                            hover:shadow-md
-                        "
-                    >
-                        <div className="flex items-start justify-between">
-                            <div
-                                className="
-                                    flex
-                                    h-11
-                                    w-11
-                                    items-center
-                                    justify-center
-                                    rounded-xl
-                                    bg-emerald-50
-                                    text-emerald-600
-                                "
-                            >
-                                <FaCheckCircle />
-                            </div>
-
-                            <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-300">
-                                Resolved
-                            </span>
-                        </div>
-
-                        <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                            Closed Cases
-                        </p>
-
-                        <div className="mt-1 flex items-end gap-2">
-                            <h3 className="text-3xl font-semibold tracking-tight text-slate-900">
-                                {closedCases}
-                            </h3>
-
-                            <span className="mb-1 text-xs font-semibold text-emerald-600">
-                                {resolutionRate}% resolution
-                            </span>
-                        </div>
-
-                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-emerald-500" />
-                    </div>
-
-                    {/* Escalated */}
-                    <div
-                        className="
-                            group
-                            relative
-                            overflow-hidden
-                            rounded-2xl
-                            border
-                            border-slate-200
-                            bg-white
-                            p-5
-                            shadow-sm
-                            transition
-                            duration-200
-                            hover:-translate-y-0.5
-                            hover:shadow-md
-                        "
-                    >
-                        <div className="flex items-start justify-between">
-                            <div
-                                className="
-                                    flex
-                                    h-11
-                                    w-11
-                                    items-center
-                                    justify-center
-                                    rounded-xl
-                                    bg-red-50
-                                    text-red-600
-                                "
-                            >
-                                <FaExclamationTriangle />
-                            </div>
-
-                            <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-300">
-                                Attention
-                            </span>
-                        </div>
-
-                        <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                            Escalated Cases
-                        </p>
-
-                        <div className="mt-1 flex items-end gap-2">
-                            <h3 className="text-3xl font-semibold tracking-tight text-slate-900">
-                                {counts["Escalated"] || 0}
-                            </h3>
-
-                            <span className="mb-1 text-xs text-slate-400">
-                                Requires attention
-                            </span>
-                        </div>
-
-                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-red-500" />
+                        ))}
                     </div>
                 </div>
             </section>
+
+            {/* =================================================
+                EXPORT TOOLBAR
+            ================================================= */}
+
+            <ExportButtons />
 
             {/* =================================================
                 ANALYTICS
             ================================================= */}
 
             <section>
-                <div className="mb-4 flex items-center gap-3">
-                    <div
-                        className="
-                            flex
-                            h-9
-                            w-9
-                            items-center
-                            justify-center
-                            rounded-xl
-                            bg-slate-100
-                            text-slate-700
-                        "
-                    >
-                        <FaChartPie />
-                    </div>
-
-                    <div>
-                        <h2 className="text-xl font-semibold tracking-tight text-slate-900">
-                            Case Analytics
-                        </h2>
-
-                        <p className="text-sm text-slate-500">
-                            Understand case distribution and activity trends.
-                        </p>
-                    </div>
-                </div>
+                <SectionHeading
+                    icon={FaChartPie}
+                    eyebrow="Case Analytics"
+                    title="Distribution & trends"
+                    description="Understand case status distribution and monthly activity."
+                    right={
+                        <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-500 shadow-sm">
+                            <FaDatabase className="text-slate-400" />
+                            {cases.length} cases analyzed
+                        </div>
+                    }
+                />
 
                 <div className="grid gap-6 xl:grid-cols-5">
-
                     <div className="min-w-0 xl:col-span-2">
                         <StatusPieChart
                             data={pieData}
@@ -723,7 +622,6 @@ export default function ReportsPage() {
                             data={monthlyData}
                         />
                     </div>
-
                 </div>
             </section>
 
@@ -732,19 +630,12 @@ export default function ReportsPage() {
             ================================================= */}
 
             <section>
-                <div className="mb-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                        Customer Experience
-                    </p>
-
-                    <h2 className="mt-1 text-xl font-semibold tracking-tight text-slate-900">
-                        Customer Satisfaction
-                    </h2>
-
-                    <p className="mt-1 text-sm text-slate-500">
-                        Feedback and satisfaction indicators from resolved cases.
-                    </p>
-                </div>
+                <SectionHeading
+                    icon={FaStar}
+                    eyebrow="Customer Experience"
+                    title="Customer Satisfaction"
+                    description="Feedback and satisfaction indicators from resolved cases."
+                />
 
                 <FeedbackSummary
                     summary={feedback.summary}
@@ -756,32 +647,123 @@ export default function ReportsPage() {
             ================================================= */}
 
             <section>
-                <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-                    <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                            Support Activity
-                        </p>
-
-                        <h2 className="mt-1 text-xl font-semibold tracking-tight text-slate-900">
-                            Recent Cases
-                        </h2>
-
-                        <p className="mt-1 text-sm text-slate-500">
-                            Latest customer support requests across the portal.
-                        </p>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-xs text-slate-400">
-                        <span className="h-2 w-2 rounded-full bg-blue-500" />
-                        {cases.length} cases loaded
-                    </div>
-                </div>
+                <SectionHeading
+                    icon={FaFolderOpen}
+                    eyebrow="Support Activity"
+                    title="Recent Cases"
+                    description="Latest customer support requests across the portal."
+                    right={
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-500">
+                            {cases.length}{" "}
+                            {cases.length === 1
+                                ? "Case"
+                                : "Cases"}
+                        </span>
+                    }
+                />
 
                 <RecentCasesTable
                     cases={cases}
                 />
             </section>
 
+        </div>
+    );
+}
+
+/* =========================================================
+   SECTION HEADING
+   ========================================================= */
+
+function SectionHeading({
+    icon: Icon,
+    eyebrow,
+    title,
+    description,
+    right,
+}) {
+    return (
+        <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm">
+                    <Icon className="h-[18px] w-[18px]" />
+                </div>
+
+                <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                        {eyebrow}
+                    </p>
+
+                    <h2 className="mt-1 text-lg font-semibold tracking-tight text-slate-900">
+                        {title}
+                    </h2>
+
+                    {description && (
+                        <p className="mt-1 text-sm text-slate-500">
+                            {description}
+                        </p>
+                    )}
+                </div>
+            </div>
+
+            {right}
+        </div>
+    );
+}
+
+/* =========================================================
+   KPI CARD
+   ========================================================= */
+
+function KpiCard({ kpi }) {
+    const Icon = kpi.icon;
+    const TrendIcon = kpi.trendIcon;
+
+    return (
+        <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+            <div className="flex items-start justify-between">
+                <div
+                    className={`flex h-11 w-11 items-center justify-center rounded-xl ${kpi.iconClass}`}
+                >
+                    <Icon className="text-lg" />
+                </div>
+
+                <span className="rounded-full bg-slate-50 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                    {kpi.tag}
+                </span>
+            </div>
+
+            <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                {kpi.label}
+            </p>
+
+            <div className="mt-1 flex items-end gap-2">
+                <h3 className="text-3xl font-semibold tracking-tight text-slate-900">
+                    {kpi.value}
+                </h3>
+
+                {TrendIcon && (
+                    <TrendIcon
+                        className={`mb-1.5 h-3 w-3 ${kpi.trendClass}`}
+                    />
+                )}
+            </div>
+
+            <div className="mt-1 flex items-center justify-between">
+                <p className="text-xs text-slate-400">
+                    {kpi.note}
+                </p>
+
+                <span
+                    className={`text-[10px] font-semibold ${kpi.trendClass}`}
+                >
+                    {kpi.trend}
+                </span>
+            </div>
+
+            <div
+                className={`absolute bottom-0 left-0 right-0 h-1 ${kpi.accent}`}
+            />
         </div>
     );
 }

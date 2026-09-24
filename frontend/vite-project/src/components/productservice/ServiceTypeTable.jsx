@@ -19,6 +19,7 @@ export default function ServiceTypeTable() {
     const [services, setServices] = useState([]);
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
+    const [statusFilter, setStatusFilter] = useState("ALL");
     const [loading, setLoading] = useState(true);
     const [togglingId, setTogglingId] = useState(null);
 
@@ -59,12 +60,22 @@ export default function ServiceTypeTable() {
     const filteredServices = useMemo(() => {
         const query = search.trim().toLowerCase();
 
-        if (!query) return services;
+        return services.filter((service) => {
+            const matchesQuery =
+                !query ||
+                service.name?.toLowerCase().includes(query);
 
-        return services.filter((service) =>
-            service.name?.toLowerCase().includes(query)
-        );
-    }, [services, search]);
+            const matchesStatus =
+                statusFilter === "ALL" ||
+                (statusFilter === "active" && service.isActive) ||
+                (statusFilter === "inactive" && !service.isActive);
+
+            return matchesQuery && matchesStatus;
+        });
+    }, [services, search, statusFilter]);
+
+    const hasActiveFilters =
+        Boolean(search.trim()) || statusFilter !== "ALL";
 
     const activeCount = services.filter(
         (service) => service.isActive
@@ -174,6 +185,34 @@ export default function ServiceTypeTable() {
                             />
                         </div>
 
+                        {/* Status filter */}
+                        <select
+                            value={statusFilter}
+                            onChange={(e) =>
+                                setStatusFilter(e.target.value)
+                            }
+                            className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-2.5 text-xs font-medium text-slate-600 outline-none transition focus:border-slate-400 focus:bg-white"
+                        >
+                            <option value="ALL">All statuses</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+
+                        {/* Clear filters */}
+                        {hasActiveFilters && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setSearch("");
+                                    setStatusFilter("ALL");
+                                }}
+                                className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-500 transition hover:bg-slate-50 hover:text-slate-800"
+                                title="Clear filters"
+                            >
+                                Clear
+                            </button>
+                        )}
+
                         <button
                             type="button"
                             onClick={load}
@@ -244,18 +283,18 @@ export default function ServiceTypeTable() {
                                         </div>
 
                                         <p className="mt-3 text-sm font-semibold text-slate-700">
-                                            {search
+                                            {hasActiveFilters
                                                 ? "No service types found"
                                                 : "No service types yet"}
                                         </p>
 
                                         <p className="mt-1 text-xs text-slate-400">
-                                            {search
-                                                ? "Try adjusting your search."
+                                            {hasActiveFilters
+                                                ? "Try adjusting your search or filters."
                                                 : "Create your first service type to get started."}
                                         </p>
 
-                                        {!search && (
+                                        {!hasActiveFilters && (
                                             <button
                                                 type="button"
                                                 onClick={() =>

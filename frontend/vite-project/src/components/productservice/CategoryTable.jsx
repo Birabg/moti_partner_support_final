@@ -19,6 +19,7 @@ export default function CategoryTable() {
     const [categories, setCategories] = useState([]);
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
+    const [statusFilter, setStatusFilter] = useState("ALL");
     const [loading, setLoading] = useState(true);
     const [togglingId, setTogglingId] = useState(null);
 
@@ -55,15 +56,23 @@ export default function CategoryTable() {
     const filteredCategories = useMemo(() => {
         const query = search.trim().toLowerCase();
 
-        if (!query) return categories;
-
         return categories.filter((category) => {
-            return (
+            const matchesQuery =
+                !query ||
                 category.name?.toLowerCase().includes(query) ||
-                category.brandName?.toLowerCase().includes(query)
-            );
+                category.brandName?.toLowerCase().includes(query);
+
+            const matchesStatus =
+                statusFilter === "ALL" ||
+                (statusFilter === "active" && category.isActive) ||
+                (statusFilter === "inactive" && !category.isActive);
+
+            return matchesQuery && matchesStatus;
         });
-    }, [categories, search]);
+    }, [categories, search, statusFilter]);
+
+    const hasActiveFilters =
+        Boolean(search.trim()) || statusFilter !== "ALL";
 
     const activeCount = categories.filter((c) => c.isActive).length;
     const inactiveCount = categories.length - activeCount;
@@ -169,6 +178,34 @@ export default function CategoryTable() {
                             />
                         </div>
 
+                        {/* Status filter */}
+                        <select
+                            value={statusFilter}
+                            onChange={(e) =>
+                                setStatusFilter(e.target.value)
+                            }
+                            className="h-9 rounded-lg border border-slate-200 bg-slate-50 px-2.5 text-xs font-medium text-slate-600 outline-none transition focus:border-slate-400 focus:bg-white"
+                        >
+                            <option value="ALL">All statuses</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+
+                        {/* Clear filters */}
+                        {hasActiveFilters && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setSearch("");
+                                    setStatusFilter("ALL");
+                                }}
+                                className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-500 transition hover:bg-slate-50 hover:text-slate-800"
+                                title="Clear filters"
+                            >
+                                Clear
+                            </button>
+                        )}
+
                         {/* Refresh */}
                         <button
                             type="button"
@@ -244,18 +281,18 @@ export default function CategoryTable() {
                                         </div>
 
                                         <p className="mt-3 text-sm font-semibold text-slate-700">
-                                            {search
+                                            {hasActiveFilters
                                                 ? "No categories found"
                                                 : "No categories yet"}
                                         </p>
 
                                         <p className="mt-1 text-xs text-slate-400">
-                                            {search
-                                                ? "Try adjusting your search."
+                                            {hasActiveFilters
+                                                ? "Try adjusting your search or filters."
                                                 : "Create your first product category to get started."}
                                         </p>
 
-                                        {!search && (
+                                        {!hasActiveFilters && (
                                             <button
                                                 type="button"
                                                 onClick={() => setOpen(true)}

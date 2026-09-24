@@ -1,4 +1,7 @@
 import {
+    FaChartPie,
+} from "react-icons/fa";
+import {
     PieChart,
     Pie,
     Cell,
@@ -64,29 +67,35 @@ export default function StatusPieChart({ data = [] }) {
     );
 
     return (
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_24px_-12px_rgba(15,23,42,0.15)]">
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_24px_-16px_rgba(15,23,42,0.14)]">
             {/* HEADER */}
             <div className="flex items-start justify-between border-b border-slate-100 px-6 py-5">
-                <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                        Case Overview
-                    </p>
+                <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                        <FaChartPie className="text-sm" />
+                    </div>
 
-                    <h2 className="mt-1 text-lg font-semibold tracking-tight text-slate-900">
-                        Case Distribution
-                    </h2>
+                    <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                            Case Overview
+                        </p>
 
-                    <p className="mt-1 text-sm text-slate-500">
-                        Current support case status breakdown
-                    </p>
+                        <h2 className="mt-1 text-base font-semibold tracking-tight text-slate-900">
+                            Case Distribution
+                        </h2>
+
+                        <p className="mt-1 text-xs text-slate-500">
+                            Current support case status breakdown
+                        </p>
+                    </div>
                 </div>
 
-                <div className="rounded-xl bg-slate-50 px-4 py-2.5 text-right">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                <div className="rounded-xl bg-slate-900 px-4 py-2.5 text-right shadow-sm">
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-white/50">
                         Total
                     </p>
 
-                    <p className="mt-0.5 text-lg font-semibold text-slate-900">
+                    <p className="mt-0.5 text-lg font-semibold text-white">
                         {total}
                     </p>
                 </div>
@@ -182,6 +191,15 @@ export default function StatusPieChart({ data = [] }) {
                             item.displayValue ??
                             item.value;
 
+                        const percentage =
+                            total > 0
+                                ? Math.round(
+                                      (item.value /
+                                          total) *
+                                          100
+                                  )
+                                : 0;
+
                         return (
                             <div
                                 key={item.name}
@@ -205,8 +223,14 @@ export default function StatusPieChart({ data = [] }) {
                                     {item.name}
                                 </span>
 
-                                <span className="ml-auto text-xs font-semibold text-slate-900">
-                                    {value}
+                                <span className="ml-auto flex items-center gap-2">
+                                    <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">
+                                        {percentage}%
+                                    </span>
+
+                                    <span className="w-6 text-right text-xs font-semibold text-slate-900">
+                                        {value}
+                                    </span>
                                 </span>
                             </div>
                         );
