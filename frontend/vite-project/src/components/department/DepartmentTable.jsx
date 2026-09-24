@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   FaEdit,
   FaCheck,
@@ -8,6 +8,11 @@ import {
   FaBuilding,
   FaLayerGroup,
 } from "react-icons/fa";
+import {
+  isStructureActive,
+  TABLE_PAGE_SIZE,
+} from "./StructureTableUtils";
+import { Pagination, Toolbar } from "./StructureTableKit";
 
 export default function DepartmentTable({
   departments = [],
@@ -17,6 +22,32 @@ export default function DepartmentTable({
 }) {
   const [editingId, setEditingId] = useState(null);
   const [editingName, setEditingName] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [page, setPage] = useState(0);
+
+  const filtered = useMemo(() => {
+    return departments.filter((department) => {
+      if (statusFilter === "ALL") return true;
+      return statusFilter === "ACTIVE" ? isStructureActive(department) : !isStructureActive(department);
+    });
+  }, [departments, statusFilter]);
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / TABLE_PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount - 1);
+  const startIndex = currentPage * TABLE_PAGE_SIZE;
+  const pageRows = filtered.slice(startIndex, startIndex + TABLE_PAGE_SIZE);
+  const rangeStart = filtered.length === 0 ? 0 : startIndex + 1;
+  const rangeEnd = Math.min(startIndex + TABLE_PAGE_SIZE, filtered.length);
+
+  const changeStatusFilter = (value) => {
+    setStatusFilter(value);
+    setPage(0);
+  };
+
+  const clearFilters = () => {
+    setStatusFilter("ALL");
+    setPage(0);
+  };
 
   function startEdit(department) {
     setEditingId(department.id);
@@ -44,6 +75,16 @@ export default function DepartmentTable({
 
   return (
     <div className="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white">
+
+      <Toolbar
+        total={departments.length}
+        filtered={filtered.length}
+        status={statusFilter}
+        onStatusChange={changeStatusFilter}
+        onClear={clearFilters}
+        hasExtraFilters={statusFilter !== "ALL"}
+        noun="department"
+      />
 
       {/* =====================================================
           TABLE
@@ -151,7 +192,7 @@ export default function DepartmentTable({
           {/* Body */}
           <tbody>
 
-            {departments.map((department, index) => {
+            {pageRows.map((department, index) => {
 
               const isEditing = editingId === department.id;
 
@@ -532,7 +573,7 @@ export default function DepartmentTable({
             })}
 
             {/* Empty */}
-            {departments.length === 0 && (
+            {pageRows.length === 0 && (
               <tr>
                 <td
                   colSpan={6}
@@ -572,6 +613,18 @@ export default function DepartmentTable({
         </table>
 
       </div>
+
+      {filtered.length > 0 && (
+        <Pagination
+          start={rangeStart}
+          end={rangeEnd}
+          total={filtered.length}
+          page={currentPage}
+          pageCount={pageCount}
+          onPageChange={setPage}
+          noun="department"
+        />
+      )}
 
     </div>
   );

@@ -362,8 +362,8 @@ export default function ApprovalPage() {
               justify-center
               rounded-2xl
               border
-              border-blue-100
-              bg-blue-50
+              border-[#dbe7f8]
+              bg-[#edf4fd]
             "
           >
             <ShieldCheck
@@ -371,7 +371,7 @@ export default function ApprovalPage() {
                 h-6
                 w-6
                 animate-pulse
-                text-blue-600
+                text-[#527eb9]
               "
             />
           </div>
@@ -380,9 +380,9 @@ export default function ApprovalPage() {
             className="
               mt-5
               text-lg
-              font-semibold
-              tracking-tight
-              text-slate-900
+              font-bold
+              tracking-[-0.02em]
+              text-[#101a28]
             "
           >
             Loading Approval Center
@@ -532,7 +532,7 @@ export default function ApprovalPage() {
                   font-bold
                   uppercase
                   tracking-[0.18em]
-                  text-blue-600
+                  text-[#567fbd]
                 "
               >
                 Overview
@@ -554,9 +554,9 @@ export default function ApprovalPage() {
             <h2
               className="
                 text-lg
-                font-semibold
-                tracking-tight
-                text-slate-900
+                font-bold
+                tracking-[-0.02em]
+                text-[#101a28]
               "
             >
               Approval activity
@@ -622,11 +622,11 @@ export default function ApprovalPage() {
                     justify-center
                     rounded-xl
                     border
-                    border-blue-100
-                    bg-blue-50
+                    border-[#dbe7f8]
+                    bg-[#edf4fd]
                   "
                 >
-                  <UserPlus className="h-4 w-4 text-blue-600" />
+                  <UserPlus className="h-4 w-4 text-[#527eb9]" />
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -634,9 +634,9 @@ export default function ApprovalPage() {
                   <h2
                     className="
                       text-base
-                      font-semibold
-                      tracking-tight
-                      text-slate-900
+                      font-bold
+                      tracking-[-0.02em]
+                      text-[#101a28]
                     "
                   >
                     Pending Customers
@@ -650,11 +650,13 @@ export default function ApprovalPage() {
                       items-center
                       justify-center
                       rounded-full
-                      bg-blue-50
+                      border
+                      border-[#dbe7f8]
+                      bg-[#edf4fd]
                       px-2
                       text-[11px]
                       font-bold
-                      text-blue-700
+                      text-[#527eb9]
                     "
                   >
                     {customers.length}
@@ -699,11 +701,11 @@ export default function ApprovalPage() {
           <div
             className="
               overflow-hidden
-              rounded-2xl
+              rounded-[22px]
               border
-              border-slate-200
+              border-slate-200/80
               bg-white
-              shadow-[0_8px_30px_-20px_rgba(15,23,42,0.25)]
+              shadow-[0_8px_30px_rgba(16,32,55,0.045)]
             "
           >
             <PendingCustomerTable
@@ -738,11 +740,11 @@ export default function ApprovalPage() {
                     justify-center
                     rounded-xl
                     border
-                    border-violet-100
-                    bg-violet-50
+                    border-[#f5e6c8]
+                    bg-[#fff7e8]
                   "
                 >
-                  <Users className="h-4 w-4 text-violet-600" />
+                  <Users className="h-4 w-4 text-[#c58a27]" />
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -750,9 +752,9 @@ export default function ApprovalPage() {
                   <h2
                     className="
                       text-base
-                      font-semibold
-                      tracking-tight
-                      text-slate-900
+                      font-bold
+                      tracking-[-0.02em]
+                      text-[#101a28]
                     "
                   >
                     Pending Staff
@@ -766,11 +768,13 @@ export default function ApprovalPage() {
                       items-center
                       justify-center
                       rounded-full
-                      bg-violet-50
+                      border
+                      border-[#f5e6c8]
+                      bg-[#fff7e8]
                       px-2
                       text-[11px]
                       font-bold
-                      text-violet-700
+                      text-[#c58a27]
                     "
                   >
                     {staff.length}
@@ -815,11 +819,11 @@ export default function ApprovalPage() {
           <div
             className="
               overflow-hidden
-              rounded-2xl
+              rounded-[22px]
               border
-              border-slate-200
+              border-slate-200/80
               bg-white
-              shadow-[0_8px_30px_-20px_rgba(15,23,42,0.25)]
+              shadow-[0_8px_30px_rgba(16,32,55,0.045)]
             "
           >
             <PendingStaffTable
@@ -854,54 +858,56 @@ export default function ApprovalPage() {
 
             <div className="flex items-center gap-3">
 
-              <div
-                className="
-                  flex
-                  h-9
-                  w-9
-                  items-center
-                  justify-center
-                  rounded-xl
-                  border
-                  border-emerald-100
-                  bg-emerald-50
-                "
-              >
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-              </div>
-
-              <div className="flex items-center gap-2">
-
-                <h2
+<div
                   className="
-                    text-base
-                    font-semibold
-                    tracking-tight
-                    text-slate-900
-                  "
-                >
-                  Approved Users
-                </h2>
-
-                <span
-                  className="
-                    inline-flex
-                    h-6
-                    min-w-6
+                    flex
+                    h-9
+                    w-9
                     items-center
                     justify-center
-                    rounded-full
-                    bg-slate-100
-                    px-2
-                    text-[11px]
-                    font-bold
-                    text-slate-600
+                    rounded-xl
+                    border
+                    border-[#d2eae2]
+                    bg-[#edf7f3]
                   "
                 >
-                  {approvedUsers.length}
-                </span>
+                  <CheckCircle2 className="h-4 w-4 text-[#3b8d73]" />
+                </div>
 
-              </div>
+                <div className="flex items-center gap-2">
+
+                  <h2
+                    className="
+                      text-base
+                      font-bold
+                      tracking-[-0.02em]
+                      text-[#101a28]
+                    "
+                  >
+                    Approved Users
+                  </h2>
+
+                  <span
+                    className="
+                      inline-flex
+                      h-6
+                      min-w-6
+                      items-center
+                      justify-center
+                      rounded-full
+                      border
+                      border-[#d2eae2]
+                      bg-[#edf7f3]
+                      px-2
+                      text-[11px]
+                      font-bold
+                      text-[#3b8d73]
+                    "
+                  >
+                    {approvedUsers.length}
+                  </span>
+
+                </div>
 
             </div>
 
@@ -937,11 +943,11 @@ export default function ApprovalPage() {
         <div
           className="
             overflow-hidden
-            rounded-2xl
+            rounded-[22px]
             border
-            border-slate-200
+            border-slate-200/80
             bg-white
-            shadow-[0_8px_30px_-20px_rgba(15,23,42,0.25)]
+            shadow-[0_8px_30px_rgba(16,32,55,0.045)]
           "
         >
           <ApprovedUsersTable

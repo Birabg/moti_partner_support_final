@@ -23,8 +23,14 @@ async(
 
     return{
 
+        staffNumber:
+        user?.staffNumber,
+
         fullName:
         `${user?.firstName} ${user?.middleName}`,
+
+        id:
+        user?.id,
 
         email:
         user?.email,

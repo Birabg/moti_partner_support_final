@@ -16,6 +16,7 @@ export const getPendingUsers = async () => {
     where: { status: "PENDING_APPROVAL" },
     select: {
       id: true,
+      staffNumber: true,
       firstName: true,
       middleName: true,
       lastName: true,
@@ -32,6 +33,7 @@ export const getPendingUsers = async () => {
     where: { status: "PENDING_APPROVAL" },
     select: {
       id: true,
+      memberNumber: true,
       firstName: true,
       middleName: true,
       lastName: true,

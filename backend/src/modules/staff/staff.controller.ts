@@ -294,6 +294,7 @@ export const getAllSupportStaff = async (
       },
       select: {
         id: true,
+        staffNumber: true,
         firstName: true,
         middleName: true,
         lastName: true,
@@ -441,6 +442,7 @@ export const getStaffDeepDetailProfile = async (req: Request, res: Response, nex
       data: {
         profile: {
           id: agent.id,
+          staffNumber: agent.staffNumber,
           firstName: agent.firstName,
           middleName: agent.middleName,
           lastName: agent.lastName,

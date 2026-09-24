@@ -1,6 +1,7 @@
 import { prisma } from "../../config/database";
 import { BcryptUtils } from "../../utils/bcrypt";
 import { sendVerificationEmail } from "../../utils/email";
+import { generateNextMemberNumber } from "../../utils/userNumber";
 import crypto from "crypto";
 import { NotFoundError } from "../../utils/error";
 import { ENV } from "../../config/env";
@@ -76,8 +77,10 @@ if (!organization || !organization.isActive) {
   const passwordHash = await BcryptUtils.hash(data.passwordPlain);
 
   const txResult = await prisma.$transaction(async (tx) => {
+    const memberNumber = await generateNextMemberNumber(tx);
     const newCustomer = await tx.customer.create({
       data: {
+        memberNumber,
         firstName: data.firstName,
         middleName: data.middleName,
         lastName: data.lastName,

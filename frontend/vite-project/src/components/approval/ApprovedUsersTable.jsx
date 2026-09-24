@@ -58,6 +58,10 @@ function getInitials(name) {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
+function getUserNumber(user) {
+    return user.staffNumber || user.memberNumber || "";
+}
+
 function getAvatarStyle(name) {
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
@@ -125,16 +129,24 @@ function SegmentedFilter({ label, options, value, onChange }) {
 }
 
 function TypeBadge({ type }) {
-    if (type === "STAFF") {
-        return (
-            <span className="inline-flex items-center rounded-full bg-gold-100 px-2.5 py-1 text-[11px] font-bold tracking-wide text-gold-600">
-                Staff
-            </span>
-        );
-    }
+    const isStaff = type === "STAFF";
+
     return (
-        <span className="inline-flex items-center rounded-full bg-navy-50 px-2.5 py-1 text-[11px] font-bold tracking-wide text-navy-700">
-            Customer
+        <span
+            className={[
+                "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold",
+                isStaff
+                    ? "border-[#f5e6c8] bg-[#fff7e8] text-[#c58a27]"
+                    : "border-[#dbe7f8] bg-[#edf4fd] text-[#527eb9]",
+            ].join(" ")}
+        >
+            <span
+                className={[
+                    "h-1.5 w-1.5 rounded-full",
+                    isStaff ? "bg-[#c58a27]" : "bg-[#527eb9]",
+                ].join(" ")}
+            />
+            {isStaff ? "Staff" : "Customer"}
         </span>
     );
 }
@@ -145,14 +157,16 @@ function StatusBadge({ status }) {
     return (
         <span
             className={[
-                "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold tracking-wide",
-                active ? "bg-success-100 text-success-600" : "bg-danger-100 text-danger-600",
+                "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold",
+                active
+                    ? "border-[#d2eae2] bg-[#edf7f3] text-[#3b8d73]"
+                    : "border-[#e6c2c0] bg-[#fdf0f0] text-[#c65b5b]",
             ].join(" ")}
         >
             <span
                 className={[
                     "h-1.5 w-1.5 rounded-full",
-                    active ? "bg-success-500" : "bg-danger-500",
+                    active ? "bg-[#3b8d73]" : "bg-[#c65b5b]",
                 ].join(" ")}
             />
             {formatStatus(status)}
@@ -219,7 +233,8 @@ export default function ApprovedUsersTable({
                 const matchesSearch =
                     !query ||
                     fullName.includes(query) ||
-                    user.email?.toLowerCase().includes(query);
+                    user.email?.toLowerCase().includes(query) ||
+                    getUserNumber(user).toLowerCase().includes(query);
 
                 const matchesType =
                     typeFilter === "ALL" || user.type === typeFilter;
@@ -409,6 +424,7 @@ export default function ApprovedUsersTable({
                     ) : (
                         pageUsers.map((user) => {
                             const fullName = getFullName(user) || "Unknown user";
+                            const userNumber = getUserNumber(user);
 
                             return (
                                 <TableRow
@@ -431,8 +447,15 @@ export default function ApprovedUsersTable({
                                                 <span className="block truncate text-sm font-semibold text-ink-900">
                                                     {fullName}
                                                 </span>
-                                                <span className="block truncate text-xs text-ink-500 max-w-[180px] md:max-w-[280px]">
-                                                    {user.email || "—"}
+                                                <span className="flex items-center gap-1.5">
+                                                    {userNumber && (
+                                                        <span className="inline-flex shrink-0 items-center rounded-md border border-ink-100 bg-ink-50 px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-wide text-ink-600">
+                                                            {userNumber}
+                                                        </span>
+                                                    )}
+                                                    <span className="block truncate text-xs text-ink-500 max-w-[150px] md:max-w-[220px]">
+                                                        {user.email || "—"}
+                                                    </span>
                                                 </span>
                                             </span>
                                         </div>

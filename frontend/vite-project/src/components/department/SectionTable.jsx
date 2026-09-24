@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   Pencil,
@@ -11,6 +11,11 @@ import {
   GitBranch,
   Users,
 } from "lucide-react";
+import {
+  isStructureActive,
+  TABLE_PAGE_SIZE,
+} from "./StructureTableUtils";
+import { Pagination, Toolbar } from "./StructureTableKit";
 
 export default function SectionTable({
   sections = [],
@@ -20,6 +25,32 @@ export default function SectionTable({
 }) {
   const [editingId, setEditingId] = useState(null);
   const [editingName, setEditingName] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [page, setPage] = useState(0);
+
+  const filtered = useMemo(() => {
+    return sections.filter((section) => {
+      if (statusFilter === "ALL") return true;
+      return statusFilter === "ACTIVE" ? isStructureActive(section) : !isStructureActive(section);
+    });
+  }, [sections, statusFilter]);
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / TABLE_PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount - 1);
+  const startIndex = currentPage * TABLE_PAGE_SIZE;
+  const pageRows = filtered.slice(startIndex, startIndex + TABLE_PAGE_SIZE);
+  const rangeStart = filtered.length === 0 ? 0 : startIndex + 1;
+  const rangeEnd = Math.min(startIndex + TABLE_PAGE_SIZE, filtered.length);
+
+  const changeStatusFilter = (value) => {
+    setStatusFilter(value);
+    setPage(0);
+  };
+
+  const clearFilters = () => {
+    setStatusFilter("ALL");
+    setPage(0);
+  };
 
   function startEdit(section) {
     setEditingId(section.id);
@@ -49,6 +80,16 @@ export default function SectionTable({
 
   return (
     <div className="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white">
+
+      <Toolbar
+        total={sections.length}
+        filtered={filtered.length}
+        status={statusFilter}
+        onStatusChange={changeStatusFilter}
+        onClear={clearFilters}
+        hasExtraFilters={statusFilter !== "ALL"}
+        noun="section"
+      />
 
       {/* =====================================================
           TABLE
@@ -176,7 +217,7 @@ export default function SectionTable({
 
           <tbody>
 
-            {sections.map((section, index) => {
+            {pageRows.map((section, index) => {
               const isEditing = editingId === section.id;
 
               const departmentName =
@@ -669,7 +710,7 @@ export default function SectionTable({
                 EMPTY STATE
             ===================================================== */}
 
-            {sections.length === 0 && (
+            {pageRows.length === 0 && (
 
               <tr>
 
@@ -716,6 +757,18 @@ export default function SectionTable({
         </table>
 
       </div>
+
+      {filtered.length > 0 && (
+        <Pagination
+          start={rangeStart}
+          end={rangeEnd}
+          total={filtered.length}
+          page={currentPage}
+          pageCount={pageCount}
+          onPageChange={setPage}
+          noun="section"
+        />
+      )}
 
     </div>
   );

@@ -2,6 +2,7 @@ import { prisma } from "../../config/database";
 import { ENV } from "../../config/env";
 import { BcryptUtils } from "../../utils/bcrypt";
 import { sendVerificationEmail } from "../../utils/email";
+import { generateNextStaffNumber } from "../../utils/userNumber";
 import crypto from "crypto";
 
 // const ALLOWED_STAFF_DOMAIN = "motiengineering.com";
@@ -29,8 +30,10 @@ export const Register = async (data: {
 
   // Database transaction commits user and token
   const txResult = await prisma.$transaction(async (tx) => {
+    const staffNumber = await generateNextStaffNumber(tx);
     const newStaff = await tx.staff.create({
       data: {
+        staffNumber,
         firstName: data.firstName,
         lastName: data.lastName,
         middleName: data.middleName,

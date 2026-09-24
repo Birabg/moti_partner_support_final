@@ -273,6 +273,7 @@ export const getStaffWithPermissions = async (staffId: string) => {
     where: { id: staffId },
     select: {
       id: true,
+      staffNumber: true,
       firstName: true,
       lastName: true,
       email: true,
@@ -290,6 +291,7 @@ export const getStaffWithPermissions = async (staffId: string) => {
 
   return {
     id: staff.id,
+    staffNumber: staff.staffNumber,
     firstName: staff.firstName,
     lastName: staff.lastName,
     email: staff.email,

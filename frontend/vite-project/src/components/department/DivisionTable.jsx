@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import {
   Building2,
   CheckCircle2,
@@ -8,6 +9,11 @@ import {
   RotateCcw,
   XCircle,
 } from "lucide-react";
+import {
+  isStructureActive,
+  TABLE_PAGE_SIZE,
+} from "./StructureTableUtils";
+import { Pagination, Toolbar } from "./StructureTableKit";
 
 export default function DivisionTable({
   divisions = [],
@@ -16,6 +22,33 @@ export default function DivisionTable({
   onDeactivate,
   onReactivate,
 }) {
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [page, setPage] = useState(0);
+
+  const filtered = useMemo(() => {
+    return divisions.filter((division) => {
+      if (statusFilter === "ALL") return true;
+      return statusFilter === "ACTIVE" ? isStructureActive(division) : !isStructureActive(division);
+    });
+  }, [divisions, statusFilter]);
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / TABLE_PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount - 1);
+  const startIndex = currentPage * TABLE_PAGE_SIZE;
+  const pageRows = filtered.slice(startIndex, startIndex + TABLE_PAGE_SIZE);
+  const rangeStart = filtered.length === 0 ? 0 : startIndex + 1;
+  const rangeEnd = Math.min(startIndex + TABLE_PAGE_SIZE, filtered.length);
+
+  const changeStatusFilter = (value) => {
+    setStatusFilter(value);
+    setPage(0);
+  };
+
+  const clearFilters = () => {
+    setStatusFilter("ALL");
+    setPage(0);
+  };
+
   function getDepartmentName(division) {
     if (division.department?.name) {
       return division.department.name;
@@ -30,6 +63,16 @@ export default function DivisionTable({
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+
+      <Toolbar
+        total={divisions.length}
+        filtered={filtered.length}
+        status={statusFilter}
+        onStatusChange={changeStatusFilter}
+        onClear={clearFilters}
+        hasExtraFilters={statusFilter !== "ALL"}
+        noun="division"
+      />
 
       {/* Desktop table */}
       <div className="hidden overflow-x-auto md:block">
@@ -60,7 +103,7 @@ export default function DivisionTable({
 
           <tbody className="divide-y divide-slate-100">
 
-            {divisions.map((division) => {
+            {pageRows.map((division) => {
               const isActive =
                 division.isActive !== false &&
                 division.status !== "INACTIVE";
@@ -233,7 +276,7 @@ export default function DivisionTable({
       {/* Mobile cards */}
       <div className="divide-y divide-slate-100 md:hidden">
 
-        {divisions.map((division) => {
+        {pageRows.map((division) => {
           const isActive =
             division.isActive !== false &&
             division.status !== "INACTIVE";
@@ -326,6 +369,18 @@ export default function DivisionTable({
         })}
 
       </div>
+
+      {filtered.length > 0 && (
+        <Pagination
+          start={rangeStart}
+          end={rangeEnd}
+          total={filtered.length}
+          page={currentPage}
+          pageCount={pageCount}
+          onPageChange={setPage}
+          noun="division"
+        />
+      )}
 
     </div>
   );

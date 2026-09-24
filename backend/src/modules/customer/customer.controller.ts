@@ -262,6 +262,7 @@ export const getCustomerHistoryProfile = async (req: Request, res: Response, nex
       data: {
         customer: {
           id: customer.id,
+          memberNumber: customer.memberNumber,
           firstName: customer.firstName,
           middleName: customer.middleName,
           lastName: customer.lastName,

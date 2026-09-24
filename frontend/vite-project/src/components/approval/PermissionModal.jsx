@@ -29,6 +29,9 @@ const getUserName = (user) =>
     user.email ||
     "User";
 
+const getUserNumber = (user) =>
+    user.staffNumber || user.memberNumber || "";
+
 export default function PermissionModal({
     user,
     onClose,
@@ -111,17 +114,24 @@ export default function PermissionModal({
             <div className="w-full max-w-2xl transform rounded-2xl bg-white shadow-[0_20px_60px_rgba(11,27,51,0.2)]">
                 <div className="flex items-start justify-between gap-4 border-b border-ink-100 px-6 py-5">
                     <div className="flex items-start gap-3">
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50">
-                            <ShieldCheck className="h-5 w-5 text-emerald-600" />
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#d2eae2] bg-[#edf7f3]">
+                            <ShieldCheck className="h-5 w-5 text-[#3b8d73]" />
                         </span>
                         <div className="min-w-0">
                             <h2 className="text-lg font-bold tracking-tight text-ink-900">
                                 Add Permissions
                             </h2>
-                            <p className="mt-0.5 truncate text-sm text-ink-500">
-                                {getUserName(user)}
-                                {user.email ? ` · ${user.email}` : ""}
-                            </p>
+                            <div className="mt-0.5 flex flex-wrap items-center gap-2">
+                                {getUserNumber(user) && (
+                                    <span className="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-[11px] font-semibold tracking-wide text-slate-600">
+                                        {getUserNumber(user)}
+                                    </span>
+                                )}
+                                <p className="truncate text-sm text-ink-500">
+                                    {getUserName(user)}
+                                    {user.email ? ` · ${user.email}` : ""}
+                                </p>
+                            </div>
                         </div>
                     </div>
                     <button
@@ -135,9 +145,9 @@ export default function PermissionModal({
                 </div>
 
                 <div className="px-6 py-5">
-                    <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-navy-100 bg-navy-50 px-4 py-3">
-                        <Lock className="mt-0.5 h-4 w-4 shrink-0 text-navy-500" />
-                        <p className="text-xs leading-relaxed text-navy-700">
+                    <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-[#dbe7f8] bg-[#edf4fd] px-4 py-3">
+                        <Lock className="mt-0.5 h-4 w-4 shrink-0 text-[#527eb9]" />
+                        <p className="text-xs leading-relaxed text-slate-600">
                             Default role permissions are already granted and locked. Select only the
                             extra permissions to add below.
                         </p>
@@ -161,9 +171,9 @@ export default function PermissionModal({
                                             "flex cursor-pointer items-center gap-3 rounded-xl border px-3.5 py-2.5 transition-all",
                                             isDefault
                                                 ? "cursor-not-allowed border-ink-100 bg-ink-50"
-                                                : isChecked
-                                                    ? "border-navy-300 bg-navy-50"
-                                                    : "border-ink-200 bg-white hover:border-navy-200 hover:bg-ink-50",
+: isChecked
+                                            ? "border-[#bcd2ea] bg-[#edf4fd]"
+                                            : "border-ink-200 bg-white hover:border-[#bcd2ea] hover:bg-ink-50",
                                         ].join(" ")}
                                     >
                                         <input

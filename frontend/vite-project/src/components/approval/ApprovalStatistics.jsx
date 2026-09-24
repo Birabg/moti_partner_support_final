@@ -22,40 +22,40 @@ export default function ApprovalStatistics({
             value: totalPending,
             description: "Registrations awaiting review",
             icon: Clock3,
-            iconClass: "bg-amber-50 text-amber-600",
-            valueClass: "text-slate-900",
-            accentClass: "bg-amber-400",
-            hoverClass: "group-hover:text-amber-500",
+            iconClass: "border border-[#f5e6c8] bg-[#fff7e8] text-[#c58a27]",
+            valueClass: "text-slate-950",
+            accentClass: "bg-[#c58a27]",
+            hoverClass: "group-hover:text-[#c58a27]",
         },
         {
             label: "Pending Customers",
             value: pendingCustomers,
             description: "Customer registrations awaiting approval",
             icon: UserPlus,
-            iconClass: "bg-blue-50 text-blue-600",
-            valueClass: "text-slate-900",
-            accentClass: "bg-blue-500",
-            hoverClass: "group-hover:text-blue-500",
+            iconClass: "border border-[#dbe7f8] bg-[#edf4fd] text-[#527eb9]",
+            valueClass: "text-slate-950",
+            accentClass: "bg-[#527eb9]",
+            hoverClass: "group-hover:text-[#527eb9]",
         },
         {
             label: "Pending Staff",
             value: pendingStaff,
             description: "Staff registrations awaiting approval",
             icon: Users,
-            iconClass: "bg-violet-50 text-violet-600",
-            valueClass: "text-slate-900",
-            accentClass: "bg-violet-500",
-            hoverClass: "group-hover:text-violet-500",
+            iconClass: "border border-[#e0e4f4] bg-[#eef1fb] text-[#4d5fa5]",
+            valueClass: "text-slate-950",
+            accentClass: "bg-[#4d5fa5]",
+            hoverClass: "group-hover:text-[#4d5fa5]",
         },
         {
             label: "Approved Users",
             value: totalApproved,
             description: "Users currently in the directory",
             icon: UserCheck,
-            iconClass: "bg-emerald-50 text-emerald-600",
-            valueClass: "text-slate-900",
-            accentClass: "bg-emerald-500",
-            hoverClass: "group-hover:text-emerald-500",
+            iconClass: "border border-[#d2eae2] bg-[#edf7f3] text-[#3b8d73]",
+            valueClass: "text-slate-950",
+            accentClass: "bg-[#3b8d73]",
+            hoverClass: "group-hover:text-[#3b8d73]",
         },
     ];
 
@@ -71,11 +71,11 @@ export default function ApprovalStatistics({
                             group
                             relative
                             overflow-hidden
-                            rounded-2xl
+                            rounded-[22px]
                             border
-                            border-slate-200
+                            border-slate-200/80
                             bg-white
-                            shadow-[0_4px_20px_-12px_rgba(15,23,42,0.18)]
+                            shadow-[0_1px_3px_rgba(15,23,42,0.03),0_8px_24px_rgba(15,23,42,0.025)]
                             transition-all
                             duration-200
                             hover:-translate-y-0.5
@@ -149,9 +149,10 @@ export default function ApprovalStatistics({
                                 <p
                                     className={`
                                         mt-1.5
-                                        text-3xl
+                                        text-[36px]
                                         font-semibold
-                                        tracking-tight
+                                        leading-none
+                                        tracking-[-0.055em]
                                         ${item.valueClass}
                                     `}
                                 >

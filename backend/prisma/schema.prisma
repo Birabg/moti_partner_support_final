@@ -187,6 +187,7 @@ model EmailDomain {
 
 model Staff {
   id                        String               @id @default(uuid())
+  staffNumber               String?              @unique @db.VarChar(20)
   firstName                 String               @db.VarChar(100)
   middleName                String               @db.VarChar(100)
   lastName                  String?              @db.VarChar(100)
@@ -263,6 +264,7 @@ model StaffPermission {
 
 model Customer {
   id                String         @id @default(uuid())
+  memberNumber      String?        @unique @db.VarChar(20)
   firstName         String         @db.VarChar(100)
   middleName        String         @db.VarChar(100)
   lastName          String?        @db.VarChar(100)

@@ -45,15 +45,15 @@ export default function PendingCustomerTable({
                             items-center
                             gap-2
                             rounded-lg
-                            border border-blue-100
-                            bg-blue-50
+                            border border-[#dbe7f8]
+                            bg-[#edf4fd]
                             px-3
                             py-1.5
                         "
                     >
-                        <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#527eb9]" />
 
-                        <span className="text-[11px] font-semibold text-blue-700">
+                        <span className="text-[11px] font-semibold text-[#527eb9]">
                             {customers.length} pending
                         </span>
                     </div>
@@ -216,10 +216,10 @@ export default function PendingCustomerTable({
                                                         items-center
                                                         justify-center
                                                         rounded-xl
-                                                        bg-blue-50
-                                                        text-blue-600
+                                                        bg-[#edf4fd]
+                                                        text-[#527eb9]
                                                         border
-                                                        border-blue-100
+                                                        border-[#dbe7f8]
                                                     "
                                                 >
                                                     <UserRound className="h-4 w-4" />
@@ -237,9 +237,16 @@ export default function PendingCustomerTable({
                                                         {fullName}
                                                     </p>
 
-                                                    <p className="mt-0.5 text-[11px] text-slate-400">
-                                                        Customer registration
-                                                    </p>
+                                                    <div className="mt-0.5 flex items-center gap-1.5">
+                                                        {customer.memberNumber && (
+                                                            <span className="inline-flex shrink-0 items-center rounded-md border border-slate-100 bg-slate-50 px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-wide text-slate-500">
+                                                                {customer.memberNumber}
+                                                            </span>
+                                                        )}
+                                                        <p className="text-[11px] text-slate-400">
+                                                            Customer registration
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </TableCell>

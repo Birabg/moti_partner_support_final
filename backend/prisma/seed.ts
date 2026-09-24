@@ -1,6 +1,7 @@
 import { Gender, StaffStatus } from "../generated/prisma/client";
 import bcrypt from "bcrypt";
 import { prisma } from "../src/config/database";
+import { generateNextStaffNumber } from "../src/utils/userNumber";
 
 export const PERMISSIONS = {
   STAFF_READ_ALL: "STAFF_READ_ALL",
@@ -239,6 +240,7 @@ async function main() {
 
   const admin = await prisma.staff.create({
     data: {
+      staffNumber: await generateNextStaffNumber(prisma),
       firstName: "System",
       middleName: "Super",
       lastName: "Admin",

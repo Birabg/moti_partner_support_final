@@ -46,15 +46,15 @@ export default function PendingStaffTable({
                             items-center
                             gap-2
                             rounded-lg
-                            border border-violet-100
-                            bg-violet-50
+                            border border-[#f5e6c8]
+                            bg-[#fff7e8]
                             px-3
                             py-1.5
                         "
                     >
-                        <span className="h-1.5 w-1.5 rounded-full bg-violet-500" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#c58a27]" />
 
-                        <span className="text-[11px] font-semibold text-violet-700">
+                        <span className="text-[11px] font-semibold text-[#c58a27]">
                             {staff.length} pending
                         </span>
                     </div>
@@ -237,9 +237,9 @@ export default function PendingStaffTable({
                                                         justify-center
                                                         rounded-xl
                                                         border
-                                                        border-violet-100
-                                                        bg-violet-50
-                                                        text-violet-600
+                                                        border-[#f5e6c8]
+                                                        bg-[#fff7e8]
+                                                        text-[#c58a27]
                                                     "
                                                 >
                                                     <UserRoundCog className="h-4 w-4" />
@@ -257,9 +257,16 @@ export default function PendingStaffTable({
                                                         {fullName}
                                                     </p>
 
-                                                    <p className="mt-0.5 text-[11px] text-slate-400">
-                                                        Staff registration
-                                                    </p>
+                                                    <div className="mt-0.5 flex items-center gap-1.5">
+                                                        {item.staffNumber && (
+                                                            <span className="inline-flex shrink-0 items-center rounded-md border border-slate-100 bg-slate-50 px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-wide text-slate-500">
+                                                                {item.staffNumber}
+                                                            </span>
+                                                        )}
+                                                        <p className="text-[11px] text-slate-400">
+                                                            Staff registration
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </TableCell>
