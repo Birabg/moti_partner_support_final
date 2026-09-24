@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import {
     Table,
     TableHeader,
@@ -17,6 +19,7 @@ import {
     SlidersHorizontal,
     UsersRound,
     Inbox,
+    Info,
     X,
     ArrowUpCircle,
     ShieldCheck,
@@ -609,7 +612,51 @@ export default function CaseTable({
 
     const closeStatuses = ["RESOLVED", "CUSTOMER_CONFIRMATION"];
 
+    // ============================================================
+    // HOVER PREVIEW
+    // ============================================================
+
+    const [hovered, setHovered] = useState(null);
+
+    const PREVIEW_WIDTH = 380;
+
+    const PREVIEW_HEIGHT = 300;
+
+
+    const updateHover = (event, caseItem) => {
+
+        const { clientX, clientY } = event;
+
+        let left = clientX + 16;
+
+        let top = clientY + 16;
+
+
+        if (left + PREVIEW_WIDTH > window.innerWidth - 12) {
+
+            left = clientX - PREVIEW_WIDTH - 16;
+
+        }
+
+
+        if (top + PREVIEW_HEIGHT > window.innerHeight - 12) {
+
+            top = clientY - PREVIEW_HEIGHT - 24;
+
+        }
+
+
+        setHovered({
+            case: caseItem,
+            left: Math.max(12, left),
+            top: Math.max(12, top),
+        });
+
+    };
+
     return (
+
+        <>
 
         <div
             className="
@@ -734,15 +781,53 @@ export default function CaseTable({
                     className="
                         flex
                         items-center
-                        gap-2
+                        gap-4
                         text-sm
                         text-slate-400
                     "
                 >
 
-                    <ActivityIndicator />
+                    <span
+                        className="
+                            flex
+                            items-center
+                            gap-2
+                        "
+                    >
 
-                    Live case data
+                        <ActivityIndicator />
+
+                        Live case data
+
+                    </span>
+
+
+                    <span
+                        className="
+                            hidden
+                            items-center
+                            gap-1.5
+                            rounded-full
+                            border
+                            border-slate-200
+                            bg-slate-50
+                            px-2.5
+                            py-1
+                            text-[11px]
+                            font-medium
+                            text-slate-500
+                            md:inline-flex
+                        "
+                    >
+
+                        <Info
+                            size={12}
+                            strokeWidth={2}
+                        />
+
+                        Hover a row to preview
+
+                    </span>
 
                 </div>
 
@@ -942,6 +1027,15 @@ export default function CaseTable({
 
                                     <TableRow
                                         key={item.id}
+                                        onMouseEnter={(event) =>
+                                            updateHover(event, item)
+                                        }
+                                        onMouseMove={(event) =>
+                                            updateHover(event, item)
+                                        }
+                                        onMouseLeave={() =>
+                                            setHovered(null)
+                                        }
                                         className="
                                             group
                                             border-b
@@ -1289,6 +1383,427 @@ export default function CaseTable({
                     Showing current page results
 
                 </div>
+
+            </div>
+
+        </div>
+
+
+        {hovered && (
+            <HoverPreview
+                item={hovered.case}
+                left={hovered.left}
+                top={hovered.top}
+            />
+        )}
+
+        </>
+
+    );
+
+}
+
+
+// ============================================================
+// HOVER PREVIEW
+// ============================================================
+
+function HoverPreview({
+    item,
+    left,
+    top,
+}) {
+
+    const status = getStatusConfig(item?.status);
+
+    const priority = getPriorityConfig(item?.priority);
+
+
+    const customerName = item?.customer
+        ? `${item.customer.firstName || ""} ${item.customer.lastName || ""}`.trim()
+        : "";
+
+    const organizationName =
+        item?.customer?.organization?.name || "";
+
+
+    const formatDate = (value) =>
+        value
+            ? new Date(value).toLocaleDateString(
+                  undefined,
+                  {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                  }
+              )
+            : "-";
+
+
+    return (
+
+        <div
+            role="tooltip"
+            className="
+                pointer-events-none
+                fixed
+                z-[70]
+                w-[380px]
+                overflow-hidden
+                rounded-2xl
+                border
+                border-slate-200
+                bg-white
+                shadow-2xl
+                shadow-slate-900/15
+            "
+            style={
+                {
+                    left,
+                    top,
+                }
+            }
+        >
+
+            {/* HEADER */}
+
+            <div
+                className="
+                    flex
+                    items-start
+                    gap-3
+                    border-b
+                    border-slate-100
+                    bg-slate-50/60
+                    px-4
+                    py-3.5
+                "
+            >
+
+                <div
+                    className="
+                        flex
+                        h-9
+                        w-9
+                        shrink-0
+                        items-center
+                        justify-center
+                        rounded-lg
+                        bg-[#17345c]
+                        text-white
+                    "
+                >
+
+                    <FileText
+                        size={15}
+                        strokeWidth={1.9}
+                    />
+
+                </div>
+
+
+                <div className="min-w-0">
+
+                    <p
+                        className="
+                            text-[10px]
+                            font-bold
+                            uppercase
+                            tracking-[0.12em]
+                            text-slate-400
+                        "
+                    >
+
+                        Case {item?.caseNumber || item?.id || ""}
+
+                    </p>
+
+
+                    <h4
+                        className="
+                            mt-0.5
+                            truncate
+                            text-sm
+                            font-semibold
+                            text-slate-900
+                        "
+                    >
+
+                        {item?.subject || "Untitled case"}
+
+                    </h4>
+
+                </div>
+
+            </div>
+
+
+            {/* DESCRIPTION */}
+
+            {item?.description && (
+
+                <div
+                    className="
+                        border-b
+                        border-slate-100
+                        px-4
+                        py-3
+                    "
+                >
+
+                    <p
+                        className="
+                            text-[10px]
+                            font-bold
+                            uppercase
+                            tracking-[0.12em]
+                            text-slate-400
+                        "
+                    >
+
+                        Description
+
+                    </p>
+
+
+                    <p
+                        className="
+                            mt-1
+                            line-clamp-3
+                            whitespace-pre-line
+                            text-xs
+                            leading-5
+                            text-slate-600
+                        "
+                    >
+
+                        {item.description}
+
+                    </p>
+
+                </div>
+
+            )}
+
+
+            {/* DETAILS */}
+
+            <div
+                className="
+                    grid
+                    grid-cols-2
+                    gap-x-4
+                    gap-y-3
+                    px-4
+                    py-3.5
+                "
+            >
+
+                <div className="min-w-0">
+
+                    <p
+                        className="
+                            text-[10px]
+                            font-bold
+                            uppercase
+                            tracking-[0.12em]
+                            text-slate-400
+                        "
+                    >
+
+                        Customer
+
+                    </p>
+
+
+                    <p
+                        className="
+                            mt-1
+                            truncate
+                            text-xs
+                            font-semibold
+                            text-slate-800
+                        "
+                    >
+
+                        {customerName || "-"}
+
+                    </p>
+
+
+                    {item?.customer?.email && (
+
+                        <p
+                            className="
+                                mt-0.5
+                                truncate
+                                text-[11px]
+                                text-slate-400
+                            "
+                        >
+
+                            {item.customer.email}
+
+                        </p>
+
+                    )}
+
+                </div>
+
+
+                <div className="min-w-0">
+
+                    <p
+                        className="
+                            text-[10px]
+                            font-bold
+                            uppercase
+                            tracking-[0.12em]
+                            text-slate-400
+                        "
+                    >
+
+                        Organization
+
+                    </p>
+
+
+                    <p
+                        className="
+                            mt-1
+                            truncate
+                            text-xs
+                            font-semibold
+                            text-slate-800
+                        "
+                    >
+
+                        {organizationName || "-"}
+
+                    </p>
+
+                </div>
+
+
+                <div className="min-w-0">
+
+                    <p
+                        className="
+                            text-[10px]
+                            font-bold
+                            uppercase
+                            tracking-[0.12em]
+                            text-slate-400
+                        "
+                    >
+
+                        Created
+
+                    </p>
+
+
+                    <p
+                        className="
+                            mt-1
+                            text-xs
+                            font-medium
+                            text-slate-700
+                        "
+                    >
+
+                        {formatDate(item?.createdAt)}
+
+                    </p>
+
+                </div>
+
+
+                <div className="min-w-0">
+
+                    <p
+                        className="
+                            text-[10px]
+                            font-bold
+                            uppercase
+                            tracking-[0.12em]
+                            text-slate-400
+                        "
+                    >
+
+                        Last activity
+
+                    </p>
+
+
+                    <p
+                        className="
+                            mt-1
+                            text-xs
+                            font-medium
+                            text-slate-700
+                        "
+                    >
+
+                        {formatDate(item?.updatedAt)}
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            {/* FOOTER */}
+
+            <div
+                className="
+                    flex
+                    items-center
+                    justify-between
+                    gap-3
+                    border-t
+                    border-slate-100
+                    bg-slate-50/60
+                    px-4
+                    py-3
+                "
+            >
+
+                <div
+                    className="
+                        flex
+                        items-center
+                        gap-2
+                    "
+                >
+
+                    <Badge tone={status.tone}>
+
+                        {status.label}
+
+                    </Badge>
+
+
+                    <Badge tone={priority.tone}>
+
+                        {priority.label}
+
+                    </Badge>
+
+                </div>
+
+
+                <span
+                    className="
+                        text-[10px]
+                        font-medium
+                        text-slate-400
+                    "
+                >
+
+                    View for full details
+
+                </span>
 
             </div>
 
