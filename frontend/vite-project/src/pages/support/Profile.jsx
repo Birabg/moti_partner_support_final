@@ -19,8 +19,12 @@ import {
 
 import SupportHeader from "../../components/support/SupportHeader";
 import SupportApi from "../../api/supportApi";
+import PermissionsPanel from "../../components/profile/PermissionsPanel";
+import { useAuth } from "../../context/useAuth";
 
 export default function Profile() {
+  const { user } = useAuth();
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -675,6 +679,16 @@ export default function Profile() {
             </form>
 
           </section>
+
+          {/* ===================================================
+              PERMISSIONS & ACCESS
+          =================================================== */}
+
+          <PermissionsPanel
+            permissions={user?.permissions || []}
+            role={user?.role}
+            managerType={user?.managerType}
+          />
 
         </div>
 
