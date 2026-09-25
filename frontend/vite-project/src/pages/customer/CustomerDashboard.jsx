@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+﻿import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import {
@@ -31,54 +31,9 @@ export default function CustomerDashboard() {
     const [notifications, setNotifications] = useState([]);
 
 
-    useEffect(() => {
-
-        if (authLoading) {
-            return;
-        }
-
-        if (user?.id) {
-            loadDashboard();
-            return;
-        }
-
-        setLoading(false);
-
-    }, [user, authLoading]);
-
-
-    useEffect(() => {
-
-        const handleCaseUpdated = () => {
-
-            if (user?.id) {
-                loadDashboard();
-            }
-
-        };
-
-        window.addEventListener(
-            "cases:updated",
-            handleCaseUpdated
-        );
-
-        return () => {
-
-            window.removeEventListener(
-                "cases:updated",
-                handleCaseUpdated
-            );
-
-        };
-
-    }, [user?.id]);
-
-
-    async function loadDashboard() {
+    const loadDashboard = useCallback(async () => {
 
         try {
-
-            setLoading(true);
 
             const response =
                 await customerCaseApi.getDashboard();
@@ -113,7 +68,54 @@ export default function CustomerDashboard() {
 
         }
 
-    }
+    }, []);
+
+
+    useEffect(() => {
+
+        if (authLoading) {
+            return;
+        }
+
+        loadDashboard();
+
+        const intervalId = setInterval(
+            loadDashboard,
+            15000
+        );
+
+        return () => {
+            clearInterval(intervalId);
+        };
+
+    }, [user, authLoading, loadDashboard]);
+
+
+    useEffect(() => {
+
+        const handleCaseUpdated = () => {
+
+            if (user?.id) {
+                loadDashboard();
+            }
+
+        };
+
+        window.addEventListener(
+            "cases:updated",
+            handleCaseUpdated
+        );
+
+        return () => {
+
+            window.removeEventListener(
+                "cases:updated",
+                handleCaseUpdated
+            );
+
+        };
+
+    }, [user?.id, loadDashboard]);
 
 
     const tokenFirstName =

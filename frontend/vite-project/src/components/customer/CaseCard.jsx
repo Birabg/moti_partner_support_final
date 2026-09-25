@@ -12,6 +12,10 @@ const statusStyles = {
     IN_PROGRESS: "bg-amber-50 text-amber-700 border-amber-100",
     PENDING: "bg-orange-50 text-orange-700 border-orange-100",
     ESCALATED: "bg-red-50 text-red-700 border-red-100",
+    AWAITING_CUSTOMER_RESPONSE: "bg-violet-50 text-violet-700 border-violet-100",
+    WAITING_CUSTOMER_FEEDBACK: "bg-violet-50 text-violet-700 border-violet-100",
+    AWAITING_CUSTOMER: "bg-violet-50 text-violet-700 border-violet-100",
+    AWAITING_CUSTOMER_FEEDBACK: "bg-violet-50 text-violet-700 border-violet-100",
     RESOLVED: "bg-emerald-50 text-emerald-700 border-emerald-100",
     CUSTOMER_CONFIRMATION:
         "bg-violet-50 text-violet-700 border-violet-100",

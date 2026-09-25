@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+﻿import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import {
@@ -10,7 +10,6 @@ import {
 
 import { FolderOpen } from "lucide-react";
 
-import { useAuth } from "../../context/useAuth";
 import customerCaseApi from "../../api/customerCaseApi";
 
 import CustomerPageHero from "../../components/customer/CustomerPageHero";
@@ -20,40 +19,18 @@ import CaseDetailsDrawer from "../../components/cases/CaseDetailsDrawer";
 
 export default function MyCases() {
 
-    const { user } = useAuth();
-
     const [cases, setCases] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [detailCase, setDetailCase] = useState(null);
 
 
-    useEffect(() => {
-        loadCases();
-    }, [user]);
-
-
-    const loadCases = async () => {
+    const loadCases = useCallback(async () => {
 
         try {
 
-            if (!user?.id) {
-                setLoading(false);
-                return;
-            }
-
-            setLoading(true);
-            setError("");
-
             const response =
                 await customerCaseApi.getCustomerCases();
-
-            console.log(
-                "CUSTOMER CASE RESPONSE:",
-                response.status,
-                response.data,
-                response.headers
-            );
 
             const history =
                 response.data?.data?.history ||
@@ -61,6 +38,8 @@ export default function MyCases() {
                 response.data?.history ||
                 response.data?.cases ||
                 [];
+
+            setError("");
 
             setCases(history);
 
@@ -76,7 +55,36 @@ export default function MyCases() {
 
         }
 
-    };
+    }, []);
+
+
+    useEffect(() => {
+        loadCases();
+    }, [loadCases]);
+
+
+    useEffect(() => {
+        loadCases();
+
+        const intervalId = setInterval(
+            loadCases,
+            15000
+        );
+
+        window.addEventListener(
+            "cases:updated",
+            loadCases
+        );
+
+        return () => {
+            clearInterval(intervalId);
+
+            window.removeEventListener(
+                "cases:updated",
+                loadCases
+            );
+        };
+    }, [loadCases]);
 
 
     /* =========================

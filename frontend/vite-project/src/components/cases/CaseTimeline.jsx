@@ -65,6 +65,28 @@ const getTimelineDate = (item) => {
   return date;
 };
 
+const getActorName = (item, caseDetails) => {
+  // Prefer an explicit actor (staff relation or anonymous actor object).
+  const direct = item?.changedBy ?? item?.actor ?? null;
+  if (direct) return getDisplayName(direct);
+
+  // Customer-performed actions have no staff relation — fall back to the
+  // case owner instead of a misleading "System" attribution.
+  const actorType = String(item?.actorType || "").toUpperCase();
+  if (actorType === "CUSTOMER") {
+    const customer = caseDetails?.customer;
+    if (customer) {
+      const name = [customer.firstName, customer.lastName].filter(Boolean).join(" ").trim();
+      if (name) return name;
+      if (customer.email) return customer.email;
+    }
+    return "Customer";
+  }
+
+  if (actorType === "STAFF") return "Support team";
+  return "System";
+};
+
 const formatDateStr = (date) => {
   if (!date) return "";
   const d = new Date(date);
@@ -208,7 +230,7 @@ export default function CaseTimeline({ history = [], caseDetails = null }) {
         const isOpenCreation = isInitialOpenEvent(fromStatus, toStatus);
         const hasPriorityChange = Boolean(oldPriority && newPriority && oldPriority !== newPriority);
         const hasAssignmentChange = Boolean(oldAgentId && newAgentId && oldAgentId !== newAgentId);
-        const changedByName = getDisplayName(item?.changedBy ?? item?.actor ?? null);
+        const changedByName = getActorName(item, caseDetails);
         const timelineDate = getTimelineDate(item);
 
         return (
