@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
     Mail,
     Building2,
@@ -7,6 +8,7 @@ import {
 } from "lucide-react";
 
 import ApprovalActionButtons from "./ApprovalActionButtons";
+import StaffRoleAssignmentModal from "./StaffRoleAssignmentModal";
 
 import {
     Table,
@@ -22,6 +24,34 @@ export default function PendingStaffTable({
     approveUser,
     rejectUser,
 }) {
+    const [selectedStaff, setSelectedStaff] = useState(null);
+    const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
+
+    const handleApprove = (item) => {
+        setSelectedStaff(item);
+        setIsRoleModalOpen(true);
+    };
+
+    const handleRoleConfirm = (roleData) => {
+        const { role, managerType, departmentId, divisionId, sectionId } = roleData;
+        approveUser(
+            selectedStaff.id,
+            "STAFF",
+            role,
+            managerType,
+            departmentId,
+            divisionId,
+            sectionId
+        );
+        setIsRoleModalOpen(false);
+        setSelectedStaff(null);
+    };
+
+    const handleRoleClose = () => {
+        setIsRoleModalOpen(false);
+        setSelectedStaff(null);
+    };
+
     return (
         <div className="w-full">
             {/* =====================================================
@@ -346,12 +376,7 @@ export default function PendingStaffTable({
                                         <TableCell className="pr-5">
                                             <div className="flex justify-end">
                                                 <ApprovalActionButtons
-                                                    onApprove={() =>
-                                                        approveUser(
-                                                            item.id,
-                                                            "STAFF"
-                                                        )
-                                                    }
+                                                    onApprove={() => handleApprove(item)}
                                                     onReject={() =>
                                                         rejectUser(
                                                             item.id,
@@ -367,6 +392,14 @@ export default function PendingStaffTable({
                         </TableBody>
                     </Table>
                 </div>
+            )}
+
+            {isRoleModalOpen && selectedStaff && (
+                <StaffRoleAssignmentModal
+                    staff={selectedStaff}
+                    onClose={handleRoleClose}
+                    onConfirm={handleRoleConfirm}
+                />
             )}
         </div>
     );

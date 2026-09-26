@@ -2,9 +2,10 @@ import { prisma } from "../../config/database";
 import { CaseStatus, CasePriority } from "../../../generated/prisma/client";
 import canTransition from "./caseStatus.validation";
 import { CaseEventBroker, CASE_EVENTS } from "./case.event";
-import { sendStatusUpdateEmail, triggerResolutionEmail } from "../../utils/email";
+import { sendStatusUpdateEmail, triggerResolutionEmail, sendStaffCaseUpdateEmail } from "../../utils/email";
 import { processCaseNotifications } from "./case.notification";
 import { createStatusHistory } from "./statusHistory.service";
+import { ENV } from "../../config/env";
 
 type Actor = {
   id?: string;
@@ -14,6 +15,91 @@ type Actor = {
   isManager?: boolean;
   isDirector?: boolean;
   isCustomer?: boolean;
+};
+
+const getCaseUpdateStaffRecipients = async (caseId: string, excludeStaffId?: string): Promise<Array<{id: string, email: string, firstName: string, lastName: string | null}>> => {
+  const targetCase = await prisma.caseReport.findUnique({
+    where: { id: caseId },
+    include: {
+      assignedSupport: {
+        include: {
+          section: {
+            include: {
+              division: {
+                include: {
+                  department: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!targetCase) return [];
+
+  const recipientIds = new Set<string>();
+
+  if (targetCase.assignedSupportId && targetCase.assignedSupportId !== excludeStaffId) {
+    recipientIds.add(targetCase.assignedSupportId);
+  }
+
+  if (targetCase.assignedSupport?.section) {
+    const staff = targetCase.assignedSupport;
+    const sectionId = staff.sectionId;
+    const divisionId = staff.section?.divisionId;
+    const departmentId = staff.section?.division?.departmentId;
+
+    const getManagerOfUnit = async (
+      unitType: "section" | "division" | "department",
+      unitId: string | null | undefined
+    ) => {
+      if (!unitId) return null;
+      const manager = await prisma.staff.findFirst({
+        where: {
+          [`managed${unitType.charAt(0).toUpperCase() + unitType.slice(1)}Id`]: unitId,
+        },
+        select: { id: true },
+      });
+      return manager?.id || null;
+    };
+
+    const sectionManagerId = await getManagerOfUnit("section", sectionId);
+    if (sectionManagerId && sectionManagerId !== excludeStaffId) {
+      recipientIds.add(sectionManagerId);
+    }
+
+    const divManagerId = await getManagerOfUnit("division", divisionId);
+    if (divManagerId && divManagerId !== excludeStaffId) {
+      recipientIds.add(divManagerId);
+    }
+
+    const deptManagerId = await getManagerOfUnit("department", departmentId);
+    if (deptManagerId && deptManagerId !== excludeStaffId) {
+      recipientIds.add(deptManagerId);
+    }
+  }
+
+  const systemAdmins = await prisma.staff.findMany({
+    where: { isSAdmin: true },
+    select: { id: true },
+  });
+
+  systemAdmins.forEach((admin) => {
+    if (admin.id !== excludeStaffId) {
+      recipientIds.add(admin.id);
+    }
+  });
+
+  if (recipientIds.size === 0) return [];
+
+  const staffDetails = await prisma.staff.findMany({
+    where: { id: { in: Array.from(recipientIds) } },
+    select: { id: true, email: true, firstName: true, lastName: true },
+  });
+
+  return staffDetails.filter(s => s.email);
 };
 
 export async function updateStatus(
@@ -192,6 +278,42 @@ export async function updateStatus(
     }
   } catch (e) {
     console.error("Status notification error:", e);
+  }
+
+  // Send staff email notifications for case updates
+  try {
+    const staffRecipients = await getCaseUpdateStaffRecipients(caseId, actorId || undefined);
+    const actorName = updated.updatedBy
+      ? `${updated.updatedBy.firstName} ${updated.updatedBy.lastName}`
+      : actor.isCustomer
+        ? (targetCase.customer ? `${targetCase.customer.firstName} ${targetCase.customer.lastName || ""}`.trim() : "Customer")
+        : "Staff";
+    const caseUrl = `${ENV.FRONTEND_URL || "http://localhost:3000"}/cases/${caseId}`;
+    
+    let updateType: "status_change" | "resolution" | "closure" | "reassignment" | "priority_change" | "escalation" | "note_added" = "status_change";
+    if (newStatus === CaseStatus.RESOLVED) updateType = "resolution";
+    else if (newStatus === CaseStatus.CLOSED) updateType = "closure";
+    else if (newStatus === CaseStatus.ESCALATED) updateType = "escalation";
+    
+    const updateDetails = opts?.reason || opts?.note || opts?.resolutionSummary || undefined;
+
+    for (const staff of staffRecipients) {
+      await sendStaffCaseUpdateEmail({
+        staffEmail: staff.email,
+        staffName: `${staff.firstName} ${staff.lastName || ""}`.trim(),
+        caseNumber: (updated as any).caseNumber,
+        caseId: updated.id,
+        subjectLine: (updated as any).subject,
+        updateType,
+        newStatus,
+        previousStatus: targetCase.status,
+        updatedBy: actorName,
+        updateDetails,
+        caseUrl,
+      });
+    }
+  } catch (staffEmailError) {
+    console.error("[Status Update] Staff email notification error:", staffEmailError);
   }
 
   return updated;

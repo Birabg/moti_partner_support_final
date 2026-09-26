@@ -1,26 +1,11 @@
-// frontend/src/api/roleApi.js
-
 import Axios from "./axios";
 
 export const RoleApi = {
+  assignRole(data) {
+    return Axios.patch("/pro/admin/role/update", data);
+  },
 
-    assign(data){
-
-        return Axios.post(
-            "/roles/assign",
-            data
-        );
-
-    },
-
-
-    revoke(data){
-
-        return Axios.post(
-            "/roles/revoke",
-            data
-        );
-
-    }
-
+  revokeRole(data) {
+    return Axios.patch("/pro/admin/role/revoke", data);
+  },
 };

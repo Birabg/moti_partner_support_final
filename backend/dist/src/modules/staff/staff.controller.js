@@ -258,6 +258,7 @@ const getAllSupportStaff = async (req, res) => {
             },
             select: {
                 id: true,
+                staffNumber: true,
                 firstName: true,
                 middleName: true,
                 lastName: true,
@@ -306,6 +307,13 @@ const getStaffDeepDetailProfile = async (req, res, next) => {
                 managedSection: {
                     include: {
                         division: { include: { department: true } },
+                    },
+                },
+                staffPermissions: {
+                    select: {
+                        permission: {
+                            select: { id: true, code: true, name: true, category: true },
+                        },
                     },
                 },
                 assignedCases: {
@@ -395,6 +403,7 @@ const getStaffDeepDetailProfile = async (req, res, next) => {
             data: {
                 profile: {
                     id: agent.id,
+                    staffNumber: agent.staffNumber,
                     firstName: agent.firstName,
                     middleName: agent.middleName,
                     lastName: agent.lastName,
@@ -432,6 +441,7 @@ const getStaffDeepDetailProfile = async (req, res, next) => {
                         comment: c.customerFeedback || c.feedback || null,
                     },
                 })),
+                staffPermissions: agent.staffPermissions?.map((sp) => sp.permission) || [],
             },
         });
     }

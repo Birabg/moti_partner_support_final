@@ -14,11 +14,13 @@ import {
 import { directorApi } from "../../api/directorApi";
 import DirectorHeader from "../../components/director/DirectorHeader";
 import Button from "../../components/ui/button";
+import PermissionsPanel from "../../components/profile/PermissionsPanel";
 
 export default function DirectorProfile() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [userPermissions, setUserPermissions] = useState([]);
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -44,6 +46,9 @@ export default function DirectorProfile() {
 
         const payload = response?.data?.data || {};
         const profileData = payload.profile || payload;
+
+        // Use staffPermissions from the API response
+        const userPermissions = (payload.staffPermissions || []).map(sp => sp.code);
 
         const nameParts = profileData.name
           ? profileData.name.trim().split(/\s+/)
@@ -71,6 +76,7 @@ export default function DirectorProfile() {
         setProfile(profileData);
         setForm(nextForm);
         setSavedForm(nextForm);
+        setUserPermissions(userPermissions);
       } catch (caughtError) {
         console.error("Director profile load error:", caughtError);
 
@@ -724,6 +730,18 @@ export default function DirectorProfile() {
                   </span>
 
                 </div>
+
+              </div>
+
+              {/* PERMISSIONS */}
+
+              <div className="mt-5">
+
+                <PermissionsPanel
+                  permissions={userPermissions}
+                  role="DIRECTOR"
+                  managerType={undefined}
+                />
 
               </div>
 

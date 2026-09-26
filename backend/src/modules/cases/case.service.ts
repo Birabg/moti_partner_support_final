@@ -15,7 +15,7 @@ import { validateHierarchyScope } from "./validation";
 import { PERMISSIONS } from "../../config/default.permission";
 import { getTransporter } from "../../utils/email";
 import { ENV } from "../../config/env";
-import { sendCaseCreationCustomerEmail, sendSharedSupportInboxAlert } from "../../utils/email";
+import { sendCaseCreationCustomerEmail, sendSharedSupportInboxAlert, sendStaffCaseUpdateEmail } from "../../utils/email";
 import { createStatusHistory } from "./statusHistory.service";
 import { generateNextCaseNumber } from "../../utils/caseNumber";
 
@@ -262,6 +262,91 @@ const getUpwardManagementRecipients = async (assignedStaffId: string): Promise<s
   });
 
   return Array.from(recipientIds);
+};
+
+const getCaseUpdateStaffRecipients = async (caseId: string, excludeStaffId?: string): Promise<Array<{id: string, email: string, firstName: string, lastName: string | null}>> => {
+  const targetCase = await prisma.caseReport.findUnique({
+    where: { id: caseId },
+    include: {
+      assignedSupport: {
+        include: {
+          section: {
+            include: {
+              division: {
+                include: {
+                  department: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!targetCase) return [];
+
+  const recipientIds = new Set<string>();
+
+  if (targetCase.assignedSupportId && targetCase.assignedSupportId !== excludeStaffId) {
+    recipientIds.add(targetCase.assignedSupportId);
+  }
+
+  if (targetCase.assignedSupport?.section) {
+    const staff = targetCase.assignedSupport;
+    const sectionId = staff.sectionId;
+    const divisionId = staff.section?.divisionId;
+    const departmentId = staff.section?.division?.departmentId;
+
+    const getManagerOfUnit = async (
+      unitType: "section" | "division" | "department",
+      unitId: string | null | undefined
+    ) => {
+      if (!unitId) return null;
+      const manager = await prisma.staff.findFirst({
+        where: {
+          [`managed${unitType.charAt(0).toUpperCase() + unitType.slice(1)}Id`]: unitId,
+        },
+        select: { id: true },
+      });
+      return manager?.id || null;
+    };
+
+    const sectionManagerId = await getManagerOfUnit("section", sectionId);
+    if (sectionManagerId && sectionManagerId !== excludeStaffId) {
+      recipientIds.add(sectionManagerId);
+    }
+
+    const divManagerId = await getManagerOfUnit("division", divisionId);
+    if (divManagerId && divManagerId !== excludeStaffId) {
+      recipientIds.add(divManagerId);
+    }
+
+    const deptManagerId = await getManagerOfUnit("department", departmentId);
+    if (deptManagerId && deptManagerId !== excludeStaffId) {
+      recipientIds.add(deptManagerId);
+    }
+  }
+
+  const systemAdmins = await prisma.staff.findMany({
+    where: { isSAdmin: true },
+    select: { id: true },
+  });
+
+  systemAdmins.forEach((admin) => {
+    if (admin.id !== excludeStaffId) {
+      recipientIds.add(admin.id);
+    }
+  });
+
+  if (recipientIds.size === 0) return [];
+
+  const staffDetails = await prisma.staff.findMany({
+    where: { id: { in: Array.from(recipientIds) } },
+    select: { id: true, email: true, firstName: true, lastName: true },
+  });
+
+  return staffDetails.filter(s => s.email);
 };
 
 const triggerStatusNotification = async (caseDetails: any, newStatus: string) => {
@@ -628,6 +713,32 @@ const caseScope = {
     console.error("Asynchronous email tracking notice warning:", emailError);
   }
 
+  try {
+    const staffRecipients = await getCaseUpdateStaffRecipients(caseId);
+    const operatorName = completeCaseDetails.updatedBy
+      ? `${completeCaseDetails.updatedBy.firstName} ${completeCaseDetails.updatedBy.lastName}`
+      : "Manager";
+    const caseUrl = `${ENV.FRONTEND_URL || "http://localhost:3000"}/cases/${caseId}`;
+    
+    for (const staff of staffRecipients) {
+      await sendStaffCaseUpdateEmail({
+        staffEmail: staff.email,
+        staffName: `${staff.firstName} ${staff.lastName || ""}`.trim(),
+        caseNumber: (completeCaseDetails as any).caseNumber,
+        caseId: completeCaseDetails.id,
+        subjectLine: (completeCaseDetails as any).subject,
+        updateType: "status_change",
+        newStatus: CaseStatus.IN_PROGRESS,
+        previousStatus: targetCase.status,
+        updatedBy: operatorName,
+        updateDetails: `Case assigned to ${completeCaseDetails.assignedSupport?.firstName} ${completeCaseDetails.assignedSupport?.lastName || ""}`,
+        caseUrl,
+      });
+    }
+  } catch (staffEmailError) {
+    console.error("[Case Assignment] Staff email notification error:", staffEmailError);
+  }
+
   return completeCaseDetails;
 };
 
@@ -638,9 +749,11 @@ export const closeCaseReport = async (
   resolutionSummary: string,
   operatorId: string,
 ) => {
-  const targetCase = await prisma.caseReport.findUnique({
+const targetCase = await prisma.caseReport.findUnique({
     where: { id: caseId },
+    include: { customer: true },
   });
+
   if (!targetCase) throw new NotFoundError("Case file not found.");
   if (targetCase.status === CaseStatus.CLOSED)
     throw new BadRequestError("This case is already closed.");
@@ -686,6 +799,32 @@ export const closeCaseReport = async (
     assignedAgentId: (result as any).assignedSupportId,
     sectionId: (result as any).sectionId,
   });
+
+  try {
+    const staffRecipients = await getCaseUpdateStaffRecipients(caseId);
+    const operatorName = result.updatedBy
+      ? `${result.updatedBy.firstName} ${result.updatedBy.lastName}`
+      : "System Admin";
+    const caseUrl = `${ENV.FRONTEND_URL || "http://localhost:3000"}/cases/${caseId}`;
+    
+    for (const staff of staffRecipients) {
+      await sendStaffCaseUpdateEmail({
+        staffEmail: staff.email,
+        staffName: `${staff.firstName} ${staff.lastName || ""}`.trim(),
+        caseNumber: (result as any).caseNumber,
+        caseId: result.id,
+        subjectLine: (result as any).subject,
+        updateType: "closure",
+        newStatus: CaseStatus.CLOSED,
+        previousStatus: targetCase.status,
+        updatedBy: operatorName,
+        updateDetails: resolutionSummary,
+        caseUrl,
+      });
+    }
+  } catch (staffEmailError) {
+    console.error("[Case Closure] Staff email notification error:", staffEmailError);
+  }
 
   return result;
 };
@@ -780,6 +919,31 @@ export const reassignOpenCase = async (
     });
   } catch (notificationError) {
     console.error("[Open Case Reassignment] Notification error:", notificationError);
+  }
+
+  try {
+    const staffRecipients = await getCaseUpdateStaffRecipients(caseId);
+    const operatorName = result.updatedBy
+      ? `${result.updatedBy.firstName} ${result.updatedBy.lastName}`
+      : "Supervisor";
+    const caseUrl = `${ENV.FRONTEND_URL || "http://localhost:3000"}/cases/${caseId}`;
+    
+    for (const staff of staffRecipients) {
+      await sendStaffCaseUpdateEmail({
+        staffEmail: staff.email,
+        staffName: `${staff.firstName} ${staff.lastName || ""}`.trim(),
+        caseNumber: (result as any).caseNumber,
+        caseId: result.id,
+        subjectLine: (result as any).subject,
+        updateType: "reassignment",
+        newStatus: CaseStatus.IN_PROGRESS,
+        updatedBy: operatorName,
+        updateDetails: `Case reassigned to new agent`,
+        caseUrl,
+      });
+    }
+  } catch (staffEmailError) {
+    console.error("[Open Case Reassignment] Staff email notification error:", staffEmailError);
   }
 
   return result;
@@ -1093,6 +1257,31 @@ const caseScope = {
     console.error("[Priority Update] Notification dispatch error:", notificationError);
   }
 
+  try {
+    const staffRecipients = await getCaseUpdateStaffRecipients(caseId);
+    const operatorName = result.updatedBy
+      ? `${result.updatedBy.firstName} ${result.updatedBy.lastName}`
+      : "Staff Member";
+    const caseUrl = `${ENV.FRONTEND_URL || "http://localhost:3000"}/cases/${caseId}`;
+    
+    for (const staff of staffRecipients) {
+      await sendStaffCaseUpdateEmail({
+        staffEmail: staff.email,
+        staffName: `${staff.firstName} ${staff.lastName || ""}`.trim(),
+        caseNumber: (result as any).caseNumber,
+        caseId: result.id,
+        subjectLine: (result as any).subject,
+        updateType: "priority_change",
+        newStatus: result.status,
+        updatedBy: operatorName,
+        updateDetails: `Priority changed from ${oldPriority} to ${priority}`,
+        caseUrl,
+      });
+    }
+  } catch (staffEmailError) {
+    console.error("[Priority Update] Staff email notification error:", staffEmailError);
+  }
+
   return result;
 };
 
@@ -1157,6 +1346,32 @@ export const resolveCase = async (caseId: string, resolutionSummary: string, age
     sectionId:(updatedCase as any).sectionId,
   });
 
+  try {
+    const staffRecipients = await getCaseUpdateStaffRecipients(caseId);
+    const operatorName = updatedCase.updatedBy
+      ? `${updatedCase.updatedBy.firstName} ${updatedCase.updatedBy.lastName}`
+      : "Agent";
+    const caseUrl = `${ENV.FRONTEND_URL || "http://localhost:3000"}/cases/${caseId}`;
+    
+    for (const staff of staffRecipients) {
+      await sendStaffCaseUpdateEmail({
+        staffEmail: staff.email,
+        staffName: `${staff.firstName} ${staff.lastName || ""}`.trim(),
+        caseNumber: updatedCase.caseNumber,
+        caseId: updatedCase.id,
+        subjectLine: updatedCase.subject,
+        updateType: "resolution",
+        newStatus: CaseStatus.RESOLVED,
+        previousStatus: targetCase.status,
+        updatedBy: operatorName,
+        updateDetails: `Resolution summary: ${resolutionSummary.trim()}`,
+        caseUrl,
+      });
+    }
+  } catch (staffEmailError) {
+    console.error("[Case Resolution] Staff email notification error:", staffEmailError);
+  }
+
   return updatedCase;
 };
 
@@ -1173,6 +1388,7 @@ export const closeCaseWithFeedback = async (
 
   const targetCase = await prisma.caseReport.findUnique({
     where: { id: caseId },
+    include: { customer: true },
   });
 
   if (!targetCase) throw new NotFoundError("Case file not found.");
@@ -1244,6 +1460,32 @@ export const closeCaseWithFeedback = async (
     console.error("Warning: Internal closing confirmation alerts failed to post:", notifErr);
   }
 
+  try {
+    const staffRecipients = await getCaseUpdateStaffRecipients(caseId);
+    const customerName = targetCase.customer
+      ? `${targetCase.customer.firstName} ${targetCase.customer.lastName || ""}`.trim()
+      : "Customer";
+    const caseUrl = `${ENV.FRONTEND_URL || "http://localhost:3000"}/cases/${caseId}`;
+    
+    for (const staff of staffRecipients) {
+      await sendStaffCaseUpdateEmail({
+        staffEmail: staff.email,
+        staffName: `${staff.firstName} ${staff.lastName || ""}`.trim(),
+        caseNumber: closedCase.caseNumber,
+        caseId: closedCase.id,
+        subjectLine: targetCase.subject,
+        updateType: "closure",
+        newStatus: CaseStatus.CLOSED,
+        previousStatus: targetCase.status,
+        updatedBy: customerName,
+        updateDetails: `Case closed by customer with rating ${rating}/5${comment ? ` - Comment: ${comment}` : ""}`,
+        caseUrl,
+      });
+    }
+  } catch (staffEmailError) {
+    console.error("[Case Closure by Customer] Staff email notification error:", staffEmailError);
+  }
+
   return closedCase;
 };
 
@@ -1305,6 +1547,32 @@ export const reopenCase = async (caseId: string, customerId: string) => {
     assignedAgentId: reopenedCase.assignedSupportId,
     sectionId: (reopenedCase as any).sectionId,
   });
+
+  try {
+    const staffRecipients = await getCaseUpdateStaffRecipients(caseId);
+    const customerName = reopenedCase.customer
+      ? `${reopenedCase.customer.firstName} ${reopenedCase.customer.lastName || ""}`.trim()
+      : "Customer";
+    const caseUrl = `${ENV.FRONTEND_URL || "http://localhost:3000"}/cases/${caseId}`;
+    
+    for (const staff of staffRecipients) {
+      await sendStaffCaseUpdateEmail({
+        staffEmail: staff.email,
+        staffName: `${staff.firstName} ${staff.lastName || ""}`.trim(),
+        caseNumber: reopenedCase.caseNumber,
+        caseId: reopenedCase.id,
+        subjectLine: reopenedCase.subject,
+        updateType: "status_change",
+        newStatus: CaseStatus.IN_PROGRESS,
+        previousStatus: targetCase.status,
+        updatedBy: customerName,
+        updateDetails: `Case reopened by customer (rejected resolution)`,
+        caseUrl,
+      });
+    }
+  } catch (staffEmailError) {
+    console.error("[Case Reopen] Staff email notification error:", staffEmailError);
+  }
 
   return reopenedCase;
 };

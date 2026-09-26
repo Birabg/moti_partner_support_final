@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendAccountApprovalEmail = exports.sendSharedSupportInboxAlert = exports.sendCustomerAssignmentEmail = exports.sendCaseAssignmentEmail = exports.sendCaseCreationCustomerEmail = exports.sendPasswordResetEmail = exports.triggerAutoCloseEmail = exports.triggerResolutionReminderEmail = exports.triggerResolutionEmail = exports.sendStatusUpdateEmail = exports.sendVerificationEmail = exports.dispatchEmail = exports.getTransporter = void 0;
+exports.sendStaffCaseUpdateEmail = exports.sendAccountApprovalEmail = exports.sendSharedSupportInboxAlert = exports.sendCustomerAssignmentEmail = exports.sendCaseAssignmentEmail = exports.sendCaseCreationCustomerEmail = exports.sendPasswordResetEmail = exports.triggerAutoCloseEmail = exports.triggerResolutionReminderEmail = exports.triggerResolutionEmail = exports.sendStatusUpdateEmail = exports.sendVerificationEmail = exports.dispatchEmail = exports.getTransporter = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const env_1 = require("../config/env");
 const getTransporter = () => {
@@ -492,3 +492,87 @@ const sendAccountApprovalEmail = async (to, fullName, frontendUrl, userType) => 
     }
 };
 exports.sendAccountApprovalEmail = sendAccountApprovalEmail;
+const sendStaffCaseUpdateEmail = async (input) => {
+    const { staffEmail, staffName, caseNumber, caseId, subjectLine, updateType, newStatus, previousStatus, updatedBy, updateDetails, caseUrl, } = input;
+    const updateTypeLabels = {
+        status_change: "Status Updated",
+        resolution: "Case Resolved",
+        closure: "Case Closed",
+        reassignment: "Case Reassigned",
+        priority_change: "Priority Changed",
+        escalation: "Case Escalated",
+        note_added: "Note Added",
+    };
+    const updateTypeLabel = updateTypeLabels[updateType] || "Case Updated";
+    const statusColors = {
+        OPEN: "#3498db",
+        ASSIGNED: "#3498db",
+        IN_PROGRESS: "#f39c12",
+        PENDING: "#9b59b6",
+        ESCALATED: "#e74c3c",
+        RESOLVED: "#27ae60",
+        CLOSED: "#2c3e50",
+        CANCELLED: "#95a5a6",
+        CUSTOMER_CONFIRMATION: "#27ae60",
+    };
+    const statusColor = newStatus ? statusColors[newStatus] || "#3498db" : "#3498db";
+    let statusHtml = "";
+    if (newStatus && previousStatus) {
+        statusHtml = `
+      <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid ${statusColor}; margin: 20px 0; border-radius: 4px;">
+        <strong>Status Changed:</strong> 
+        <span style="color: ${statusColor}; font-weight: bold; margin-left: 8px;">${previousStatus} → ${newStatus}</span>
+      </div>
+    `;
+    }
+    else if (newStatus) {
+        statusHtml = `
+      <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid ${statusColor}; margin: 20px 0; border-radius: 4px;">
+        <strong>New Status:</strong> 
+        <span style="color: ${statusColor}; font-weight: bold; margin-left: 8px;">${newStatus}</span>
+      </div>
+    `;
+    }
+    const detailsHtml = updateDetails
+        ? `
+      <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px;">
+        <strong>Details:</strong>
+        <p style="margin: 8px 0 0; font-style: italic; color: #856404;">${updateDetails}</p>
+      </div>
+    `
+        : "";
+    const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+      <h2 style="color: #2c3e50;">${updateTypeLabel}: Case #${caseNumber}</h2>
+      <p>Hello ${staffName},</p>
+      <p>An update has been made to support ticket <strong>"${subjectLine}"</strong> (Case #${caseNumber}).</p>
+      
+      ${statusHtml}
+      ${detailsHtml}
+
+      <p>You can review the full case details and take action if needed:</p>
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="${caseUrl}" style="background-color: #3498db; color: white; padding: 12px 25px; text-decoration: none; font-weight: bold; border-radius: 4px; display: inline-block;">View Case</a>
+      </div>
+
+      <p style="font-size: 12px; color: #7f8c8d; margin-top: 30px;">
+        Updated by: ${updatedBy}<br>
+        If the button above does not load, copy and paste this address into your browser: ${caseUrl}
+      </p>
+    </div>
+  `;
+    try {
+        await (0, exports.dispatchEmail)({
+            to: staffEmail,
+            subject: `[Staff Update] Case #${caseNumber} - ${updateTypeLabel}`,
+            html: htmlContent,
+            kind: `staff-${updateType}`,
+        });
+        return true;
+    }
+    catch (error) {
+        console.error(`[Email:staff-${updateType}] Failed to send staff case update email to ${staffEmail}:`, error);
+        return false;
+    }
+};
+exports.sendStaffCaseUpdateEmail = sendStaffCaseUpdateEmail;

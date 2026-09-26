@@ -10,6 +10,78 @@ const caseStatus_validation_1 = __importDefault(require("./caseStatus.validation
 const case_event_1 = require("./case.event");
 const email_1 = require("../../utils/email");
 const statusHistory_service_1 = require("./statusHistory.service");
+const env_1 = require("../../config/env");
+const getCaseUpdateStaffRecipients = async (caseId, excludeStaffId) => {
+    const targetCase = await database_1.prisma.caseReport.findUnique({
+        where: { id: caseId },
+        include: {
+            assignedSupport: {
+                include: {
+                    section: {
+                        include: {
+                            division: {
+                                include: {
+                                    department: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    });
+    if (!targetCase)
+        return [];
+    const recipientIds = new Set();
+    if (targetCase.assignedSupportId && targetCase.assignedSupportId !== excludeStaffId) {
+        recipientIds.add(targetCase.assignedSupportId);
+    }
+    if (targetCase.assignedSupport?.section) {
+        const staff = targetCase.assignedSupport;
+        const sectionId = staff.sectionId;
+        const divisionId = staff.section?.divisionId;
+        const departmentId = staff.section?.division?.departmentId;
+        const getManagerOfUnit = async (unitType, unitId) => {
+            if (!unitId)
+                return null;
+            const manager = await database_1.prisma.staff.findFirst({
+                where: {
+                    [`managed${unitType.charAt(0).toUpperCase() + unitType.slice(1)}Id`]: unitId,
+                },
+                select: { id: true },
+            });
+            return manager?.id || null;
+        };
+        const sectionManagerId = await getManagerOfUnit("section", sectionId);
+        if (sectionManagerId && sectionManagerId !== excludeStaffId) {
+            recipientIds.add(sectionManagerId);
+        }
+        const divManagerId = await getManagerOfUnit("division", divisionId);
+        if (divManagerId && divManagerId !== excludeStaffId) {
+            recipientIds.add(divManagerId);
+        }
+        const deptManagerId = await getManagerOfUnit("department", departmentId);
+        if (deptManagerId && deptManagerId !== excludeStaffId) {
+            recipientIds.add(deptManagerId);
+        }
+    }
+    const systemAdmins = await database_1.prisma.staff.findMany({
+        where: { isSAdmin: true },
+        select: { id: true },
+    });
+    systemAdmins.forEach((admin) => {
+        if (admin.id !== excludeStaffId) {
+            recipientIds.add(admin.id);
+        }
+    });
+    if (recipientIds.size === 0)
+        return [];
+    const staffDetails = await database_1.prisma.staff.findMany({
+        where: { id: { in: Array.from(recipientIds) } },
+        select: { id: true, email: true, firstName: true, lastName: true },
+    });
+    return staffDetails.filter(s => s.email);
+};
 async function updateStatus(caseId, newStatus, actor, opts) {
     const targetCase = await database_1.prisma.caseReport.findUnique({ where: { id: caseId }, include: { customer: true, assignedSupport: true } });
     if (!targetCase)
@@ -166,6 +238,42 @@ async function updateStatus(caseId, newStatus, actor, opts) {
     }
     catch (e) {
         console.error("Status notification error:", e);
+    }
+    // Send staff email notifications for case updates
+    try {
+        const staffRecipients = await getCaseUpdateStaffRecipients(caseId, actorId || undefined);
+        const actorName = updated.updatedBy
+            ? `${updated.updatedBy.firstName} ${updated.updatedBy.lastName}`
+            : actor.isCustomer
+                ? (targetCase.customer ? `${targetCase.customer.firstName} ${targetCase.customer.lastName || ""}`.trim() : "Customer")
+                : "Staff";
+        const caseUrl = `${env_1.ENV.FRONTEND_URL || "http://localhost:3000"}/cases/${caseId}`;
+        let updateType = "status_change";
+        if (newStatus === client_1.CaseStatus.RESOLVED)
+            updateType = "resolution";
+        else if (newStatus === client_1.CaseStatus.CLOSED)
+            updateType = "closure";
+        else if (newStatus === client_1.CaseStatus.ESCALATED)
+            updateType = "escalation";
+        const updateDetails = opts?.reason || opts?.note || opts?.resolutionSummary || undefined;
+        for (const staff of staffRecipients) {
+            await (0, email_1.sendStaffCaseUpdateEmail)({
+                staffEmail: staff.email,
+                staffName: `${staff.firstName} ${staff.lastName || ""}`.trim(),
+                caseNumber: updated.caseNumber,
+                caseId: updated.id,
+                subjectLine: updated.subject,
+                updateType,
+                newStatus,
+                previousStatus: targetCase.status,
+                updatedBy: actorName,
+                updateDetails,
+                caseUrl,
+            });
+        }
+    }
+    catch (staffEmailError) {
+        console.error("[Status Update] Staff email notification error:", staffEmailError);
     }
     return updated;
 }

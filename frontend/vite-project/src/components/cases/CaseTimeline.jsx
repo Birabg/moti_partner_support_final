@@ -165,7 +165,7 @@ const hasMeaningfulEvent = (item) => {
   );
 };
 
-export default function CaseTimeline({ history = [], caseDetails = null }) {
+export default function CaseTimeline({ history = [], caseDetails = null, hidePriority = false }) {
   const timeline = Array.isArray(history)
     ? (() => {
         const sorted = [...history].sort((a, b) => {
@@ -333,7 +333,7 @@ export default function CaseTimeline({ history = [], caseDetails = null }) {
                 </div>
               )}
 
-              {hasPriorityChange && (
+{!hidePriority && hasPriorityChange && (
                 <p className="mt-3 text-sm text-orange-600">
                   Priority updated: {formatPriority(oldPriority)} → {formatPriority(newPriority)}
                 </p>

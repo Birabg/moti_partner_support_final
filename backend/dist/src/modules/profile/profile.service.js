@@ -12,7 +12,9 @@ const getMyProfile = async (userId) => {
         }
     });
     return {
+        staffNumber: user?.staffNumber,
         fullName: `${user?.firstName} ${user?.middleName}`,
+        id: user?.id,
         email: user?.email,
         role: user?.isSAdmin
             ? "SYSTEM_ADMIN"

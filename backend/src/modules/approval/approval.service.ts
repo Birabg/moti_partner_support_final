@@ -26,6 +26,12 @@ export const getPendingUsers = async () => {
       isSAdmin: true,
       isManager: true,
       isPSsupport: true,
+      isDirector: true,
+      isSystemSupport: true,
+      sectionId: true,
+      managedDepartment: { select: { id: true } },
+      managedDivision: { select: { id: true } },
+      managedSection: { select: { id: true } },
     },
   });
 
@@ -51,10 +57,36 @@ export const getPendingUsers = async () => {
   const formatFullName = (firstName?: string | null, middleName?: string | null, lastName?: string | null) =>
     [firstName, middleName, lastName].filter(Boolean).join(" ").trim();
 
+  const getRole = (staff: any) => {
+    if (staff.isSAdmin) return "SYSTEM_ADMIN";
+    if (staff.isDirector) return "DIRECTOR";
+    if (staff.isManager) return "MANAGER";
+    if (staff.isPSsupport) return "PS_SUPPORT";
+    if (staff.isSystemSupport) return "SYSTEM_SUPPORT";
+    return "STAFF";
+  };
+
+  const getManagerType = (staff: any) => {
+    if (!staff.isManager) return null;
+    if (staff.managedDepartment) return "DEPARTMENT";
+    if (staff.managedDivision) return "DIVISION";
+    if (staff.managedSection) return "SECTION";
+    return null;
+  };
+
+  const getDepartmentId = (staff: any) => staff.managedDepartment?.id || null;
+  const getDivisionId = (staff: any) => staff.managedDivision?.id || null;
+  const getSectionId = (staff: any) => staff.managedSection?.id || staff.sectionId || null;
+
   return {
     staff: pendingStaff.map((staff) => ({
       ...staff,
       fullName: formatFullName(staff.firstName, staff.middleName, staff.lastName),
+      role: getRole(staff),
+      managerType: getManagerType(staff),
+      departmentId: getDepartmentId(staff),
+      divisionId: getDivisionId(staff),
+      sectionId: getSectionId(staff),
     })),
     customers: pendingCustomers.map((customer) => ({
       ...customer,

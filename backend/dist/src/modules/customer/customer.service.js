@@ -7,6 +7,7 @@ exports.getCustomerCaseHistory = exports.resendCustomerVerification = exports.ve
 const database_1 = require("../../config/database");
 const bcrypt_1 = require("../../utils/bcrypt");
 const email_1 = require("../../utils/email");
+const userNumber_1 = require("../../utils/userNumber");
 const crypto_1 = __importDefault(require("crypto"));
 const error_1 = require("../../utils/error");
 const RegisterCustomer = async (data) => {
@@ -64,8 +65,10 @@ const RegisterCustomer = async (data) => {
     }
     const passwordHash = await bcrypt_1.BcryptUtils.hash(data.passwordPlain);
     const txResult = await database_1.prisma.$transaction(async (tx) => {
+        const memberNumber = await (0, userNumber_1.generateNextMemberNumber)(tx);
         const newCustomer = await tx.customer.create({
             data: {
+                memberNumber,
                 firstName: data.firstName,
                 middleName: data.middleName,
                 lastName: data.lastName,

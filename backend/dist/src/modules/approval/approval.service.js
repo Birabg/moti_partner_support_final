@@ -11,6 +11,7 @@ const getPendingUsers = async () => {
         where: { status: "PENDING_APPROVAL" },
         select: {
             id: true,
+            staffNumber: true,
             firstName: true,
             middleName: true,
             lastName: true,
@@ -20,12 +21,19 @@ const getPendingUsers = async () => {
             isSAdmin: true,
             isManager: true,
             isPSsupport: true,
+            isDirector: true,
+            isSystemSupport: true,
+            sectionId: true,
+            managedDepartment: { select: { id: true } },
+            managedDivision: { select: { id: true } },
+            managedSection: { select: { id: true } },
         },
     });
     const pendingCustomers = await database_1.prisma.customer.findMany({
         where: { status: "PENDING_APPROVAL" },
         select: {
             id: true,
+            memberNumber: true,
             firstName: true,
             middleName: true,
             lastName: true,
@@ -40,10 +48,42 @@ const getPendingUsers = async () => {
         },
     });
     const formatFullName = (firstName, middleName, lastName) => [firstName, middleName, lastName].filter(Boolean).join(" ").trim();
+    const getRole = (staff) => {
+        if (staff.isSAdmin)
+            return "SYSTEM_ADMIN";
+        if (staff.isDirector)
+            return "DIRECTOR";
+        if (staff.isManager)
+            return "MANAGER";
+        if (staff.isPSsupport)
+            return "PS_SUPPORT";
+        if (staff.isSystemSupport)
+            return "SYSTEM_SUPPORT";
+        return "STAFF";
+    };
+    const getManagerType = (staff) => {
+        if (!staff.isManager)
+            return null;
+        if (staff.managedDepartment)
+            return "DEPARTMENT";
+        if (staff.managedDivision)
+            return "DIVISION";
+        if (staff.managedSection)
+            return "SECTION";
+        return null;
+    };
+    const getDepartmentId = (staff) => staff.managedDepartment?.id || null;
+    const getDivisionId = (staff) => staff.managedDivision?.id || null;
+    const getSectionId = (staff) => staff.managedSection?.id || staff.sectionId || null;
     return {
         staff: pendingStaff.map((staff) => ({
             ...staff,
             fullName: formatFullName(staff.firstName, staff.middleName, staff.lastName),
+            role: getRole(staff),
+            managerType: getManagerType(staff),
+            departmentId: getDepartmentId(staff),
+            divisionId: getDivisionId(staff),
+            sectionId: getSectionId(staff),
         })),
         customers: pendingCustomers.map((customer) => ({
             ...customer,

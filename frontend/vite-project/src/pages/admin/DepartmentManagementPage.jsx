@@ -18,6 +18,7 @@ import { SectionApi } from "../../api/sectionApi";
 import AdminPageHero from "../../components/admin/AdminPageHero";
 
 import DepartmentTabs from "../../components/department/DepartmentTabs";
+import DepartmentHierarchyView from "../../components/department/DepartmentHierarchyView";
 
 import DepartmentStatistics from "../../components/department/DepartmentStatistics";
 import DepartmentSearch from "../../components/department/DepartmentSearch";
@@ -257,6 +258,15 @@ export default function DepartmentManagementPage() {
       icon: Layers3,
       count: sections.length,
     },
+
+    hierarchy: {
+      label: "Hierarchy",
+      singular: "Hierarchy",
+      description:
+        "View the complete organizational hierarchy across all levels.",
+      icon: Layers3,
+      count: departments.length + divisions.length + sections.length,
+    },
   }[activeTab];
 
   const ActiveIcon = activeConfig.icon;
@@ -475,6 +485,29 @@ export default function DepartmentManagementPage() {
         </div>
 
       </section>
+
+      {/* ======================================================
+          HIERARCHY VIEW
+      ====================================================== */}
+
+      {activeTab === "hierarchy" && (
+        <div className="mt-5">
+          <DepartmentHierarchyView
+            departments={departments}
+            divisions={divisions}
+            sections={sections}
+            onUpdateDepartment={updateDepartment}
+            onDeactivateDepartment={deactivateDepartment}
+            onReactivateDepartment={reactivateDepartment}
+            onUpdateDivision={updateDivision}
+            onDeactivateDivision={deactivateDivision}
+            onReactivateDivision={reactivateDivision}
+            onUpdateSection={updateSection}
+            onDeactivateSection={deactivateSection}
+            onReactivateSection={reactivateSection}
+          />
+        </div>
+      )}
 
       {/* ======================================================
           DEPARTMENT

@@ -3,6 +3,7 @@ import {
   Building2,
   GitBranch,
   Layers3,
+  ListTree,
 } from "lucide-react";
 
 export default function DepartmentTabs({
@@ -10,6 +11,11 @@ export default function DepartmentTabs({
   setActiveTab,
 }) {
   const tabs = [
+    {
+      id: "hierarchy",
+      label: "Hierarchy",
+      icon: ListTree,
+    },
     {
       id: "department",
       label: "Departments",

@@ -1471,6 +1471,7 @@ export default function CaseDetailsDrawer({
                                     fullCase.statusHistory || []
                                 }
                                 caseDetails={fullCase}
+                                hidePriority={isCustomer}
                             />
 
                         </section>

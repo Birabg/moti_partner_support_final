@@ -57,6 +57,7 @@ export default function DirectorCaseAnalytics() {
       ...buildList("RESOLVED", summary.resolved ?? summary.RESOLVED ?? 0),
       ...buildList("CUSTOMER_CONFIRMATION", summary.customerConfirmation ?? summary.CUSTOMER_CONFIRMATION ?? 0),
       ...buildList("CLOSED", summary.closed ?? summary.CLOSED ?? 0),
+      ...buildList("CANCELLED", summary.cancelled ?? summary.CANCELLED ?? 0),
     ];
   }, [summary]);
 

@@ -228,6 +228,7 @@ const getStaffWithPermissions = async (staffId) => {
         where: { id: staffId },
         select: {
             id: true,
+            staffNumber: true,
             firstName: true,
             lastName: true,
             email: true,
@@ -244,6 +245,7 @@ const getStaffWithPermissions = async (staffId) => {
         throw new error_1.NotFoundError("Staff record not found.");
     return {
         id: staff.id,
+        staffNumber: staff.staffNumber,
         firstName: staff.firstName,
         lastName: staff.lastName,
         email: staff.email,

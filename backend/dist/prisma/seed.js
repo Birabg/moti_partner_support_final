@@ -7,6 +7,7 @@ exports.PERMISSIONS = void 0;
 const client_1 = require("../generated/prisma/client");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const database_1 = require("../src/config/database");
+const userNumber_1 = require("../src/utils/userNumber");
 exports.PERMISSIONS = {
     STAFF_READ_ALL: "STAFF_READ_ALL",
     CUSTOMER_READ_ALL: "CUSTOMER_READ_ALL",
@@ -228,6 +229,7 @@ async function main() {
     }));
     const admin = await database_1.prisma.staff.create({
         data: {
+            staffNumber: await (0, userNumber_1.generateNextStaffNumber)(database_1.prisma),
             firstName: "System",
             middleName: "Super",
             lastName: "Admin",

@@ -51,7 +51,9 @@ export default function CreateCase() {
     serviceTypeId: ""
   });
 
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
+  const MAX_FILES = 5;
+  const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
 
   useEffect(() => {
@@ -179,8 +181,8 @@ export default function CreateCase() {
       //   form.priority || "MEDIUM"
       // );
 
-      if (file) {
-        data.append("attachments", file);
+      if (files.length > 0) {
+        files.forEach((f) => data.append("attachments", f));
       }
 
       const response = await createCase(data);
@@ -804,7 +806,7 @@ export default function CreateCase() {
                 </div>
 
 
-                {/* Attachment */}
+                {/* Attachments */}
 
                 <div>
 
@@ -816,68 +818,146 @@ export default function CreateCase() {
                     mb-2
                   ">
 
-                    Attachment
+                    Attachments (max 5 files, 100MB each)
 
                   </label>
 
+                  <div className="space-y-3">
 
-                  <label className="
-                    flex
-                    flex-col
-                    items-center
-                    justify-center
-                    w-full
-                    min-h-[130px]
-                    rounded-xl
-                    border-2
-                    border-dashed
-                    border-slate-200
-                    bg-slate-50
-                    hover:bg-slate-100
-                    hover:border-blue-300
-                    transition
-                    cursor-pointer
-                  ">
-
-                    <FaPaperclip
-                      className="text-slate-400 mb-3"
-                      size={20}
-                    />
-
-                    <span className="
-                      text-sm
-                      font-medium
-                      text-slate-600
+                    <label className="
+                      flex
+                      flex-col
+                      items-center
+                      justify-center
+                      w-full
+                      min-h-[130px]
+                      rounded-xl
+                      border-2
+                      border-dashed
+                      border-slate-200
+                      bg-slate-50
+                      hover:bg-slate-100
+                      hover:border-blue-300
+                      transition
+                      cursor-pointer
                     ">
 
-                      {file
-                        ? file.name
-                        : "Click to attach a file"
-                      }
+                      <FaPaperclip
+                        className="text-slate-400 mb-3"
+                        size={20}
+                      />
 
-                    </span>
+                      <span className="
+                        text-sm
+                        font-medium
+                        text-slate-600
+                      ">
 
-                    <span className="
-                      text-xs
-                      text-slate-400
-                      mt-1
-                    ">
+                        {files.length > 0
+                          ? `${files.length} file${files.length !== 1 ? 's' : ''} attached`
+                          : 'Click to attach files'}
 
-                      Screenshots or documents can help us resolve your case faster.
+                      </span>
 
-                    </span>
+                      <span className="
+                        text-xs
+                        text-slate-400
+                        mt-1
+                      ">
 
-                    <input
-                      type="file"
-                      className="hidden"
-                      onChange={(e) =>
-                        setFile(
-                          e.target.files[0]
-                        )
-                      }
-                    />
+                        {files.length > 0
+                          ? `${files.length}/${MAX_FILES} files • Screenshots or documents can help us resolve your case faster.`
+                          : 'Screenshots or documents can help us resolve your case faster.'}
 
-                  </label>
+                      </span>
+
+                      <input
+                        type="file"
+                        className="hidden"
+                        multiple
+                        onChange={(e) => {
+                          const newFiles = Array.from(e.target.files);
+                          const validFiles = [];
+                          const errors = [];
+
+                          newFiles.forEach((f) => {
+                            if (files.length + validFiles.length >= MAX_FILES) {
+                              errors.push(`Maximum ${MAX_FILES} files allowed.`);
+                              return;
+                            }
+                            if (f.size > MAX_FILE_SIZE) {
+                              errors.push(`${f.name} exceeds 100MB limit.`);
+                              return;
+                            }
+                            validFiles.push(f);
+                          });
+
+                          if (errors.length > 0) {
+                            alert(errors.join('\n'));
+                          }
+
+                          if (validFiles.length > 0) {
+                            setFiles((prev) => [...prev, ...validFiles]);
+                          }
+                        }}
+                        disabled={files.length >= MAX_FILES}
+                      />
+
+                    </label>
+
+                    {files.length > 0 && (
+                      <div className="space-y-2">
+                        {files.map((f, index) => (
+                          <div
+                            key={`${f.name}-${index}`}
+                            className="
+                              flex
+                              items-center
+                              gap-3
+                              p-3
+                              bg-slate-50
+                              rounded-xl
+                              border
+                              border-slate-200
+                            "
+                          >
+                            <FaPaperclip className="text-slate-400" size={18} />
+                            <span className="text-sm text-slate-700 flex-1 truncate">{f.name}</span>
+                            <span className="text-xs text-slate-500">{(f.size / 1024 / 1024).toFixed(2)} MB</span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setFiles((prev) => prev.filter((_, i) => i !== index))
+                              }
+                              className="
+                                p-1.5
+                                text-slate-400
+                                hover:text-red-500
+                                hover:bg-red-50
+                                rounded-lg
+                                transition
+                              "
+                            >
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                  </div>
 
                 </div>
 

@@ -7,6 +7,7 @@ exports.resendStaffVerification = exports.verifyStaffEmail = exports.Register = 
 const database_1 = require("../../config/database");
 const bcrypt_1 = require("../../utils/bcrypt");
 const email_1 = require("../../utils/email");
+const userNumber_1 = require("../../utils/userNumber");
 const crypto_1 = __importDefault(require("crypto"));
 // const ALLOWED_STAFF_DOMAIN = "motiengineering.com";
 const Register = async (data) => {
@@ -22,8 +23,10 @@ const Register = async (data) => {
     const passwordHash = await bcrypt_1.BcryptUtils.hash(data.passwordPlain);
     // Database transaction commits user and token
     const txResult = await database_1.prisma.$transaction(async (tx) => {
+        const staffNumber = await (0, userNumber_1.generateNextStaffNumber)(tx);
         const newStaff = await tx.staff.create({
             data: {
+                staffNumber,
                 firstName: data.firstName,
                 lastName: data.lastName,
                 middleName: data.middleName,

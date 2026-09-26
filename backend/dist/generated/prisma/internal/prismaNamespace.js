@@ -189,6 +189,7 @@ exports.EmailDomainScalarFieldEnum = {
 };
 exports.StaffScalarFieldEnum = {
     id: 'id',
+    staffNumber: 'staffNumber',
     firstName: 'firstName',
     middleName: 'middleName',
     lastName: 'lastName',
@@ -226,6 +227,7 @@ exports.StaffPermissionScalarFieldEnum = {
 };
 exports.CustomerScalarFieldEnum = {
     id: 'id',
+    memberNumber: 'memberNumber',
     firstName: 'firstName',
     middleName: 'middleName',
     lastName: 'lastName',

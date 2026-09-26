@@ -55,7 +55,22 @@ export default function CustomerDashboard() {
             setCases(history);
 
             setNotifications(
-                data.notifications || []
+                (data.notifications || []).filter(
+                    (notification) => {
+                        const notificationType =
+                            String(
+                                notification?.type ??
+                                    notification?.notificationType ??
+                                    ""
+                            ).toUpperCase();
+
+                        // Customer must never see anything priority related.
+                        return (
+                            notificationType !==
+                            "CASE_PRIORITY_CHANGED"
+                        );
+                    }
+                )
             );
 
         } catch (error) {

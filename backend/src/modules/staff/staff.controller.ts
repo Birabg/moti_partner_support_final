@@ -346,6 +346,13 @@ export const getStaffDeepDetailProfile = async (req: Request, res: Response, nex
             division: { include: { department: true } },
           },
         },
+        staffPermissions: {
+          select: {
+            permission: {
+              select: { id: true, code: true, name: true, category: true },
+            },
+          },
+        },
         assignedCases: {
           orderBy: { id: "desc" },
           select: {
@@ -480,6 +487,7 @@ export const getStaffDeepDetailProfile = async (req: Request, res: Response, nex
             comment: c.customerFeedback || c.feedback || null,
           },
         })),
+        staffPermissions: agent.staffPermissions?.map((sp: any) => sp.permission) || [],
       },
     });
   } catch (error) {

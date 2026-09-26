@@ -277,6 +277,20 @@ export default function CustomerNotifications() {
                     const seen = new Set();
 
                     return merged.filter((notification) => {
+                        const notificationType = String(
+                            notification?.type ??
+                                notification?.notificationType ??
+                                ""
+                        ).toUpperCase();
+
+                        // Customer must never see anything priority related.
+                        if (
+                            notificationType ===
+                            "CASE_PRIORITY_CHANGED"
+                        ) {
+                            return false;
+                        }
+
                         const key =
                             notification?.id ??
                             `${notification?.createdAt}-${notification?.message}`;

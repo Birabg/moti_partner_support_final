@@ -19,6 +19,7 @@ import {
 
 import SupportHeader from "../../components/support/SupportHeader";
 import SupportApi from "../../api/supportApi";
+import { PermissionApi } from "../../api/permissionApi";
 import PermissionsPanel from "../../components/profile/PermissionsPanel";
 import { useAuth } from "../../context/useAuth";
 
@@ -28,6 +29,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [userPermissions, setUserPermissions] = useState([]);
 
   const [form, setForm] = useState({
     firstName: "",
@@ -95,9 +97,19 @@ export default function Profile() {
             profile.createdAt || "",
         };
 
+        // Fetch permissions for the current user
+        let userPermissions = [];
+        try {
+          const permRes = await PermissionApi.getAll();
+          userPermissions = permRes.data?.data || [];
+        } catch (err) {
+          console.error("Failed to load permissions:", err);
+        }
+
         if (mounted) {
           setForm(nextForm);
           setSavedForm(nextForm);
+          setUserPermissions(userPermissions);
         }
       } catch (err) {
         console.error("Failed to load profile:", err);
@@ -685,7 +697,7 @@ export default function Profile() {
           =================================================== */}
 
           <PermissionsPanel
-            permissions={user?.permissions || []}
+            permissions={userPermissions}
             role={user?.role}
             managerType={user?.managerType}
           />

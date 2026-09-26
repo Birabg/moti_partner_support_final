@@ -14,8 +14,10 @@ import {
   FaUsers,
 } from "react-icons/fa";
 import { directorApi } from "../../api/directorApi";
+import { useAuth } from "../../context/useAuth";
 
 export default function DirectorDashboard() {
+  const { hasPermission } = useAuth();
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -257,18 +259,21 @@ export default function DirectorDashboard() {
       label: "Users",
       description: "Manage active users",
       icon: FaUsers,
+      permission: "STAFF_ASSIGN_ROLE",
     },
     {
       to: "/director/department-management",
       label: "Departments",
       description: "Manage organizational hierarchy",
       icon: FaSitemap,
+      permission: "STRUCTURE_MANAGE",
     },
     {
       to: "/director/case-analytics",
       label: "Case Analytics",
       description: "Review support performance",
       icon: FaChartBar,
+      permission: "VIEW_ALL_CASES_METRICS",
     },
   ];
 
@@ -989,8 +994,9 @@ export default function DirectorDashboard() {
 
         <div className="grid gap-4 md:grid-cols-3">
 
-          {quickLinks.map(
-            ({ to, label, description, icon: Icon }) => (
+          {quickLinks
+            .filter(({ permission }) => !permission || hasPermission(permission))
+            .map(({ to, label, description, icon: Icon }) => (
               <Link
                 key={to}
                 to={to}

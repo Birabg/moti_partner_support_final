@@ -296,6 +296,7 @@ function StatCard({
 
 export default function CaseStats({
     cases = [],
+    total: overrideTotal,
 }) {
 
     const safeCases = Array.isArray(cases)
@@ -307,7 +308,7 @@ export default function CaseStats({
     // COUNT CASES
     // ------------------------------------------------------------
 
-    const total = safeCases.length;
+    const total = overrideTotal !== undefined ? overrideTotal : safeCases.length;
 
 
     const counts = safeCases.reduce(

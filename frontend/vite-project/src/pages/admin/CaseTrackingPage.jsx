@@ -136,11 +136,13 @@ export default function CaseTrackingPage() {
     // LOAD CASES
     // ============================================================
 
-    const loadCases = async () => {
+    const loadCases = async (isBackground = false) => {
 
         try {
 
-            setLoading(true);
+            if (!isBackground) {
+                setLoading(true);
+            }
 
 
             const response = await getAllCases(
@@ -197,7 +199,7 @@ export default function CaseTrackingPage() {
     useEffect(() => {
 
         let intervalId = setInterval(() => {
-            loadCases();
+            loadCases(true); // background refresh - no loading spinner
         }, 15000);
 
         loadCases();
@@ -482,6 +484,7 @@ export default function CaseTrackingPage() {
 
                 <CaseStats
                     cases={cases}
+                    total={pagination.total}
                 />
 
             </section>
